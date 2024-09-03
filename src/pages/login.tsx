@@ -18,9 +18,8 @@ function Login() {
         try {
             await api.getFiles()
             navigate("/dashboard")
-        } catch (err: any) {
-            const message = `${err.response.status} - ${err.response.statusText}`
-            console.error(message || err)
+        } catch (err: any) { 
+
         } finally {
             setCheckingAuth(false)
         }

@@ -1,6 +1,7 @@
 import axios from "axios"
 import { FileInfo } from "../components/files"
 
+// TODO: Change this to production URL
 const API_URL = "http://localhost:8080/api"
 const client = axios.create({
     withCredentials: true,
