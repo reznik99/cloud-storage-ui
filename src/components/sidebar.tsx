@@ -2,26 +2,21 @@
 import { useCallback, useState } from "react"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress, Stack, Typography } from "@mui/material"
 import { Cancel, Upload, UploadFile } from "@mui/icons-material"
+import { EnqueueSnackbar } from "notistack"
 import viteLogo from '/vite.svg'
-import { FileInfo } from "./files"
 import api from "../networking/endpoints"
-import { calculateSizePercentageUsed, calculateSizeUsed, Feedback } from "../utilities/utils"
+import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, getErrorString, Progress } from "../utilities/utils"
 
 type IProps = {
     files: Array<FileInfo>;
     loadFileList: () => void;
-    setAlertInfo: (info: Feedback) => void;
-}
-
-const zeroProgress = {
-    estimateSec: 0,
-    value: 0
+    enqueueSnackbar: EnqueueSnackbar;
 }
 
 function Sidebar(props: IProps) {
     const [fileModalOpen, setFileModalOpen] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>()
-    const [progress, setProgress] = useState(zeroProgress)
+    const [progress, setProgress] = useState<Progress | null>()
 
     const handleFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedFile(event.target?.files?.[0])
@@ -37,13 +32,13 @@ function Sidebar(props: IProps) {
             await api.uploadFile(selectedFile as File, setProgress)
             handleCancel()
             props.loadFileList()
-            props.setAlertInfo({ message: "File uploaded successfully", severity: "success" })
+            props.enqueueSnackbar("File uploaded successfully", { variant: "success" })
         } catch (err: any) {
-            const message = `${err.response.status} - ${err.response.statusText}`
-            console.error(message || err)
-            props.setAlertInfo({ message: "Upload failed: " + message, severity: "error" })
+            const error = getErrorString(err)
+            console.error(error)
+            props.enqueueSnackbar("Upload failed: " + error, { variant: "error" })
         } finally {
-            setProgress(zeroProgress)
+            setProgress(null)
         }
     }, [selectedFile])
 
@@ -83,7 +78,7 @@ function Sidebar(props: IProps) {
                         {/* Bind the handler to the input */}
                         <input onChange={handleFile} type="file" hidden />
                     </Button>
-                    {progress.value > 0 &&
+                    {progress &&
                         <Box sx={{ mt: 2, textAlign: 'center' }}>
                             <LinearProgress variant="determinate" value={progress.value} />
                             <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.value}%</Typography>

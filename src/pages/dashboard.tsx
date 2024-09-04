@@ -1,22 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Box, Snackbar } from '@mui/material'
+import { Box } from '@mui/material'
 import FilesView from '../components/files'
 import Sidebar from '../components/sidebar'
 import api from '../networking/endpoints'
-import { Feedback } from '../utilities/utils'
+import { useSnackbar } from 'notistack'
 
 function Dashboard() {
-  const [alertInfo, setAlertInfo] = useState<Feedback | null>(null)
+  const { enqueueSnackbar } = useSnackbar()
+  const [loading, setLoading] = useState(false)
   const [files, setFiles] = useState([])
 
   useEffect(() => {
     loadFileList()
   }, [])
 
-  const loadFileList = useCallback(() => {
-    api.getFiles()
-      .then(response => setFiles(response.data.files))
-      .catch(err => console.error(err.message))
+  const loadFileList = useCallback(async () => {
+    try {
+      setLoading(true)
+      const resp = await api.getFiles()
+      setFiles(resp.data.files)
+    } catch (err: any) {
+      console.error(err.message)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   return (
@@ -30,29 +37,15 @@ function Dashboard() {
 
       {/* File explorer */}
       <FilesView files={files || []}
-        setAlertInfo={setAlertInfo}
-        loadFileList={loadFileList} />
+        enqueueSnackbar={enqueueSnackbar}
+        loadFileList={loadFileList}
+        loading={loading} />
 
       {/* Side menu */}
       <Sidebar files={files || []}
-        setAlertInfo={setAlertInfo}
+        enqueueSnackbar={enqueueSnackbar}
         loadFileList={loadFileList} />
 
-      {/* Feedback */}
-      <Snackbar open={Boolean(alertInfo)}
-        autoHideDuration={4000}
-        onClose={() => setAlertInfo(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        {alertInfo
-          ? <Alert onClose={() => setAlertInfo(null)}
-            severity={alertInfo.severity || 'error'}
-            variant="filled"
-            sx={{ width: '100%' }}>
-            {alertInfo?.message}
-          </Alert>
-          : undefined
-        }
-      </Snackbar>
     </Box>
   )
 }

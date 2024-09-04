@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { AccountCircle, ArrowBack } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
-import { Feedback } from "../utilities/utils"
+import { Feedback, getErrorString } from "../utilities/utils"
 
 function Signup() {
     const navigate = useNavigate()
@@ -21,11 +21,9 @@ function Signup() {
             if (password !== passwordConfirmation) throw new Error("Passwords do not match!")
             await api.signup(emailAddress, password)
         } catch (err: any) {
-            const message = err.response?.data?.message || err.message
-            setFeedback({
-                message: message,
-                severity: "error"
-            })
+            const error = getErrorString(err)
+            console.error(error)
+            setFeedback({ message: error, severity: "error" })
         } finally {
             setLoading(false)
         }

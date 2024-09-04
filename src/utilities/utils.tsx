@@ -1,9 +1,17 @@
 import { Article, AudioFile, Folder, FolderZip, Movie, Photo } from "@mui/icons-material"
-import { FileInfo } from "../components/files"
 
+export type FileInfo = {
+    name: string;
+    size: number;
+    added: string;
+}
 export type Feedback = {
     message: string,
     severity: "error" | "info" | "success" | "warning"
+}
+export type Progress = {
+    estimateSec: number;
+    value: number;
 }
 
 export function calculateSizeUsed(files: Array<FileInfo>) {
@@ -63,4 +71,10 @@ export async function triggerDownload(name: string, fileBlob: Blob) {
     link.download = name;
     link.click();
     URL.revokeObjectURL(objectUrl);
+}
+
+export function getErrorString(err: any) {
+    if (err.response) return `${err.response.status} - ${err.response.statusText}`
+    if (err.message) return err.message
+    return err.toString()
 }

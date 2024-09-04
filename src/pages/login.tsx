@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ArrowForward, LoginOutlined } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
-import { Feedback } from "../utilities/utils"
+import { Feedback, getErrorString } from "../utilities/utils"
 
 function Login() {
     const navigate = useNavigate()
@@ -33,11 +33,9 @@ function Login() {
             await api.login(emailAddress, password)
             navigate("/dashboard")
         } catch (err: any) {
-            console.error(err)
-            setFeedback({
-                message: err.response?.data?.message || err.message,
-                severity: "error"
-            })
+            const error = getErrorString(err)
+            console.error(error)
+            setFeedback({ message: error, severity: "error" })
         } finally {
             setLoading(false)
         }

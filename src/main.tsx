@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { SnackbarProvider } from 'notistack'
 
 import Dashboard from './pages/dashboard.tsx'
 import Nav from './components/nav.tsx'
@@ -38,6 +39,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <SnackbarProvider maxSnack={5} autoHideDuration={4000}>
+      <RouterProvider router={router} />
+    </SnackbarProvider>
   </StrictMode>,
 )

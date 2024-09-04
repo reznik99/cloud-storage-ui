@@ -1,34 +1,25 @@
 import { useCallback, useState } from "react"
 import { Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
 import { Box, Button, Collapse, Divider, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from "@mui/material"
-import { Feedback, formatSize, getFileIcon, triggerDownload } from "../utilities/utils"
+import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
-
-export type FileInfo = {
-    name: string;
-    size: number;
-    added: string;
-}
+import { EnqueueSnackbar } from "notistack"
 
 type IProps = {
     files: Array<FileInfo>;
+    loading: boolean;
     loadFileList: () => void;
-    setAlertInfo: (info: Feedback) => void;
-}
-
-const zeroProgress = {
-    estimateSec: 0,
-    value: 0
+    enqueueSnackbar: EnqueueSnackbar;
 }
 
 function FilesView(props: IProps) {
     const [openIdx, setOpenIdx] = useState(-1)
     const [loadingIdx, setLoadingIdx] = useState(-1)
-    const [progress, setProgress] = useState(zeroProgress)
+    const [progress, setProgress] = useState<Progress | null>()
 
     const createLink = useCallback((_: number) => {
         // do link creation
-        props.setAlertInfo({ message: "Not yet implemented", severity: "warning" })
+        props.enqueueSnackbar("Not yet implemented", { variant: "warning" })
     }, [])
 
     const downloadFile = useCallback(async (idx: number) => {
@@ -39,14 +30,14 @@ function FilesView(props: IProps) {
             setLoadingIdx(idx)
             const resp = await api.downloadFile(file, setProgress)
             triggerDownload(file.name, resp.data)
-            props.setAlertInfo({ message: "File downloaded successfully", severity: "success" })
+            props.enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: any) {
-            const message = `${err.response.status} - ${err.response.statusText}`
-            console.error(message || err)
-            props.setAlertInfo({ message: "Download failed: " + message, severity: "error" })
+            const error = getErrorString(err)
+            console.error(error)
+            props.enqueueSnackbar("Download failed: " + error, { variant: "error" })
         } finally {
             setLoadingIdx(-1)
-            setProgress(zeroProgress)
+            setProgress(null)
         }
     }, [props.files])
 
@@ -57,12 +48,12 @@ function FilesView(props: IProps) {
         try {
             setLoadingIdx(idx)
             await api.deleteFile(file)
-            props.setAlertInfo({ message: "File deleted successfully", severity: "success" })
+            props.enqueueSnackbar("File deleted successfully", { variant: "success" })
             props.loadFileList()
         } catch (err: any) {
-            const message = `${err.response.status} - ${err.response.statusText}`
-            console.error(message || err)
-            props.setAlertInfo({ message: "Delete failed: " + message, severity: "error" })
+            const error = getErrorString(err)
+            console.error(error)
+            props.enqueueSnackbar("Delete failed: " + error, { variant: "error" })
         } finally {
             setLoadingIdx(-1)
         }
@@ -127,7 +118,7 @@ function FilesView(props: IProps) {
                                     </Button>
                                 </Tooltip>
                             </ListItem>
-                            {loadingIdx === idx && <>
+                            {(loadingIdx === idx && progress) && <>
                                 <LinearProgress variant="determinate" value={progress.value} />
                                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.value}%</Typography>
                                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
