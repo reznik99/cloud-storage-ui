@@ -6,8 +6,8 @@ import logo from '/logo.png'
 import api from "../networking/endpoints";
 
 function Nav() {
-    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
     const navigate = useNavigate()
+    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
@@ -37,19 +37,16 @@ function Nav() {
 
             <img src={logo} style={{ maxHeight: 40 }} />
 
-            <Typography>Welcome Reznik</Typography>
+            <Typography variant="h4">Welcome</Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+
                 <Tooltip title="Open settings">
-                    <>
-                        <Typography>Reznik</Typography>
-                        <IconButton onClick={handleOpenUserMenu} sx={{ py: 0 }}>
-                            <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                        </IconButton>
-                    </>
+                    <IconButton onClick={handleOpenUserMenu} sx={{ py: 0 }}>
+                        <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                    </IconButton>
                 </Tooltip>
-                <Menu
-                    sx={{ mt: '45px' }}
+                <Menu sx={{ mt: '45px' }}
                     id="menu-appbar"
                     keepMounted
                     anchorEl={anchorElUser}

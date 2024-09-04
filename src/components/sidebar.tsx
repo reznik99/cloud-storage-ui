@@ -1,6 +1,6 @@
 
 import { useCallback, useState } from "react"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress, Stack, Typography } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, LinearProgress, Stack, Switch, Typography, useColorScheme } from "@mui/material"
 import { Cancel, Upload, UploadFile } from "@mui/icons-material"
 import { EnqueueSnackbar } from "notistack"
 import viteLogo from '/vite.svg'
@@ -14,6 +14,7 @@ type IProps = {
 }
 
 function Sidebar(props: IProps) {
+    const { mode, setMode } = useColorScheme()
     const [fileModalOpen, setFileModalOpen] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>()
     const [progress, setProgress] = useState<Progress | null>()
@@ -56,6 +57,15 @@ function Sidebar(props: IProps) {
                 <Typography>{calculateSizeUsed(props.files)} MiB/1,000 MiB</Typography>
                 <LinearProgress variant="determinate" value={calculateSizePercentageUsed(calculateSizeUsed(props.files), 1000)} />
             </Box>
+
+            {mode &&
+                <FormControlLabel checked={mode === 'dark'}
+                    onChange={() => setMode(mode === 'light' ? 'dark' : 'light')}
+                    control={<Switch color="primary" />}
+                    label={mode}
+                    labelPlacement="top"
+                />
+            }
 
             <Button variant="contained"
                 startIcon={<Upload />}

@@ -43,24 +43,24 @@ export function getFileIcon(fileName: string): any {
         case ".gzip":
         case ".zip":
         case ".tar":
-            return (<FolderZip />)
+            return (<FolderZip color="primary" />)
         case "":
-            return (<Folder />)
+            return (<Folder color="primary" />)
         // Images
         case ".jpg":
         case ".jpeg":
         case ".png":
-            return (<Photo />)
+            return (<Photo color="primary" />)
         // Videos
         case ".mp4":
         case ".wav":
-            return (<Movie />)
+            return (<Movie color="primary" />)
         // Music
         case ".mp3":
-            return (<AudioFile />)
+            return (<AudioFile color="primary" />)
         // Default
         default:
-            return (<Article />)
+            return (<Article color="primary" />)
     }
 }
 
