@@ -1,8 +1,10 @@
 import axios from "axios"
-import { FileInfo } from "../components/files"
+import { FileInfo } from "../utilities/utils"
 
-// TODO: Change this to production URL
-const API_URL = "http://localhost:8080/api"
+
+// const API_URL = "http://localhost:8080/api"
+const API_URL = "https://storage.francescogorini.com/api"
+
 const client = axios.create({
     withCredentials: true,
     baseURL: API_URL

@@ -4,9 +4,11 @@ import { AccountCircle, ArrowBack } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
+import { useSnackbar } from "notistack"
 
 function Signup() {
     const navigate = useNavigate()
+    const { enqueueSnackbar } = useSnackbar()
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<Feedback | null>()
     const [emailAddress, setEmailAddress] = useState('')
@@ -20,6 +22,7 @@ function Signup() {
             setLoading(true)
             if (password !== passwordConfirmation) throw new Error("Passwords do not match!")
             await api.signup(emailAddress, password)
+            enqueueSnackbar("Account created successfully", { variant: "success" })
         } catch (err: any) {
             const error = getErrorString(err)
             console.error(error)

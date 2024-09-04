@@ -74,7 +74,7 @@ export async function triggerDownload(name: string, fileBlob: Blob) {
 }
 
 export function getErrorString(err: any) {
-    if (err.response) return `${err.response.status} - ${err.response.statusText}`
+    if (err.response?.statusText) return `${err.response.status} - ${err.response.statusText}`
     if (err.message) return err.message
     return err.toString()
 }
