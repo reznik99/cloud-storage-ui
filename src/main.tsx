@@ -20,22 +20,13 @@ const theme = createTheme({
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <>
-      <Nav />
-      <Login />
-    </>,
+    element: <Login />,
   }, {
     path: "/login",
-    element: <>
-      <Nav />
-      <Login />
-    </>,
+    element: <Login />,
   }, {
     path: "/signup",
-    element: <>
-      <Nav />
-      <Signup />
-    </>,
+    element: <Signup />,
   }, {
     path: "/dashboard",
     element: <>

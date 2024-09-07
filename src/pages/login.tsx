@@ -52,7 +52,7 @@ function Login() {
                     <CircularProgress />
                 </Box>
                 : <Stack sx={{ alignItems: 'center', mt: 5 }}>
-                    <Card variant="outlined" sx={{ padding: 5, width: '50%' }}>
+                    <Card sx={{ padding: 5, width: '50%' }}>
 
                         <Typography
                             component="h1"

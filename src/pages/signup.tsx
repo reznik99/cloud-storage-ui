@@ -34,7 +34,7 @@ function Signup() {
 
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
-            <Card variant="outlined" sx={{ padding: 5, width: '50%' }}>
+            <Card sx={{ padding: 5, width: '50%' }}>
 
                 <Typography component="h1" variant="h4"
                     sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
