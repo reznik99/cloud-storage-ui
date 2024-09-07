@@ -121,7 +121,6 @@ type Link = {
     file_id: number;
     created_by: number;
     created_at: string;
-    url: string;
 }
 
 type LinkProps = {
@@ -136,10 +135,10 @@ function Link(props: LinkProps) {
             <ListItem>
                 <ListItemIcon><InsertLink /></ListItemIcon>
                 <ListItemButton onClick={() => {
-                    navigator.clipboard.writeText(props.link.url)
+                    navigator.clipboard.writeText(`${window.location.host}/share/${props.link.access_key}`)
                     props.enqueueSnackbar("Copied URL to clipboard!")
                 }}>
-                    {props.link.url}
+                    {`${window.location.host}/share/${props.link.access_key}`}
                 </ListItemButton>
                 <Tooltip title="Delete" disableInteractive>
                     <Button onClick={props.deleteLink}>

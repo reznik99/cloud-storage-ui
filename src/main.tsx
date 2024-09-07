@@ -9,6 +9,7 @@ import Nav from './components/nav.tsx'
 import Login from './pages/login.tsx'
 import Signup from './pages/signup.tsx'
 import './index.css'
+import LinkShare from './pages/share.tsx'
 
 const theme = createTheme({
   colorSchemes: {
@@ -33,6 +34,9 @@ const router = createBrowserRouter([
       <Nav />
       <Dashboard />
     </>,
+  }, {
+    path: "/share/:access_key",
+    element: <LinkShare />,
   }
 ]);
 

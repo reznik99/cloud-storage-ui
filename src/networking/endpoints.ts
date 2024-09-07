@@ -28,6 +28,28 @@ async function deleteLink(file: FileInfo) {
     })
 }
 
+async function previewLink(accessKey: string) {
+    return client.get("/link_preview?access_key=" + accessKey)
+}
+
+async function downloadLink(accessKey: string, progressCallback: (progress: any) => void) {
+    if (!progressCallback) {
+        progressCallback = (_: number) => { }
+    }
+    return client.get("/link_download?access_key=" + accessKey, {
+        responseType: 'blob',
+        onDownloadProgress: (progressEvent) => {
+            if (progressEvent.lengthComputable && progressEvent.total) {
+                progressCallback({
+                    estimateSec: Math.round(progressEvent.estimated || 0),
+                    bytesProcessed: progressEvent.loaded,
+                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                })
+            }
+        }
+    })
+}
+
 async function getFiles() {
     return client.get("/files")
 }
@@ -63,7 +85,6 @@ async function downloadFile(file: FileInfo, progressCallback: (progress: any) =>
     return client.get("/file?name=" + file.name, {
         responseType: 'blob',
         onDownloadProgress: (progressEvent) => {
-
             if (progressEvent.lengthComputable && progressEvent.total) {
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
@@ -111,6 +132,8 @@ const api = {
     deleteFile,
     getLink,
     createLink,
-    deleteLink
+    deleteLink,
+    previewLink,
+    downloadLink
 }
 export default api
