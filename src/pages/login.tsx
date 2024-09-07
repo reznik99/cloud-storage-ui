@@ -4,6 +4,7 @@ import { ArrowForward, LoginOutlined } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
+import logo from '/logo.png'
 
 function Login() {
     const navigate = useNavigate()
@@ -18,7 +19,7 @@ function Login() {
         try {
             await api.getFiles()
             navigate("/dashboard")
-        } catch (err: any) { 
+        } catch (err: any) {
 
         } finally {
             setCheckingAuth(false)
@@ -54,12 +55,15 @@ function Login() {
                 : <Stack sx={{ alignItems: 'center', mt: 5 }}>
                     <Card sx={{ padding: 5, width: '50%' }}>
 
-                        <Typography
-                            component="h1"
-                            variant="h4"
-                            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
-                            Log In
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography
+                                component="h1"
+                                variant="h4"
+                                sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+                                Log In
+                            </Typography>
+                            <img src={logo} style={{ maxHeight: 40 }} />
+                        </Box>
 
                         <Box component="form"
                             onSubmit={login}
@@ -68,7 +72,7 @@ function Login() {
                                 flexDirection: 'column',
                                 width: '100%',
                                 gap: 3,
-                                my: 2,
+                                my: 3,
                             }}>
                             <FormControl>
                                 <FormLabel htmlFor="email">Email Address</FormLabel>
@@ -108,7 +112,7 @@ function Login() {
                             </Button>
                         </Box>
 
-                        <Divider sx={{ mb: 2 }}>or</Divider>
+                        <Divider sx={{ mb: 3 }}>or</Divider>
 
                         <Button fullWidth
                             variant="outlined"

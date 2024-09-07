@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useSnackbar } from "notistack"
 import { AccountCircle, ArrowBack } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
-import { useSnackbar } from "notistack"
+import logo from '/logo.png'
 
 function Signup() {
     const navigate = useNavigate()
@@ -36,10 +37,14 @@ function Signup() {
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
             <Card sx={{ padding: 5, width: '50%' }}>
 
-                <Typography component="h1" variant="h4"
-                    sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
-                    Sign up
-                </Typography>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography component="h1" variant="h4"
+                        sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+                        Sign up
+                    </Typography>
+                    <img src={logo} style={{ maxHeight: 40 }} />
+                </Box>
 
                 <Box component="form"
                     onSubmit={signup}
@@ -48,7 +53,7 @@ function Signup() {
                         flexDirection: 'column',
                         width: '100%',
                         gap: 3,
-                        my: 2,
+                        my: 3,
                     }}>
                     <FormControl>
                         <FormLabel htmlFor="email">Email Address</FormLabel>
@@ -102,7 +107,7 @@ function Signup() {
                     </Button>
                 </Box>
 
-                <Divider sx={{ mb: 2 }}>or</Divider>
+                <Divider sx={{ mb: 3 }}>or</Divider>
 
                 <Button fullWidth
                     variant="outlined"
