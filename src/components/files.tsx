@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
 import { Box, Button, Collapse, Divider, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from "@mui/material"
-import { EnqueueSnackbar } from "notistack"
+import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
@@ -10,17 +10,17 @@ type IProps = {
     files: Array<FileInfo>;
     loading: boolean;
     loadFileList: () => void;
-    enqueueSnackbar: EnqueueSnackbar;
 }
 
 function FilesView(props: IProps) {
+    const { enqueueSnackbar } = useSnackbar()
     const [openIdx, setOpenIdx] = useState(-1)
     const [loadingIdx, setLoadingIdx] = useState(-1)
     const [progress, setProgress] = useState<Progress | null>()
 
     const createLink = useCallback((_: number) => {
         // do link creation
-        props.enqueueSnackbar("Not yet implemented", { variant: "warning" })
+        enqueueSnackbar("Not yet implemented", { variant: "warning" })
     }, [])
 
     const downloadFile = useCallback(async (idx: number) => {
@@ -31,11 +31,11 @@ function FilesView(props: IProps) {
             setLoadingIdx(idx)
             const resp = await api.downloadFile(file, setProgress)
             triggerDownload(file.name, resp.data)
-            props.enqueueSnackbar("File downloaded successfully", { variant: "success" })
+            enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: any) {
             const error = getErrorString(err)
             console.error(error)
-            props.enqueueSnackbar("Download failed: " + error, { variant: "error" })
+            enqueueSnackbar("Download failed: " + error, { variant: "error" })
         } finally {
             setLoadingIdx(-1)
             setProgress(null)
@@ -49,12 +49,12 @@ function FilesView(props: IProps) {
         try {
             setLoadingIdx(idx)
             await api.deleteFile(file)
-            props.enqueueSnackbar("File deleted successfully", { variant: "success" })
+            enqueueSnackbar("File deleted successfully", { variant: "success" })
             props.loadFileList()
         } catch (err: any) {
             const error = getErrorString(err)
             console.error(error)
-            props.enqueueSnackbar("Delete failed: " + error, { variant: "error" })
+            enqueueSnackbar("Delete failed: " + error, { variant: "error" })
         } finally {
             setLoadingIdx(-1)
         }

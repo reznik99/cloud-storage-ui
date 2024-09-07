@@ -3,10 +3,8 @@ import { Box } from '@mui/material'
 import FilesView from '../components/files'
 import Sidebar from '../components/sidebar'
 import api from '../networking/endpoints'
-import { useSnackbar } from 'notistack'
 
 function Dashboard() {
-  const { enqueueSnackbar } = useSnackbar()
   const [loading, setLoading] = useState(false)
   const [files, setFiles] = useState([])
 
@@ -36,15 +34,11 @@ function Dashboard() {
     }}>
 
       {/* File explorer */}
-      <FilesView files={files || []}
-        enqueueSnackbar={enqueueSnackbar}
-        loadFileList={loadFileList}
+      <FilesView files={files || []} loadFileList={loadFileList}
         loading={loading} />
 
       {/* Side menu */}
-      <Sidebar files={files || []}
-        enqueueSnackbar={enqueueSnackbar}
-        loadFileList={loadFileList} />
+      <Sidebar files={files || []} loadFileList={loadFileList} />
 
     </Box>
   )
