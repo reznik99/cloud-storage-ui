@@ -5,6 +5,7 @@ import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
+import FileLinkDialog from "./file_link"
 
 type IProps = {
     files: Array<FileInfo>;
@@ -16,12 +17,8 @@ function FilesView(props: IProps) {
     const { enqueueSnackbar } = useSnackbar()
     const [openIdx, setOpenIdx] = useState(-1)
     const [loadingIdx, setLoadingIdx] = useState(-1)
+    const [linkDialogIdx, setLinkDialogIdx] = useState(-1)
     const [progress, setProgress] = useState<Progress | null>()
-
-    const createLink = useCallback((_: number) => {
-        // do link creation
-        enqueueSnackbar("Not yet implemented", { variant: "warning" })
-    }, [])
 
     const downloadFile = useCallback(async (idx: number) => {
         if (!props.files[idx]) return
@@ -88,15 +85,13 @@ function FilesView(props: IProps) {
                         <Box key={idx}>
                             {/* File metadata */}
                             <ListItem>
-                                <ListItemIcon>
-                                    {getFileIcon(file.name)}
-                                </ListItemIcon>
+                                <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
                                 <ListItemText sx={{ width: 250 }} primary={file.name} />
                                 <ListItemText sx={{ width: 150 }} primary={formatSize(file.size)} />
 
                                 {/* File actions */}
                                 <Tooltip title="Share" disableInteractive>
-                                    <Button onClick={() => createLink(idx)}>
+                                    <Button onClick={() => setLinkDialogIdx(idx)}>
                                         <Link />
                                     </Button>
                                 </Tooltip>
@@ -144,6 +139,10 @@ function FilesView(props: IProps) {
                     </Box>
                 }
             </List>
+
+            <FileLinkDialog open={linkDialogIdx >= 0}
+                file={props.files[linkDialogIdx]}
+                closeDialog={() => setLinkDialogIdx(-1)}/>
         </Box>
     )
 }

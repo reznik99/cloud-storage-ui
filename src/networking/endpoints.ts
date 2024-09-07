@@ -10,6 +10,24 @@ const client = axios.create({
     baseURL: API_URL
 })
 
+async function getLink(file: FileInfo) {
+    return client.get("/link?name=" + file.name)
+}
+
+async function createLink(file: FileInfo) {
+    return client.post("/link", {
+        name: file.name
+    })
+}
+
+async function deleteLink(file: FileInfo) {
+    return client.delete("/link", {
+        data: {
+            name: file.name
+        }
+    })
+}
+
 async function getFiles() {
     return client.get("/files")
 }
@@ -45,7 +63,7 @@ async function downloadFile(file: FileInfo, progressCallback: (progress: any) =>
     return client.get("/file?name=" + file.name, {
         responseType: 'blob',
         onDownloadProgress: (progressEvent) => {
-            
+
             if (progressEvent.lengthComputable && progressEvent.total) {
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
@@ -90,6 +108,9 @@ const api = {
     getFiles,
     uploadFile,
     downloadFile,
-    deleteFile
+    deleteFile,
+    getLink,
+    createLink,
+    deleteLink
 }
 export default api
