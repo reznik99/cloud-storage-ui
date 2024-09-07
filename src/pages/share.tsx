@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import { ArrowBack, Download } from "@mui/icons-material"
-import { Button, Card, CardContent, FormControl, FormLabel, IconButton, LinearProgress, Stack, TextField, Typography } from "@mui/material"
+import { Box, Button, Card, CardContent, FormControl, FormLabel, IconButton, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import { FileInfo, formatSize, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
-import { useNavigate, useParams } from "react-router-dom"
 
 function LinkShare() {
     const navigate = useNavigate()
@@ -23,7 +23,6 @@ function LinkShare() {
             setLoading(true)
             const resp = await api.previewLink(params.access_key as string)
             setFile(resp.data as FileInfo)
-            console.log(resp.data)
         } catch (err: any) {
             const error = getErrorString(err)
             console.error(error)
@@ -42,6 +41,7 @@ function LinkShare() {
         } catch (err: any) {
             const error = getErrorString(err)
             console.error(error)
+            enqueueSnackbar("File download failed: " + error, { variant: "success" })
         } finally {
             setLoading(false)
         }
@@ -57,28 +57,34 @@ function LinkShare() {
                     <FormControl>
                         <FormLabel htmlFor="password">Decryption Password (optional)</FormLabel>
                         <TextField fullWidth
+                            autoComplete='off'
                             name="password"
                             type="password"
                             id="password"
                             placeholder="••••••"
-                            variant="outlined"
-                            color="primary" />
+                            variant="outlined" />
                     </FormControl>
-                    <Button onClick={downloadLink}
+                    <Button variant="outlined" 
+                        onClick={downloadLink}
                         disabled={loading}
                         startIcon={<Download />}>
                         Download
                     </Button>
-                    {progress && <>
-                        <LinearProgress variant="determinate" value={progress.percentage} />
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.percentage}%</Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>processed {formatSize(progress.bytesProcessed)}</Typography>
-                    </>}
+                    {progress &&
+                        <>
+                            <LinearProgress variant="determinate" value={progress.percentage} />
+                            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.percentage}%</Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>processed {formatSize(progress.bytesProcessed)}</Typography>
+                            </Box>
+                        </>
+                    }
                 </CardContent>
-
-                {loading && <LinearProgress variant="indeterminate" />}
             </Card>
+            {loading && <Box sx={{ width: '50%' }}>
+                <LinearProgress variant="indeterminate" />
+            </Box>}
         </Stack>
     )
 }
