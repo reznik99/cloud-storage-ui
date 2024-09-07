@@ -11,7 +11,8 @@ export type Feedback = {
 }
 export type Progress = {
     estimateSec: number;
-    value: number;
+    bytesProcessed: number;
+    percentage: number;
 }
 
 export function calculateSizeUsed(files: Array<FileInfo>) {
@@ -22,7 +23,7 @@ export function calculateSizeUsed(files: Array<FileInfo>) {
 }
 
 export function calculateSizePercentageUsed(used: number, total: number) {
-    return Math.round((used / total) * 100)
+    return Math.min(Math.round((used / total) * 100), 100)
 }
 
 export function formatSize(byteSize: number) {

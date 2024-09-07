@@ -3,9 +3,10 @@ import { useCallback, useState } from "react"
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, LinearProgress, Stack, Switch, Typography, useColorScheme } from "@mui/material"
 import { Cancel, Upload, UploadFile } from "@mui/icons-material"
 import { EnqueueSnackbar } from "notistack"
-import viteLogo from '/vite.svg'
+import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, formatSize, getErrorString, Progress } from "../utilities/utils"
 import api from "../networking/endpoints"
-import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, getErrorString, Progress } from "../utilities/utils"
+import viteLogo from '/vite.svg'
+
 
 type IProps = {
     files: Array<FileInfo>;
@@ -90,9 +91,10 @@ function Sidebar(props: IProps) {
                     </Button>
                     {progress &&
                         <Box sx={{ mt: 2, textAlign: 'center' }}>
-                            <LinearProgress variant="determinate" value={progress.value} />
-                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.value}%</Typography>
+                            <LinearProgress variant="determinate" value={progress.percentage} />
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.percentage}%</Typography>
                             <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>processed {formatSize(progress.bytesProcessed)}</Typography>
                         </Box>
                     }
                 </DialogContent>

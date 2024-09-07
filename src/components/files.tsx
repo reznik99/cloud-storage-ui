@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react"
 import { Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
 import { Box, Button, Collapse, Divider, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from "@mui/material"
+import { EnqueueSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
-import { EnqueueSnackbar } from "notistack"
+import emptyDirectory from '/empty-box.png'
 
 type IProps = {
     files: Array<FileInfo>;
@@ -73,7 +74,7 @@ function FilesView(props: IProps) {
             border: '1px solid #99c3ff',
         }}>
 
-            <List>
+            <List sx={{ width: '100%', height: '100%' }}>
                 {/* List Header */}
                 <ListItem sx={{ textAlign: 'center' }}>
                     <ListItemText sx={{ width: 150 }} primary="File Name" />
@@ -119,9 +120,10 @@ function FilesView(props: IProps) {
                                 </Tooltip>
                             </ListItem>
                             {(loadingIdx === idx && progress) && <>
-                                <LinearProgress variant="determinate" value={progress.value} />
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.value}%</Typography>
+                                <LinearProgress variant="determinate" value={progress.percentage} />
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.percentage}%</Typography>
                                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>processed {formatSize(progress.bytesProcessed)}</Typography>
                             </>
                             }
 
@@ -133,6 +135,13 @@ function FilesView(props: IProps) {
                             </Collapse>
                         </Box>
                     )
+                }
+
+                {!props.files.length &&
+                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                        <img src={emptyDirectory} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>No files</Typography>
+                    </Box>
                 }
             </List>
         </Box>

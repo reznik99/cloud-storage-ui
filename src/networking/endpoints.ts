@@ -30,7 +30,8 @@ async function uploadFile(file: File, progressCallback: (progress: any) => void)
             if (progressEvent.lengthComputable && progressEvent.total) {
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
-                    value: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                    bytesProcessed: progressEvent.loaded,
+                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
                 })
             }
         }
@@ -44,10 +45,12 @@ async function downloadFile(file: FileInfo, progressCallback: (progress: any) =>
     return client.get("/file?name=" + file.name, {
         responseType: 'blob',
         onDownloadProgress: (progressEvent) => {
+            
             if (progressEvent.lengthComputable && progressEvent.total) {
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
-                    value: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                    bytesProcessed: progressEvent.loaded,
+                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
                 })
             }
         }
