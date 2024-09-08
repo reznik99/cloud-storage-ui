@@ -22,7 +22,6 @@ function FileLinkDialog(props: IProps) {
         }
         return () => {
             setLink(null)
-            setLoading(true)
         }
     }, [props.file])
 
@@ -72,16 +71,15 @@ function FileLinkDialog(props: IProps) {
         }
     }, [props.file])
 
-    if (!props.file) return null
-
     return (
         <Dialog open={props.open}
             fullWidth={true}
+            keepMounted={true}
             maxWidth="md"
             onClose={props.closeDialog}
             aria-labelledby="link-dialog-title"
             aria-describedby="link-dialog-description">
-            <DialogTitle id="link-dialog-title">Share '{props.file.name}'</DialogTitle>
+            <DialogTitle id="link-dialog-title">Share '{props?.file?.name}'</DialogTitle>
             <DialogContent>
                 <DialogContentText id="link-dialog-description">
                     Share your files with friends by creating a secure link.
