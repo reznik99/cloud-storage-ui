@@ -68,7 +68,6 @@ function FilesView(props: IProps) {
             maxHeight: '100%',
             overflowY: 'scroll',
             flexGrow: 1,
-            border: '1px solid #99c3ff',
         }}>
 
             <List sx={{ width: '100%', height: '100%' }}>
@@ -142,7 +141,7 @@ function FilesView(props: IProps) {
 
             <FileLinkDialog open={linkDialogIdx >= 0}
                 file={props.files[linkDialogIdx]}
-                closeDialog={() => setLinkDialogIdx(-1)}/>
+                closeDialog={() => setLinkDialogIdx(-1)} />
         </Box>
     )
 }

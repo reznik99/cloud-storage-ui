@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { Box, Button, FormControlLabel, LinearProgress, Stack, Switch, Typography, useColorScheme } from "@mui/material"
+import { Box, Button, Card, FormControlLabel, LinearProgress, Switch, Typography, useColorScheme } from "@mui/material"
 import { Upload } from "@mui/icons-material"
 import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo } from "../utilities/utils"
 import viteLogo from '/vite.svg'
@@ -16,15 +16,17 @@ function Sidebar(props: IProps) {
     const [fileModalOpen, setFileModalOpen] = useState(false)
 
     return (
-        <Stack spacing={5}
-            direction="column"
-            alignItems="center"
-            sx={{ paddingX: 2 }}>
-
+        <Card sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 5,
+            paddingX: 5
+        }}>
             <a href="https://vitejs.dev" target="_blank">
                 <img src={viteLogo} className="logo" alt="Vite logo" />
             </a>
-            <Box sx={{ width: '100%' }}>
+            <Box sx={{ width: '100%', textAlign: 'center' }}>
                 <Typography>Space used:</Typography>
                 <Typography>{calculateSizeUsed(props.files)} MiB/1,000 MiB</Typography>
                 <LinearProgress variant="determinate" value={calculateSizePercentageUsed(calculateSizeUsed(props.files), 1000)} />
@@ -50,7 +52,7 @@ function Sidebar(props: IProps) {
                 loadFileList={props.loadFileList}
             />
 
-        </Stack>
+        </Card>
     )
 }
 

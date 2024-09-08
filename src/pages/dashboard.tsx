@@ -26,11 +26,9 @@ function Dashboard() {
 
   return (
     <Box sx={{
-      textAlign: 'center',
       display: 'flex',
       flexGrow: 1,
       overflowY: 'scroll',
-      paddingX: 2,
     }}>
 
       {/* File explorer */}
