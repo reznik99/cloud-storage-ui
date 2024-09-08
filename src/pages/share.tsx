@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import { ArrowBack, Download } from "@mui/icons-material"
-import { Box, Button, Card, CardContent, FormControl, FormLabel, IconButton, LinearProgress, Stack, TextField, Typography } from "@mui/material"
+import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, FormControl, FormLabel, IconButton, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import { FileInfo, formatSize, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
+import logo from '/logo.png'
 
 function LinkShare() {
     const navigate = useNavigate()
@@ -49,42 +50,57 @@ function LinkShare() {
 
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
-            <Card sx={{ padding: 5, width: '50%' }}>
-                <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
-                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-
-                    <Typography variant="h4">{file?.name}</Typography>
-                    <FormControl>
-                        <FormLabel htmlFor="password">Decryption Password (optional)</FormLabel>
-                        <TextField fullWidth
-                            autoComplete='off'
-                            name="password"
-                            type="password"
-                            id="password"
-                            placeholder="••••••"
-                            variant="outlined" />
-                    </FormControl>
-                    <Button variant="outlined" 
-                        onClick={downloadLink}
-                        disabled={loading}
-                        startIcon={<Download />}>
-                        Download
-                    </Button>
-                    {progress &&
-                        <>
-                            <LinearProgress variant="determinate" value={progress.percentage} />
-                            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.percentage}%</Typography>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>processed {formatSize(progress.bytesProcessed)}</Typography>
-                            </Box>
-                        </>
-                    }
-                </CardContent>
-            </Card>
+            {/* Loader */}
             {loading && <Box sx={{ width: '50%' }}>
                 <LinearProgress variant="indeterminate" />
             </Box>}
+            <Card sx={{ padding: 5, width: '50%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
+                    <Typography variant="h5">{file?.name}</Typography>
+                    <img src={logo} style={{ maxHeight: 40 }} />
+                </Box>
+                <Divider sx={{ mt: 2 }} />
+                {file
+                    ? <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box>
+                            <Typography variant="body1">Uploaded on: {new Date(file?.added || 0).toLocaleDateString()}</Typography>
+                            <Typography variant="body1">Size: {formatSize(file?.size || 0)}</Typography>
+                        </Box>
+                        <FormControl>
+                            <FormLabel htmlFor="password">Decryption Password (optional)</FormLabel>
+                            <TextField fullWidth
+                                autoComplete='off'
+                                name="password"
+                                type="password"
+                                id="password"
+                                placeholder="••••••"
+                                variant="outlined" />
+                        </FormControl>
+                        <Button variant="outlined"
+                            onClick={downloadLink}
+                            disabled={loading}
+                            startIcon={<Download />}>
+                            Download
+                        </Button>
+                        {progress &&
+                            <>
+                                <LinearProgress variant="determinate" value={progress.percentage} />
+                                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                        {`${progress.percentage}% (${formatSize(progress.bytesProcessed)}/${formatSize(file?.size || 0)})`}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
+                                </Box>
+                            </>
+                        }
+                    </CardContent>
+                    : !loading && <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
+                        <AlertTitle>File not found</AlertTitle>
+                        <Typography variant="body2">This link is either invalid or no longer available</Typography>
+                    </Alert>
+                }
+            </Card>
         </Stack>
     )
 }

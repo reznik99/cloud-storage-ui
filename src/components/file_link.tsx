@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { EnqueueSnackbar, useSnackbar } from "notistack"
 import { Add, Cancel, Delete, InsertLink } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, Tooltip, Typography } from "@mui/material"
-import { FileInfo, getErrorString, } from "../utilities/utils"
+import { assembleShareLink, FileInfo, getErrorString, } from "../utilities/utils"
 import api from "../networking/endpoints"
 
 type IProps = {
@@ -135,10 +135,10 @@ function Link(props: LinkProps) {
             <ListItem>
                 <ListItemIcon><InsertLink /></ListItemIcon>
                 <ListItemButton onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.host}/share/${props.link.access_key}`)
+                    navigator.clipboard.writeText(assembleShareLink(props.link.access_key))
                     props.enqueueSnackbar("Copied URL to clipboard!")
                 }}>
-                    {`${window.location.host}/share/${props.link.access_key}`}
+                    {assembleShareLink(props.link.access_key)}
                 </ListItemButton>
                 <Tooltip title="Delete" disableInteractive>
                     <Button onClick={props.deleteLink}>
