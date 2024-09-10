@@ -5,7 +5,7 @@ import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
-import FileLinkDialog from "./file_link"
+import FileLinkDialog from "./modal_file_link"
 import ProgressBar from "./progress_bar"
 
 type IProps = {
