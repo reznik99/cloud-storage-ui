@@ -37,6 +37,7 @@ async function downloadLink(accessKey: string, progressCallback: (progress: any)
         progressCallback = (_: number) => { }
     }
     return client.get("/link_download?access_key=" + accessKey, {
+        signal: signal,
         responseType: 'blob',
         onDownloadProgress: (progressEvent) => {
             if (progressEvent.lengthComputable && progressEvent.total) {
