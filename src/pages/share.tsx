@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import { ArrowBack, Download } from "@mui/icons-material"
@@ -15,6 +15,7 @@ function LinkShare() {
     const [loading, setLoading] = useState<boolean>(false)
     const [file, setFile] = useState<FileInfo | null>()
     const [progress, setProgress] = useState<Progress | null>()
+    const controller = useRef(new AbortController())
 
     useEffect(() => {
         loadLinkInfo()
@@ -35,17 +36,19 @@ function LinkShare() {
 
     const downloadLink = useCallback(async () => {
         if (!file) return
+        controller.current = new AbortController()
         try {
             setLoading(true)
-            const resp = await api.downloadLink(params.access_key as string, setProgress)
+            const resp = await api.downloadLink(params.access_key as string, setProgress, controller.current.signal)
             triggerDownload(file.name, resp.data)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: any) {
             const error = getErrorString(err)
             console.error(error)
-            enqueueSnackbar("File download failed: " + error, { variant: "success" })
+            enqueueSnackbar("File download failed: " + error, { variant: "error" })
         } finally {
             setLoading(false)
+            setProgress(null)
         }
     }, [file])
 
@@ -84,7 +87,11 @@ function LinkShare() {
                             startIcon={<Download />}>
                             Download
                         </Button>
-                        {progress && <ProgressBar progress={progress} file={file} />}
+                        {progress && <ProgressBar sx={{ mt: 2 }}
+                            onCancel={() => controller.current.abort()}
+                            progress={progress}
+                            file={file} />
+                        }
                     </CardContent>
                     : !loading && <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
                         <AlertTitle>File not found</AlertTitle>

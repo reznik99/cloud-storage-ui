@@ -32,7 +32,7 @@ async function previewLink(accessKey: string) {
     return client.get("/link_preview?access_key=" + accessKey)
 }
 
-async function downloadLink(accessKey: string, progressCallback: (progress: any) => void) {
+async function downloadLink(accessKey: string, progressCallback: (progress: any) => void, signal: AbortSignal) {
     if (!progressCallback) {
         progressCallback = (_: number) => { }
     }
@@ -54,12 +54,9 @@ async function getFiles() {
     return client.get("/files")
 }
 
-async function uploadFile(file: File, progressCallback: (progress: any) => void, signal: AbortSignal | null) {
+async function uploadFile(file: File, progressCallback: (progress: any) => void, signal: AbortSignal) {
     if (!progressCallback) {
         progressCallback = (_: number) => { }
-    }
-    if (!signal) {
-        signal = new AbortSignal()
     }
 
     const formData = new FormData()
@@ -82,11 +79,12 @@ async function uploadFile(file: File, progressCallback: (progress: any) => void,
     })
 }
 
-async function downloadFile(file: FileInfo, progressCallback: (progress: any) => void) {
+async function downloadFile(file: FileInfo, progressCallback: (progress: any) => void, signal: AbortSignal) {
     if (!progressCallback) {
         progressCallback = (_: number) => { }
     }
     return client.get("/file?name=" + file.name, {
+        signal: signal,
         responseType: 'blob',
         onDownloadProgress: (progressEvent) => {
             if (progressEvent.lengthComputable && progressEvent.total) {

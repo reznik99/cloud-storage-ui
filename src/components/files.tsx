@@ -1,11 +1,12 @@
-import { useCallback, useState } from "react"
-import { Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
-import { Box, Button, Collapse, Divider, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from "@mui/material"
+import { useCallback, useRef, useState } from "react"
+import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
+import { Box, Button, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
 import FileLinkDialog from "./file_link"
+import ProgressBar from "./progress_bar"
 
 type IProps = {
     files: Array<FileInfo>;
@@ -19,14 +20,15 @@ function FilesView(props: IProps) {
     const [loadingIdx, setLoadingIdx] = useState(-1)
     const [linkDialogIdx, setLinkDialogIdx] = useState(-1)
     const [progress, setProgress] = useState<Progress | null>()
+    const controller = useRef(new AbortController())
 
     const downloadFile = useCallback(async (idx: number) => {
         if (!props.files[idx]) return
         const file = props.files[idx]
-
+        controller.current = new AbortController()
         try {
             setLoadingIdx(idx)
-            const resp = await api.downloadFile(file, setProgress)
+            const resp = await api.downloadFile(file, setProgress, controller.current.signal)
             triggerDownload(file.name, resp.data)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: any) {
@@ -95,11 +97,18 @@ function FilesView(props: IProps) {
                                     </Button>
                                 </Tooltip>
 
-                                <Tooltip title="Download" disableInteractive>
-                                    <Button onClick={() => downloadFile(idx)}>
-                                        <Download />
-                                    </Button>
-                                </Tooltip>
+                                {(loadingIdx === idx && progress)
+                                    ? <Tooltip title="Cancel" disableInteractive>
+                                        <Button onClick={() => controller.current.abort()}>
+                                            <Cancel />
+                                        </Button>
+                                    </Tooltip>
+                                    : <Tooltip title="Download" disableInteractive>
+                                        <Button onClick={() => downloadFile(idx)}>
+                                            <Download />
+                                        </Button>
+                                    </Tooltip>
+                                }
 
                                 <Tooltip title="Delete" disableInteractive>
                                     <Button onClick={() => deleteFile(idx)}>
@@ -113,12 +122,11 @@ function FilesView(props: IProps) {
                                     </Button>
                                 </Tooltip>
                             </ListItem>
-                            {(loadingIdx === idx && progress) && <>
-                                <LinearProgress variant="determinate" value={progress.percentage} />
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{progress.percentage}%</Typography>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>processed {formatSize(progress.bytesProcessed)}</Typography>
-                            </>
+                            {(loadingIdx === idx && progress) &&
+                                <ProgressBar onCancel={() => controller.current.abort()}
+                                    progress={progress}
+                                    file={file}
+                                />
                             }
 
                             {/* File details */}

@@ -1,45 +1,49 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Box } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 import FilesView from '../components/files'
 import Sidebar from '../components/sidebar'
 import api from '../networking/endpoints'
 
+
 function Dashboard() {
-  const [loading, setLoading] = useState(false)
-  const [files, setFiles] = useState([])
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
+    const [files, setFiles] = useState([])
 
-  useEffect(() => {
-    loadFileList()
-  }, [])
+    useEffect(() => {
+        loadFileList()
+    }, [])
 
-  const loadFileList = useCallback(async () => {
-    try {
-      setLoading(true)
-      const resp = await api.getFiles()
-      setFiles(resp.data.files)
-    } catch (err: any) {
-      console.error(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    const loadFileList = useCallback(async () => {
+        try {
+            setLoading(true)
+            const resp = await api.getFiles()
+            setFiles(resp.data.files)
+        } catch (err: any) {
+            console.error(err.message)
+            if (err.response?.status === 401) navigate("/login")
+        } finally {
+            setLoading(false)
+        }
+    }, [])
 
-  return (
-    <Box sx={{
-      display: 'flex',
-      flexGrow: 1,
-      overflowY: 'scroll',
-    }}>
+    return (
+        <Box sx={{
+            display: 'flex',
+            flexGrow: 1,
+            overflowY: 'scroll',
+        }}>
 
-      {/* File explorer */}
-      <FilesView files={files || []} loadFileList={loadFileList}
-        loading={loading} />
+            {/* File explorer */}
+            <FilesView files={files || []} loadFileList={loadFileList}
+                loading={loading} />
 
-      {/* Side menu */}
-      <Sidebar files={files || []} loadFileList={loadFileList} />
+            {/* Side menu */}
+            <Sidebar files={files || []} loadFileList={loadFileList} />
 
-    </Box>
-  )
+        </Box>
+    )
 }
 
 export default Dashboard

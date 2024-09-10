@@ -26,12 +26,10 @@ function FileUploadDialog(props: IProps) {
         props.closeDialog()
         setSelectedFile(null)
         controller.current.abort()
-        console.warn("Controller aborted")
     }, [])
 
     const uploadFile = useCallback(async () => {
         controller.current = new AbortController()
-        console.info("Created controller")
         try {
             await api.uploadFile(selectedFile as File, setProgress, controller.current.signal)
             handleCancel()
@@ -63,7 +61,11 @@ function FileUploadDialog(props: IProps) {
                     <input onChange={handleFile} type="file" hidden />
                 </Button>
 
-                {progress && <ProgressBar sx={{ mt: 2 }} progress={progress} file={fileToFileInfo(selectedFile)} />}
+                {progress && <ProgressBar sx={{ mt: 2 }}
+                    onCancel={() => controller.current.abort()}
+                    progress={progress}
+                    file={fileToFileInfo(selectedFile)} />
+                }
             </DialogContent>
             <DialogActions>
                 <Button variant="text"
