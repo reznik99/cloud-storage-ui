@@ -6,6 +6,7 @@ import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, FormControl
 import { FileInfo, formatSize, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import logo from '/logo.png'
+import ProgressBar from "../components/progress_bar"
 
 function LinkShare() {
     const navigate = useNavigate()
@@ -83,17 +84,7 @@ function LinkShare() {
                             startIcon={<Download />}>
                             Download
                         </Button>
-                        {progress &&
-                            <>
-                                <LinearProgress variant="determinate" value={progress.percentage} />
-                                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        {`${progress.percentage}% (${formatSize(progress.bytesProcessed)}/${formatSize(file?.size || 0)})`}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
-                                </Box>
-                            </>
-                        }
+                        {progress && <ProgressBar progress={progress} file={file} />}
                     </CardContent>
                     : !loading && <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
                         <AlertTitle>File not found</AlertTitle>

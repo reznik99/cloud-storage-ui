@@ -84,3 +84,12 @@ export function getErrorString(err: any) {
 export function assembleShareLink(accessKey: string) {
     return `${window.location.protocol}//${window.location.host}/share/${accessKey}`
 }
+
+export function fileToFileInfo(file: File | null | undefined): FileInfo {
+    if (!file) return { name: '', size: 0, added: new Date(0).toLocaleString() }
+    return {
+        name: file.name,
+        size: file.size,
+        added: new Date().toLocaleString()
+    }
+}

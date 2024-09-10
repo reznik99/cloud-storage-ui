@@ -54,15 +54,19 @@ async function getFiles() {
     return client.get("/files")
 }
 
-async function uploadFile(file: File, progressCallback: (progress: any) => void) {
+async function uploadFile(file: File, progressCallback: (progress: any) => void, signal: AbortSignal | null) {
     if (!progressCallback) {
         progressCallback = (_: number) => { }
+    }
+    if (!signal) {
+        signal = new AbortSignal()
     }
 
     const formData = new FormData()
     formData.append("file", file)
 
     return client.post("/file", formData, {
+        signal: signal,
         headers: {
             "Content-Type": "multipart/form-data",
         },
