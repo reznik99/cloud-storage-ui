@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState } from "react"
-import { Cancel, UploadFile } from "@mui/icons-material"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material"
+import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
+import { DecryptFile, EncryptFile } from "../utilities/crypto"
 import api from "../networking/endpoints"
 import ProgressBar from "./progress_bar"
 
@@ -17,6 +18,8 @@ function FileUploadDialog(props: IProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>()
     const [progress, setProgress] = useState<Progress | null>()
     const controller = useRef(new AbortController())
+    const [encPassword, setEncPassword] = useState('')
+    const [testLoading, setTestLoading] = useState(false)
 
     const handleFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedFile(event.target?.files?.[0])
@@ -44,6 +47,21 @@ function FileUploadDialog(props: IProps) {
         }
     }, [selectedFile])
 
+    const testEncryption = useCallback(async () => {
+        if (!selectedFile) return
+        try {
+            setTestLoading(true)
+            const encFile = await EncryptFile(encPassword, selectedFile)
+            await DecryptFile(encPassword, fileToFileInfo(selectedFile), await encFile.arrayBuffer())
+            enqueueSnackbar("Encryption tests succeeded", { variant: "success" })
+        } catch (err: any) {
+            console.error(err)
+            enqueueSnackbar("Encryption tests failed: " + err, { variant: "error" })
+        } finally {
+            setTestLoading(false)
+        }
+    }, [selectedFile, encPassword])
+
     return (
         <Dialog open={props.open}
             fullWidth={true}
@@ -56,10 +74,40 @@ function FileUploadDialog(props: IProps) {
                     Select a file to upload to store on the cloud.
                 </DialogContentText>
 
-                <Button variant={Boolean(selectedFile?.name) ? "contained" : "outlined"} component="label">
-                    {selectedFile?.name ?? "Select File"}
-                    <input onChange={handleFile} type="file" hidden />
-                </Button>
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
+                    <Button variant={Boolean(selectedFile?.name) ? "contained" : "outlined"} component="label">
+                        {selectedFile?.name ?? "Select File"}
+                        <input onChange={handleFile} type="file" hidden />
+                    </Button>
+                </Box>
+
+                <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMore />}>Advanced Options</AccordionSummary>
+                    <AccordionDetails>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
+                            <Typography variant="body2">Encrypt your file with a password to provide End to End encryption!</Typography>
+                            <FormControl sx={{ width: '80%' }}>
+                                <FormLabel htmlFor="password">Encryption Password</FormLabel>
+                                <TextField fullWidth
+                                    name="password"
+                                    type="password"
+                                    id="password"
+                                    autoComplete="new-password"
+                                    placeholder="••••••"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={encPassword}
+                                    onChange={(e) => setEncPassword(e.target.value)} />
+                            </FormControl>
+                            <Button variant="text"
+                                startIcon={testLoading ? <CircularProgress /> : <Key />}
+                                onClick={testEncryption}
+                                disabled={testLoading || !selectedFile}>
+                                Test Encryption
+                            </Button>
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
 
                 {progress && <ProgressBar sx={{ mt: 2 }}
                     onCancel={() => controller.current.abort()}
