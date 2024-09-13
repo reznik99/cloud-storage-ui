@@ -12,7 +12,9 @@ function Login() {
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<Feedback | null>()
     const [emailAddress, setEmailAddress] = useState('')
+    const [emailError, setEmailError] = useState('')
     const [password, setPassword] = useState('')
+    const [passwordError, setPasswordError] = useState('')
 
     const checkAuth = useCallback(async () => {
         setCheckingAuth(true)
@@ -20,17 +22,31 @@ function Login() {
             await api.getFiles()
             navigate("/dashboard")
         } catch (err: any) {
-
+            console.warn("Authentication required")
         } finally {
             setCheckingAuth(false)
         }
     }, [])
 
+    const resetFeedback = () => {
+        setFeedback(null)
+        setEmailError("")
+        setPasswordError("")
+    }
+
+    const checkValues = useCallback(() => {
+        if (!emailAddress.trim()) setEmailError("Email is required")
+        else if (!password.trim()) setPasswordError("Password is required")
+        else return true
+        return false
+    }, [emailAddress, password])
+
     const login = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        resetFeedback()
         try {
-            setFeedback(null)
             setLoading(true)
+            if (!checkValues()) return
             await api.login(emailAddress, password)
             navigate("/dashboard")
         } catch (err: any) {
@@ -76,8 +92,7 @@ function Login() {
                             }}>
                             <FormControl>
                                 <FormLabel htmlFor="email">Email Address</FormLabel>
-                                <TextField required
-                                    fullWidth
+                                <TextField fullWidth
                                     id="email"
                                     type="email"
                                     name="email"
@@ -86,12 +101,13 @@ function Login() {
                                     variant="outlined"
                                     color="primary"
                                     value={emailAddress}
+                                    error={!!emailError}
+                                    helperText={emailError}
                                     onChange={(e) => setEmailAddress(e.target.value)} />
                             </FormControl>
                             <FormControl>
                                 <FormLabel htmlFor="password">Password</FormLabel>
-                                <TextField required
-                                    fullWidth
+                                <TextField fullWidth
                                     name="password"
                                     type="password"
                                     id="password"
@@ -100,6 +116,8 @@ function Login() {
                                     variant="outlined"
                                     color="primary"
                                     value={password}
+                                    error={!!passwordError}
+                                    helperText={passwordError}
                                     onChange={(e) => setPassword(e.target.value)} />
                             </FormControl>
 
