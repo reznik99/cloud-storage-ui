@@ -136,7 +136,7 @@ function Signup() {
                             helperText={passwordError}
                             onChange={(e) => setPasswordConfirmation(e.target.value)} />
                     </FormControl>
-                    {password && <PasswordMeter password={password} />}
+                    {password && <PasswordMeter password={password || passwordConfirmation} />}
 
                     <Button fullWidth
                         variant="contained"
