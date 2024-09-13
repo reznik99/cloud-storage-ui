@@ -56,7 +56,7 @@ async function DeriveKey(password: string, salt: Uint8Array | null): Promise<Key
     }
 }
 
-// EncryptFile encrypts a file with the given password. Salt and IV are pre-pended to ciphertext. File is chunked if larger than chunk size
+// EncryptFile encrypts a file with the given password. Salt and IV are pre-pended to ciphertext.
 async function EncryptFile(password: string, file: File) {
     console.time('EncryptFile')
     // Derive encryption key from password
@@ -87,6 +87,7 @@ async function EncryptFile(password: string, file: File) {
     return new File([outputBuffer], file.name, { type: file.type, lastModified: file.lastModified })
 }
 
+// DecryptFile decrypts a file with the given password. Salt and IV are extracted from ciphertext.
 async function DecryptFile(password: string, fileInfo: FileInfo, fileData: ArrayBuffer) {
     console.time('DecryptFile')
     // Extract prepended salt & iv from ciphertext
