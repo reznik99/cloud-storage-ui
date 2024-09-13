@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import { AccountCircle, ArrowBack } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
-import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
+import { ValidatePassword } from "../utilities/security"
+import api from "../networking/endpoints"
 import logo from '/logo.png'
+import PasswordMeter from "../components/password_meter"
 
 function Signup() {
     const navigate = useNavigate()
@@ -13,15 +15,46 @@ function Signup() {
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<Feedback | null>()
     const [emailAddress, setEmailAddress] = useState('')
+    const [emailError, setEmailError] = useState('')
     const [password, setPassword] = useState('')
+    const [passwordError, setPasswordError] = useState('')
     const [passwordConfirmation, setPasswordConfirmation] = useState('')
+
+    const handleEmail = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        resetFeedback()
+        if (!e.target.validity.valid) {
+            setEmailError("Invalid email address")
+        }
+        setEmailAddress(e.target.value)
+    }
+
+    const resetFeedback = () => {
+        setFeedback(null)
+        setEmailError("")
+        setPasswordError("")
+    }
+
+    const checkValues = useCallback(() => {
+        if (!emailAddress.trim()) setEmailError("Email is required")
+        else if (!password.trim()) setPasswordError("Password is required")
+        else if (password !== passwordConfirmation) setPasswordError("Passwords do not match!")
+        else {
+            const err = ValidatePassword(password)
+            if (err) {
+                setPasswordError(err)
+                return false
+            }
+            return true
+        }
+        return false
+    }, [emailAddress, password, passwordConfirmation])
 
     const signup = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        resetFeedback()
         try {
-            setFeedback(null)
             setLoading(true)
-            if (password !== passwordConfirmation) throw new Error("Passwords do not match!")
+            if (!checkValues()) return
             await api.signup(emailAddress, password)
             enqueueSnackbar("Account created successfully", { variant: "success" })
         } catch (err: any) {
@@ -37,7 +70,6 @@ function Signup() {
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
             <Card sx={{ padding: 5, width: '50%' }}>
 
-
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography component="h1" variant="h4"
                         sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
@@ -47,6 +79,7 @@ function Signup() {
                 </Box>
 
                 <Box component="form"
+                    noValidate={true}
                     onSubmit={signup}
                     sx={{
                         display: 'flex',
@@ -67,7 +100,9 @@ function Signup() {
                             variant="outlined"
                             color="primary"
                             value={emailAddress}
-                            onChange={(e) => setEmailAddress(e.target.value)} />
+                            error={!!emailError}
+                            helperText={emailError}
+                            onChange={handleEmail} />
                     </FormControl>
                     <FormControl>
                         <FormLabel htmlFor="password">Password</FormLabel>
@@ -81,6 +116,8 @@ function Signup() {
                             variant="outlined"
                             color="primary"
                             value={password}
+                            error={!!passwordError}
+                            helperText={passwordError}
                             onChange={(e) => setPassword(e.target.value)} />
                     </FormControl>
                     <FormControl>
@@ -95,8 +132,11 @@ function Signup() {
                             variant="outlined"
                             color="primary"
                             value={passwordConfirmation}
+                            error={!!passwordError}
+                            helperText={passwordError}
                             onChange={(e) => setPasswordConfirmation(e.target.value)} />
                     </FormControl>
+                    {password && <PasswordMeter password={password} />}
 
                     <Button fullWidth
                         variant="contained"
