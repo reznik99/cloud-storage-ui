@@ -2,37 +2,55 @@ import { Box, LinearProgress, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import zxcvbn from "zxcvbn"
 
-function getColor(strength: number): "success" | "info" | "error" | "primary" | "secondary" | "warning" {
-    if (strength >= 75) return "success"
-    if (strength >= 50) return "info"
-    if (strength >= 25) return "warning"
-    return "error"
+function normalizeStrength(score: number) {
+    return ((score + 1) / 5) * 100
 }
 
-function getDescription(strength: number): string {
-    if (strength >= 75) return "Strong password"
-    if (strength >= 50) return "Average password"
-    if (strength >= 25) return "Weak password"
-    return "Bruh 😒"
+function getColor(score: number): "success" | "info" | "error" | "primary" | "secondary" | "warning" {
+    switch (score) {
+        case 0: return "error"
+        case 1: return "error"
+        case 2: return "warning"
+        case 3: return "info"
+        case 4: return "success"
+        default: return "success"
+    }
+}
+
+function getDescription(score: number): string {
+    switch (score) {
+        case 0: return "Bruh 😒"
+        case 1: return "Very weak password"
+        case 2: return "Weak password"
+        case 3: return "Average password"
+        case 4: return "Strong password"
+        default: return "Strong password"
+    }
 }
 
 function PasswordMeter({ password }: { password: string }) {
-    const [strength, setStrength] = useState(0)
-    const [feedback, setFeedback] = useState('')
+    const [strength, setStrength] = useState<zxcvbn.ZXCVBNResult | null>()
 
     useEffect(() => {
         const output = zxcvbn(password)
-        setFeedback(output.feedback.warning || '')
-        setStrength(((output.score + 1) / 5) * 100)
+        setStrength(output)
     }, [password])
 
     return (
         <Box sx={{ textAlign: 'center' }}>
             <LinearProgress variant="determinate"
-                color={getColor(strength)}
-                value={strength}
+                color={getColor(strength?.score || 0)}
+                value={normalizeStrength(strength?.score || 0)}
             />
-            <Typography variant="body2" color={getColor(strength)}>{feedback || getDescription(strength)}</Typography>
+            <Typography variant="body2"
+                color={getColor(strength?.score || 0)}>
+                {getDescription(strength?.score || 0)}
+            </Typography>
+            {strength?.crack_times_display?.offline_slow_hashing_1e4_per_second &&
+                <Typography variant="body2" color={getColor(strength?.score || 0)}>
+                    Time to crack: {strength?.crack_times_display?.offline_slow_hashing_1e4_per_second}
+                </Typography>
+            }
         </Box>
     )
 }
