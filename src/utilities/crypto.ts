@@ -32,7 +32,7 @@ async function deriveAESKey(masterKey: CryptoKey, salt: Buffer | Uint8Array, ext
     )
 }
 
-// DeriveKey generates an AES Key from a password.
+// DeriveKey generates an AES Key from a password and salt (if any). Generates the salt if none passed in.
 async function DeriveKey(password: string, salt: Uint8Array | null): Promise<KeyInfo> {
     console.time('PasswordKeyDerivation')
     // Convert ascii password to bytes
@@ -60,7 +60,7 @@ async function DeriveKey(password: string, salt: Uint8Array | null): Promise<Key
 async function EncryptFile(password: string, file: File) {
     console.time('EncryptFile')
     // Derive encryption key from password
-    const encOpts = await DeriveKey(password, null)
+    const { key, salt } = await DeriveKey(password, null)
     // Generate random IV for this file
     const iv = generateRandomBytes(AESGCM_iv_len)
     // Get file contents as a byte array
@@ -68,21 +68,19 @@ async function EncryptFile(password: string, file: File) {
     // Encrypt file contents using derived key and IV
     const ciphertext = await window.crypto.subtle.encrypt(
         { name: "AES-GCM", iv: iv },
-        encOpts.key,
+        key,
         data
     )
 
     // Calculate total ciphertext output length
-    const outputLength = encOpts.salt.byteLength + iv.byteLength + ciphertext.byteLength
+    const outputLength = salt.byteLength + iv.byteLength + ciphertext.byteLength
     // Prepend Salt and IV to file ciphertext
     const outputBuffer = new Uint8Array(outputLength);
-    outputBuffer.set(encOpts.salt, 0)
+    outputBuffer.set(salt, 0)
     outputBuffer.set(iv, PBKDF2_salt_len)
     outputBuffer.set(new Uint8Array(ciphertext), PBKDF2_salt_len + AESGCM_iv_len)
 
     console.timeEnd('EncryptFile')
-    console.log("Salt:", Buffer.from(encOpts.salt).toString('base64'))
-    console.log("IV:", Buffer.from(iv).toString('base64'))
     // Return a new 'File' with plaintext replaced by ciphertext
     return new File([outputBuffer], file.name, { type: file.type, lastModified: file.lastModified })
 }
@@ -97,11 +95,11 @@ async function DecryptFile(password: string, fileInfo: FileInfo, fileData: Array
     console.log("Salt:", Buffer.from(salt).toString('base64'))
     console.log("IV:", Buffer.from(iv).toString('base64'))
     // Derive encryption key from password and salt
-    const encOpts = await DeriveKey(password, new Uint8Array(salt))
+    const { key } = await DeriveKey(password, new Uint8Array(salt))
     // Decrypt contents of the file
     const plaintext = await window.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: iv},
-        encOpts.key,
+        { name: "AES-GCM", iv: iv },
+        key,
         data
     )
     console.timeEnd('DecryptFile')

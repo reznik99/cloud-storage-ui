@@ -1,8 +1,8 @@
 import zxcvbn from 'zxcvbn';
 
-const passSecurity = {
-    minLength: 8,
-    minScore: 1
+const security = {
+    minPasswordLength: 8,
+    minPasswordScore: 1
 }
 
 export function GetPasswordScore(password: string): number {
@@ -15,9 +15,9 @@ export function ValidatePassword(password: string): string {
 
     if (password !== password.trim()) return "Whitespace at the start or end of the password is not permitted"
 
-    if (password.length < passSecurity.minLength) return `Your password needs to be at least ${passSecurity.minLength} characters long`
+    if (password.length < security.minPasswordLength) return `Your password needs to be at least ${security.minPasswordLength} characters long`
 
-    if (GetPasswordScore(password) < passSecurity.minScore) return "Password too weak"
+    if (GetPasswordScore(password) < security.minPasswordScore) return "Password too weak"
 
     return "" // Valid password
 }
