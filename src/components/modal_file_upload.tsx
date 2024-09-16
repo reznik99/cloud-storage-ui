@@ -3,7 +3,7 @@ import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
-import { DecryptFile, EncryptFile } from "../utilities/crypto"
+import { BufferEquals, DecryptFile, DeriveKeysFromPassword, EncryptFile, Hash } from "../utilities/crypto"
 import api from "../networking/endpoints"
 import ProgressBar from "./progress_bar"
 
@@ -51,8 +51,24 @@ function FileUploadDialog(props: IProps) {
         if (!selectedFile) return
         try {
             setTestLoading(true)
-            const encFile = await EncryptFile(encPassword, selectedFile)
-            await DecryptFile(encPassword, fileToFileInfo(selectedFile), await encFile.arrayBuffer())
+            // Derive master key from password
+            const derive1 = await DeriveKeysFromPassword(encPassword, null)
+            // Decrypt file with random key and wrap with master key
+            const encFile = await EncryptFile(derive1.mEncKey, selectedFile)
+
+            // Derive master key from password
+            const derive2 = await DeriveKeysFromPassword(encPassword, derive1.salt)
+            // Decrypt random key with master key and decrypt file
+            const decFile = await DecryptFile(derive2.mEncKey, fileToFileInfo(selectedFile), await encFile.arrayBuffer())
+
+            // Hash both original file data and decrypted file data to check they match
+            const originalFileData = await selectedFile.arrayBuffer()
+            const decryptedFileData = await decFile.arrayBuffer()
+            const originalHash = await Hash(originalFileData, "SHA-256")
+            const decryptedHash = await Hash(decryptedFileData, "SHA-256")
+            const equal = BufferEquals(new Uint8Array(originalHash), new Uint8Array(decryptedHash))
+            if (!equal) throw new Error("Decrypted file doesn't match original")
+
             enqueueSnackbar("Encryption tests succeeded", { variant: "success" })
         } catch (err: any) {
             console.error(err)
