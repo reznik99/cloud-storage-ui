@@ -84,6 +84,8 @@ function FileLinkDialog(props: IProps) {
             <DialogContent>
                 <DialogContentText id="link-dialog-description">
                     Share your files with friends by creating a secure link.
+                </DialogContentText>
+                <DialogContentText id="link-dialog-description-2">
                     The recipient will be able to download the file without requiring an account!
                 </DialogContentText>
 

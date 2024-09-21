@@ -17,12 +17,12 @@ function Sidebar(props: IProps) {
 
     return (
         <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Card sx={{
+            <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 5,
-                paddingX: 5,
+                paddingX: 8,
                 flexGrow: 1
             }}>
                 <a href="https://vitejs.dev" target="_blank">
@@ -53,8 +53,8 @@ function Sidebar(props: IProps) {
                     closeDialog={() => setFileModalOpen(false)}
                     loadFileList={props.loadFileList}
                 />
-            </Card>
-            <Alert severity="info" icon={false} sx={{ textAlign: 'center' }}>
+            </Box>
+            <Alert severity="info" sx={{ textAlign: 'center', justifyContent: 'center' }}>
                 <Typography variant="body2">
                     Created by <Link href="https://francescogorini.com" target="_blank">Francesco Gorini</Link>
                 </Typography>
@@ -62,7 +62,6 @@ function Sidebar(props: IProps) {
                 <Typography variant="body2">
                     Source code <Link href="https://github.com/reznik99/cloud-storage-ui" target="_blank">github.com</Link>
                 </Typography>
-
             </Alert>
         </Card>
     )

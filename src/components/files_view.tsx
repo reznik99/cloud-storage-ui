@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
-import { Box, Button, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
+import { Box, Button, Chip, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
@@ -72,7 +72,7 @@ function FilesView(props: IProps) {
             flexGrow: 1,
         }}>
 
-            <List sx={{ width: '100%', height: '100%', padding: 0 }}>
+            <List disablePadding sx={{ width: '100%', height: '100%' }}>
                 {/* List Header */}
                 <Paper elevation={6} square>
                     <ListItem sx={{ width: '100%', textAlign: 'center' }}>
@@ -85,9 +85,9 @@ function FilesView(props: IProps) {
                         </Stack>
                     </ListItem>
                 </Paper>
-                <Divider />
                 {/* List */}
                 <Paper elevation={3} square>
+                    <Divider><Chip label={`${props.files?.length || 0} files`} size="small" /></Divider>
                     {
                         props.files.map((file, idx) =>
                             <Box key={idx}>
@@ -137,10 +137,12 @@ function FilesView(props: IProps) {
                                 }
 
                                 {/* File details */}
-                                <Collapse in={openIdx == idx} timeout="auto">
-                                    <List component="div" disablePadding sx={{ pl: 4 }}>
-                                        <ListItemText primary={"Uploaded on: " + new Date(file.added).toLocaleString()} />
-                                    </List>
+                                <Collapse in={openIdx == idx} timeout="auto" sx={{ textAlign: 'center' }}>
+                                    <Paper>
+                                        <Typography variant="body2" sx={{ padding: 2 }}>
+                                            Uploaded on: <Chip label={new Date(file.added).toLocaleString()} />
+                                        </Typography>
+                                    </Paper>
                                 </Collapse>
                             </Box>
                         )
