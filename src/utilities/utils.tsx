@@ -1,4 +1,5 @@
 import { Article, AudioFile, Folder, FolderZip, Movie, Photo } from "@mui/icons-material"
+import axios, { AxiosError } from "axios";
 
 export type FileInfo = {
     name: string;
@@ -37,7 +38,7 @@ export function formatSize(byteSize: number) {
     return byteSize.toLocaleString() + " GiB"
 }
 
-export function getFileIcon(fileName: string): any {
+export function getFileIcon(fileName: string): JSX.Element {
     const fileExt = fileName.substring(fileName.lastIndexOf('.'), fileName.length)
     switch (fileExt) {
         // Folders
@@ -65,7 +66,7 @@ export function getFileIcon(fileName: string): any {
     }
 }
 
-export async function triggerDownload(name: string, fileBlob: Blob) {
+export async function triggerDownload(name: string, fileBlob: Blob): Promise<void> {
     const objectUrl = URL.createObjectURL(fileBlob);
     const link: HTMLAnchorElement = document.createElement('a');
     link.href = objectUrl;
@@ -74,11 +75,12 @@ export async function triggerDownload(name: string, fileBlob: Blob) {
     URL.revokeObjectURL(objectUrl);
 }
 
-export function getErrorString(err: any) {
-    if (err.response?.data?.message) return `${err.response.status} - ${err.response.data.message}`
-    if (err.response?.statusText) return `${err.response.status} - ${err.response.statusText}`
-    if (err.message) return err.message
-    return err.toString()
+export function getErrorString(err: Error | AxiosError | unknown): string {
+    const isAxiosError = axios.isAxiosError(err)
+    if (isAxiosError && err.response?.data?.message) return `${err.response.status} - ${err.response.data.message}`
+    if (isAxiosError && err.response?.statusText) return `${err.response.status} - ${err.response.statusText}`
+    if (err instanceof Error && err?.message) return err.message
+    return err?.toString() || "unknown error"
 }
 
 export function assembleShareLink(accessKey: string) {
@@ -92,4 +94,8 @@ export function fileToFileInfo(file: File | null | undefined): FileInfo {
         size: file.size,
         added: new Date().toLocaleString()
     }
+}
+
+export function noopProgressCallback(progress: Progress) {
+    console.debug(progress)
 }

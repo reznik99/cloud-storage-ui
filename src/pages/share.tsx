@@ -19,14 +19,14 @@ function LinkShare() {
 
     useEffect(() => {
         loadLinkInfo()
-    }, [])
+    })
 
     const loadLinkInfo = useCallback(async () => {
         try {
             setLoading(true)
             const resp = await api.previewLink(params.access_key as string)
             setFile(resp.data as FileInfo)
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
         } finally {
@@ -42,7 +42,7 @@ function LinkShare() {
             const resp = await api.downloadLink(params.access_key as string, setProgress, controller.current.signal)
             triggerDownload(file.name, resp.data)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             enqueueSnackbar("File download failed: " + error, { variant: "error" })
@@ -50,7 +50,7 @@ function LinkShare() {
             setLoading(false)
             setProgress(null)
         }
-    }, [file])
+    }, [file, params.access_key, enqueueSnackbar])
 
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>

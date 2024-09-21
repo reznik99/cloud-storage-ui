@@ -31,7 +31,7 @@ function FilesView(props: IProps) {
             const resp = await api.downloadFile(file, setProgress, controller.current.signal)
             triggerDownload(file.name, resp.data)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             enqueueSnackbar("Download failed: " + error, { variant: "error" })
@@ -39,7 +39,7 @@ function FilesView(props: IProps) {
             setLoadingIdx(-1)
             setProgress(null)
         }
-    }, [props.files])
+    }, [props.files, enqueueSnackbar])
 
     const deleteFile = useCallback(async (idx: number) => {
         if (!props.files[idx]) return
@@ -50,14 +50,14 @@ function FilesView(props: IProps) {
             await api.deleteFile(file)
             enqueueSnackbar("File deleted successfully", { variant: "success" })
             props.loadFileList()
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             enqueueSnackbar("Delete failed: " + error, { variant: "error" })
         } finally {
             setLoadingIdx(-1)
         }
-    }, [props.files])
+    }, [props, enqueueSnackbar])
 
     const toggleDetails = useCallback((idx: number) => {
         if (openIdx === idx) setOpenIdx(-1)

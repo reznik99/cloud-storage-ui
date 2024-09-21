@@ -57,14 +57,14 @@ function Signup() {
             if (!checkValues()) return
             await api.signup(emailAddress, password)
             enqueueSnackbar("Account created successfully", { variant: "success" })
-        } catch (err: any) {
+        } catch (err) {
             const error = getErrorString(err)
             console.error(error)
             setFeedback({ message: error, severity: "error" })
         } finally {
             setLoading(false)
         }
-    }, [emailAddress, password, passwordConfirmation])
+    }, [emailAddress, password, checkValues, enqueueSnackbar])
 
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>

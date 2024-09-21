@@ -1,5 +1,5 @@
 import axios from "axios"
-import { FileInfo } from "../utilities/utils"
+import { FileInfo, noopProgressCallback, Progress } from "../utilities/utils"
 
 
 // const API_URL = "http://localhost:8080/api"
@@ -32,10 +32,9 @@ async function previewLink(accessKey: string) {
     return client.get("/link_preview?access_key=" + accessKey)
 }
 
-async function downloadLink(accessKey: string, progressCallback: (progress: any) => void, signal: AbortSignal) {
-    if (!progressCallback) {
-        progressCallback = (_: number) => { }
-    }
+async function downloadLink(accessKey: string, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
+    if (!progressCallback) progressCallback = noopProgressCallback
+
     return client.get("/link_download?access_key=" + accessKey, {
         signal: signal,
         responseType: 'blob',
@@ -55,10 +54,8 @@ async function getFiles() {
     return client.get("/files")
 }
 
-async function uploadFile(file: File, progressCallback: (progress: any) => void, signal: AbortSignal) {
-    if (!progressCallback) {
-        progressCallback = (_: number) => { }
-    }
+async function uploadFile(file: File, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
+    if (!progressCallback) progressCallback = noopProgressCallback
 
     const formData = new FormData()
     formData.append("file", file)
@@ -80,10 +77,9 @@ async function uploadFile(file: File, progressCallback: (progress: any) => void,
     })
 }
 
-async function downloadFile(file: FileInfo, progressCallback: (progress: any) => void, signal: AbortSignal) {
-    if (!progressCallback) {
-        progressCallback = (_: number) => { }
-    }
+async function downloadFile(file: FileInfo, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
+    if (!progressCallback) progressCallback = noopProgressCallback
+
     return client.get("/file?name=" + file.name, {
         signal: signal,
         responseType: 'blob',

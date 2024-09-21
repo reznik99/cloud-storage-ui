@@ -29,7 +29,7 @@ function FileUploadDialog(props: IProps) {
         props.closeDialog()
         setSelectedFile(null)
         controller.current.abort()
-    }, [])
+    }, [props])
 
     const uploadFile = useCallback(async () => {
         controller.current = new AbortController()
@@ -38,14 +38,14 @@ function FileUploadDialog(props: IProps) {
             handleCancel()
             props.loadFileList()
             enqueueSnackbar("File uploaded successfully", { variant: "success" })
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             enqueueSnackbar("Upload failed: " + error, { variant: "error" })
         } finally {
             setProgress(null)
         }
-    }, [selectedFile])
+    }, [selectedFile, props, handleCancel, enqueueSnackbar])
 
     const testEncryption = useCallback(async () => {
         if (!selectedFile) return
@@ -70,13 +70,13 @@ function FileUploadDialog(props: IProps) {
             if (!equal) throw new Error("Decrypted file doesn't match original")
 
             enqueueSnackbar("Encryption tests succeeded", { variant: "success" })
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err)
             enqueueSnackbar("Encryption tests failed: " + err, { variant: "error" })
         } finally {
             setTestLoading(false)
         }
-    }, [selectedFile, encPassword])
+    }, [selectedFile, encPassword, enqueueSnackbar])
 
     return (
         <Dialog open={props.open}
@@ -91,7 +91,7 @@ function FileUploadDialog(props: IProps) {
                 </DialogContentText>
 
                 <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                    <Button variant={Boolean(selectedFile?.name) ? "contained" : "outlined"} component="label">
+                    <Button variant={selectedFile?.name ? "contained" : "outlined"} component="label">
                         {selectedFile?.name ?? "Select File"}
                         <input onChange={handleFile} type="file" hidden />
                     </Button>

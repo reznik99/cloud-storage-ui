@@ -9,13 +9,13 @@ function Nav() {
     const navigate = useNavigate()
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
 
-    const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    const handleOpenUserMenu = useCallback((event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
-    };
-
-    const handleCloseUserMenu = () => {
+    }, [])
+    
+    const handleCloseUserMenu = useCallback(() => {
         setAnchorElUser(null);
-    };
+    }, [])
 
     const logout = useCallback(async () => {
         try {

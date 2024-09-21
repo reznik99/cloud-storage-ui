@@ -1,3 +1,4 @@
+import axios from "axios"
 import { useCallback, useEffect, useState } from "react"
 import { EnqueueSnackbar, useSnackbar } from "notistack"
 import { Add, Cancel, Delete, InsertLink } from "@mui/icons-material"
@@ -16,22 +17,13 @@ function FileLinkDialog(props: IProps) {
     const [loading, setLoading] = useState(true)
     const [link, setLink] = useState<Link | null>()
 
-    useEffect(() => {
-        if (props.file?.name) {
-            loadLink()
-        }
-        return () => {
-            setLink(null)
-        }
-    }, [props.file])
-
     const loadLink = useCallback(async () => {
         try {
             setLoading(true)
             const resp = await api.getLink(props.file)
             setLink(resp.data as Link)
-        } catch (err: any) {
-            if (err.status !== 404) {
+        } catch (err: unknown) {
+            if (!axios.isAxiosError(err) || err.status !== 404) {
                 const error = getErrorString(err)
                 console.error(error)
                 enqueueSnackbar(error, { variant: "error" })
@@ -39,7 +31,7 @@ function FileLinkDialog(props: IProps) {
         } finally {
             setLoading(false)
         }
-    }, [props.file])
+    }, [props.file, enqueueSnackbar])
 
     const createLink = useCallback(async () => {
         try {
@@ -47,14 +39,14 @@ function FileLinkDialog(props: IProps) {
             const resp = await api.createLink(props.file)
             setLink(resp.data as Link)
             enqueueSnackbar("File link created successfully", { variant: "success" })
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             enqueueSnackbar("Failed to generate link: " + error, { variant: "error" })
         } finally {
             setLoading(false)
         }
-    }, [props.file])
+    }, [props.file, enqueueSnackbar])
 
     const deleteLink = useCallback(async () => {
         try {
@@ -62,14 +54,23 @@ function FileLinkDialog(props: IProps) {
             await api.deleteLink(props.file)
             setLink(null)
             enqueueSnackbar("File link deleted successfully", { variant: "success" })
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             enqueueSnackbar("Failed to delete link: " + error, { variant: "error" })
         } finally {
             setLoading(false)
         }
-    }, [props.file])
+    }, [props.file, enqueueSnackbar])
+
+    useEffect(() => {
+        if (props.file?.name) {
+            loadLink()
+        }
+        return () => {
+            setLink(null)
+        }
+    }, [props.file, loadLink])
 
     return (
         <Dialog open={props.open}

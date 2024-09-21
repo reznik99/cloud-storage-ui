@@ -21,12 +21,13 @@ function Login() {
         try {
             await api.getFiles()
             navigate("/dashboard")
-        } catch (err: any) {
-            console.warn("Authentication required")
+        } catch (err: unknown) {
+            const message = getErrorString(err)
+            console.warn("Authentication required:", message)
         } finally {
             setCheckingAuth(false)
         }
-    }, [])
+    }, [navigate])
 
     const resetFeedback = () => {
         setFeedback(null)
@@ -49,14 +50,14 @@ function Login() {
             if (!checkValues()) return
             await api.login(emailAddress, password)
             navigate("/dashboard")
-        } catch (err: any) {
+        } catch (err: unknown) {
             const error = getErrorString(err)
             console.error(error)
             setFeedback({ message: error, severity: "error" })
         } finally {
             setLoading(false)
         }
-    }, [emailAddress, password])
+    }, [emailAddress, password, checkValues, navigate])
 
     useEffect(() => {
         checkAuth()
