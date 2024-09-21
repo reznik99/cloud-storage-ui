@@ -60,12 +60,12 @@ async function importKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoK
 }
 
 // Exports a key from the browser to be prepended to a file
-async function exportKey(encKey: CryptoKey): Promise<ArrayBuffer> {
-    return window.crypto.subtle.exportKey(
-        "raw",
-        encKey
-    )
-}
+// async function exportKey(encKey: CryptoKey): Promise<ArrayBuffer> {
+//     return window.crypto.subtle.exportKey(
+//         "raw",
+//         encKey
+//     )
+// }
 
 // Generates a per file encryption key
 async function generateFileEncryptionKey(): Promise<CryptoKey> {
