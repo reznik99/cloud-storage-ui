@@ -13,10 +13,6 @@ function Dashboard() {
     const [loading, setLoading] = useState(false)
     const [files, setFiles] = useState([])
 
-    useEffect(() => {
-        loadFileList()
-    })
-
     const loadFileList = useCallback(async () => {
         try {
             setLoading(true)
@@ -30,6 +26,10 @@ function Dashboard() {
             setLoading(false)
         }
     }, [navigate])
+
+    useEffect(() => {
+        loadFileList()
+    }, [loadFileList])
 
     return (
         <Box sx={{

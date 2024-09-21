@@ -17,10 +17,6 @@ function LinkShare() {
     const [progress, setProgress] = useState<Progress | null>()
     const controller = useRef(new AbortController())
 
-    useEffect(() => {
-        loadLinkInfo()
-    })
-
     const loadLinkInfo = useCallback(async () => {
         try {
             setLoading(true)
@@ -52,6 +48,10 @@ function LinkShare() {
         }
     }, [file, params.access_key, enqueueSnackbar])
 
+    useEffect(() => {
+        loadLinkInfo()
+    }, [loadLinkInfo])
+    
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
             {/* Loader */}
