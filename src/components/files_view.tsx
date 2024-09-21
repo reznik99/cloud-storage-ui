@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
-import { Box, Button, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, Tooltip, Typography } from "@mui/material"
+import { Box, Button, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
@@ -72,72 +72,80 @@ function FilesView(props: IProps) {
             flexGrow: 1,
         }}>
 
-            <List sx={{ width: '100%', height: '100%' }}>
+            <List sx={{ width: '100%', height: '100%', padding: 0 }}>
                 {/* List Header */}
-                <ListItem sx={{ textAlign: 'center' }}>
-                    <ListItemText sx={{ width: 150 }} primary="File Name" />
-                    <ListItemText sx={{ width: 150 }} primary="File Size" />
-                    <ListItemText sx={{ width: 150 }} primary="Actions" />
-                </ListItem>
+                <Paper elevation={6} square>
+                    <ListItem sx={{ width: '100%', textAlign: 'center' }}>
+                        <Stack width='100%'
+                            direction='row'
+                            justifyContent='space-between'>
+                            <ListItemText primary="File Name" />
+                            <ListItemText primary="File Size" />
+                            <ListItemText primary="Actions" />
+                        </Stack>
+                    </ListItem>
+                </Paper>
                 <Divider />
                 {/* List */}
-                {
-                    props.files.map((file, idx) =>
-                        <Box key={idx}>
-                            {/* File metadata */}
-                            <ListItem>
-                                <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
-                                <ListItemText sx={{ width: 250 }} primary={file.name} />
-                                <ListItemText sx={{ width: 150 }} primary={formatSize(file.size)} />
+                <Paper elevation={3} square>
+                    {
+                        props.files.map((file, idx) =>
+                            <Box key={idx}>
+                                {/* File metadata */}
+                                <ListItem>
+                                    <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
+                                    <ListItemText sx={{ width: 250 }} primary={file.name} />
+                                    <ListItemText sx={{ width: 150 }} primary={formatSize(file.size)} />
 
-                                {/* File actions */}
-                                <Tooltip title="Share" disableInteractive>
-                                    <Button onClick={() => setLinkDialogIdx(idx)}>
-                                        <Link />
-                                    </Button>
-                                </Tooltip>
-
-                                {(loadingIdx === idx && progress)
-                                    ? <Tooltip title="Cancel" disableInteractive>
-                                        <Button onClick={() => controller.current.abort()}>
-                                            <Cancel />
+                                    {/* File actions */}
+                                    <Tooltip title="Share" disableInteractive>
+                                        <Button onClick={() => setLinkDialogIdx(idx)}>
+                                            <Link />
                                         </Button>
                                     </Tooltip>
-                                    : <Tooltip title="Download" disableInteractive>
-                                        <Button onClick={() => downloadFile(idx)}>
-                                            <Download />
+
+                                    {(loadingIdx === idx && progress)
+                                        ? <Tooltip title="Cancel" disableInteractive>
+                                            <Button onClick={() => controller.current.abort()}>
+                                                <Cancel />
+                                            </Button>
+                                        </Tooltip>
+                                        : <Tooltip title="Download" disableInteractive>
+                                            <Button onClick={() => downloadFile(idx)}>
+                                                <Download />
+                                            </Button>
+                                        </Tooltip>
+                                    }
+
+                                    <Tooltip title="Delete" disableInteractive>
+                                        <Button onClick={() => deleteFile(idx)}>
+                                            <Delete />
                                         </Button>
                                     </Tooltip>
+
+                                    <Tooltip title="Details" disableInteractive>
+                                        <Button onClick={() => toggleDetails(idx)}>
+                                            {openIdx === idx ? <ExpandLess /> : <ExpandMore />}
+                                        </Button>
+                                    </Tooltip>
+                                </ListItem>
+                                {(loadingIdx === idx && progress) &&
+                                    <ProgressBar onCancel={() => controller.current.abort()}
+                                        progress={progress}
+                                        file={file}
+                                    />
                                 }
 
-                                <Tooltip title="Delete" disableInteractive>
-                                    <Button onClick={() => deleteFile(idx)}>
-                                        <Delete />
-                                    </Button>
-                                </Tooltip>
-
-                                <Tooltip title="Details" disableInteractive>
-                                    <Button onClick={() => toggleDetails(idx)}>
-                                        {openIdx === idx ? <ExpandLess /> : <ExpandMore />}
-                                    </Button>
-                                </Tooltip>
-                            </ListItem>
-                            {(loadingIdx === idx && progress) &&
-                                <ProgressBar onCancel={() => controller.current.abort()}
-                                    progress={progress}
-                                    file={file}
-                                />
-                            }
-
-                            {/* File details */}
-                            <Collapse in={openIdx == idx} timeout="auto">
-                                <List component="div" disablePadding sx={{ pl: 4 }}>
-                                    <ListItemText primary={"Uploaded on: " + new Date(file.added).toLocaleString()} />
-                                </List>
-                            </Collapse>
-                        </Box>
-                    )
-                }
+                                {/* File details */}
+                                <Collapse in={openIdx == idx} timeout="auto">
+                                    <List component="div" disablePadding sx={{ pl: 4 }}>
+                                        <ListItemText primary={"Uploaded on: " + new Date(file.added).toLocaleString()} />
+                                    </List>
+                                </Collapse>
+                            </Box>
+                        )
+                    }
+                </Paper>
 
                 {!props.files.length &&
                     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>

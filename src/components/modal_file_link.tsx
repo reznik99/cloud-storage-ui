@@ -87,6 +87,12 @@ function FileLinkDialog(props: IProps) {
                     The recipient will be able to download the file without requiring an account!
                 </DialogContentText>
 
+                {!link &&
+                    <Button startIcon={<Add />} onClick={createLink}>
+                        Create link
+                    </Button>
+                }
+
                 <List>
                     {loading
                         ? <CircularProgress />
@@ -97,11 +103,6 @@ function FileLinkDialog(props: IProps) {
                             </Alert>
                     }
                 </List>
-                {!link &&
-                    <Button startIcon={<Add />} onClick={createLink}>
-                        Create link
-                    </Button>
-                }
             </DialogContent>
             <DialogActions>
                 <Button variant="text"
