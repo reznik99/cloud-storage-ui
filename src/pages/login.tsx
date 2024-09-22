@@ -65,7 +65,7 @@ function Login() {
         } finally {
             setLoading(false)
         }
-    }, [emailAddress, password, checkValues, navigate])
+    }, [emailAddress, password, checkValues, navigate, dispatch])
 
     useEffect(() => {
         checkAuth()

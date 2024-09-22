@@ -1,12 +1,12 @@
 import { AccountCircle, ArrowBack, Edit, Password } from '@mui/icons-material'
-import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, LinearProgress, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
+import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useSnackbar } from "notistack"
 
 import { RootState } from '../store/store'
-import { calculateSizePercentageUsed, calculateSizeUsed, sizePercentageToColor } from '../utilities/utils'
-import { useCallback } from 'react'
+import { calculateSizePercentageUsed, calculateSizeUsed } from '../utilities/utils'
+import CircularProgressWithLabel from '../components/circular_progress_w_label'
 
 function Settings() {
     const navigate = useNavigate()
@@ -14,23 +14,26 @@ function Settings() {
     const data = useSelector((state: RootState) => state.user)
     const { enqueueSnackbar } = useSnackbar()
 
-    const editField = useCallback(() => {
+    const editField = () => {
         enqueueSnackbar("Not implemented", { variant: "warning" })
-    }, [])
+    }
 
     const sizeUsed = calculateSizeUsed(data.files)
     const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
     return (
         <Container component={Paper} sx={{ padding: 5 }}>
-            <Tooltip title="Go back" disableInteractive>
-                <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
-            </Tooltip>
+            <Stack direction='row' alignItems='center' spacing={2}>
+                <Tooltip title="Go back" disableInteractive>
+                    <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
+                </Tooltip>
+                <Typography variant="h5">Settings</Typography>
+            </Stack>
 
             <Stack direction='column'
                 spacing={2}
                 sx={{ padding: 2 }}>
 
-                <Divider><Typography variant='h5'>Account Details</Typography></Divider>
+                <Divider><Typography variant='h6'>Account Details</Typography></Divider>
                 <FormControl>
                     <FormLabel>Email Address</FormLabel>
                     <TextField fullWidth
@@ -90,20 +93,25 @@ function Settings() {
             <Stack direction='column'
                 spacing={2}
                 sx={{ padding: 2 }}>
-                <Divider><Typography variant='h5'>File Details</Typography></Divider>
-                <FormControl>
-                    <FormLabel>Files stored: <Chip label={data.files?.length || 0} /></FormLabel>
+                <Divider><Typography variant='h6'>File Details</Typography></Divider>
+                <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                    <FormLabel>Files stored:</FormLabel>
+                    <Chip label={data.files?.length || 0} />
                 </FormControl>
-                <FormControl>
-                    <FormLabel>Storage used: <Chip label={`${sizeUsed} MB/1,000 MB (${sizeUsedPercentage}%)`} /></FormLabel>
+                <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                    <FormLabel>Storage used:</FormLabel>
+                    <Chip label={`${sizeUsed} MB/1,000 MB`} />
                 </FormControl>
-                <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />
+                <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                    <FormLabel>Storage used:</FormLabel>
+                    <CircularProgressWithLabel value={sizeUsedPercentage} size={40} />
+                </FormControl>
             </Stack>
 
             <Stack direction='column'
                 spacing={2}
                 sx={{ padding: 2 }}>
-                <Divider><Typography variant='h5'>Preferences</Typography></Divider>
+                <Divider><Typography variant='h6'>Preferences</Typography></Divider>
                 <Box>
                     <FormLabel>Color Theme</FormLabel>
                     <FormControlLabel checked={mode === 'dark'}

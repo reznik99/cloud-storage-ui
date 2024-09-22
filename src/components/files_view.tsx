@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
-import { Box, Button, Chip, Collapse, Divider, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
+import { Box, Button, Chip, Collapse, Divider, FormLabel, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
@@ -138,10 +138,10 @@ function FilesView(props: IProps) {
 
                                 {/* File details */}
                                 <Collapse in={openIdx == idx} timeout="auto" sx={{ textAlign: 'center' }}>
-                                    <Paper>
-                                        <Typography variant="body2" sx={{ padding: 2 }}>
+                                    <Paper sx={{ padding: 2 }}>
+                                        <FormLabel>
                                             Uploaded on: <Chip label={new Date(file.added).toLocaleString()} />
-                                        </Typography>
+                                        </FormLabel>
                                     </Paper>
                                 </Collapse>
                             </Box>

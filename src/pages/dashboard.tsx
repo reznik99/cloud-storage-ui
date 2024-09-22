@@ -29,7 +29,7 @@ function Dashboard() {
         } finally {
             setLoading(false)
         }
-    }, [navigate])
+    }, [navigate, dispatch])
 
     useEffect(() => {
         loadFileList()
