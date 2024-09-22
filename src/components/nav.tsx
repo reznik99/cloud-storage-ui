@@ -12,7 +12,7 @@ function Nav() {
     const handleOpenUserMenu = useCallback((event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
     }, [])
-    
+
     const handleCloseUserMenu = useCallback(() => {
         setAnchorElUser(null);
     }, [])
@@ -55,7 +55,7 @@ function Nav() {
                     open={Boolean(anchorElUser)}
                     onClose={handleCloseUserMenu}>
 
-                    <MenuItem onClick={() => { }} disabled>
+                    <MenuItem onClick={() => { handleCloseUserMenu(); navigate("/settings"); }}>
                         <ListItemIcon>
                             <Settings fontSize="small" />
                         </ListItemIcon>

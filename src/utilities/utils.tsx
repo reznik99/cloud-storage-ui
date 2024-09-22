@@ -29,13 +29,13 @@ export function calculateSizePercentageUsed(used: number, total: number) {
 
 export function formatSize(byteSize: number) {
     if (byteSize < 1_000) {
-        return "<1 KiB"
+        return "<1 kB"
     } else if (byteSize < 1_000_000) {
-        return (byteSize / 1_000).toFixed(0).toLocaleString() + " KiB"
+        return (byteSize / 1_000).toFixed(0).toLocaleString() + " kB"
     } else if (byteSize < 1_000_000_000) {
-        return (byteSize / 1_000_000).toFixed(2).toLocaleString() + " MiB"
+        return (byteSize / 1_000_000).toFixed(2).toLocaleString() + " MB"
     }
-    return byteSize.toLocaleString() + " GiB"
+    return byteSize.toLocaleString() + " GB"
 }
 
 export function getFileIcon(fileName: string): JSX.Element {
