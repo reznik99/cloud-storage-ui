@@ -51,11 +51,12 @@ function Login() {
         try {
             setLoading(true)
             if (!checkValues()) return
-            await api.login(emailAddress, password)
+            const resp = await api.login(emailAddress, password)
             dispatch(saveCreds({
-                emailAddress: emailAddress,
+                emailAddress: resp.data.email_address,
                 password: password,
-                createdAt: new Date().toLocaleString() // TODO: get from response
+                createdAt: resp.data.created_at,
+                lastSeen: resp.data.last_seen,
             }))
             navigate("/dashboard")
         } catch (err: unknown) {
