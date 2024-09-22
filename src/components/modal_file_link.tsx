@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import { EnqueueSnackbar, useSnackbar } from "notistack"
 import { Add, Cancel, Delete, InsertLink } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, Tooltip, Typography } from "@mui/material"
-import { assembleShareLink, FileInfo, getErrorString, } from "../utilities/utils"
+import { assembleShareLink, FileInfo, getErrorString, localDateTime, } from "../utilities/utils"
 import api from "../networking/endpoints"
 
 type IProps = {
@@ -150,7 +150,7 @@ function Link(props: LinkProps) {
             </ListItem>
             <Alert severity="success">
                 <AlertTitle>This file is available for sharing</AlertTitle>
-                <Typography>Created on: {new Date(props.link.created_at).toLocaleString()}</Typography>
+                <Typography>Created on: {localDateTime(new Date(props.link.created_at), true)}</Typography>
                 <Typography>Downloads: {props.link.access_count}</Typography>
             </Alert>
         </Box>

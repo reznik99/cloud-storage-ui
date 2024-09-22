@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { useSnackbar } from "notistack"
 
 import { RootState } from '../store/store'
-import { calculateSizePercentageUsed, calculateSizeUsed } from '../utilities/utils'
+import { calculateSizePercentageUsed, calculateSizeUsed, localDateTime } from '../utilities/utils'
 import CircularProgressWithLabel from '../components/circular_progress_w_label'
 
 function Settings() {
@@ -65,7 +65,7 @@ function Settings() {
                         variant="standard"
                         color="primary"
                         type='password'
-                        defaultValue={data.password}
+                        defaultValue={"a".repeat(data.password?.length)}
                         disabled
                         slotProps={{
                             input: {
@@ -86,7 +86,11 @@ function Settings() {
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel>Account active since <Chip label={data.createdAt} /></FormLabel>
+                    <FormLabel>Account created: <Chip label={localDateTime(new Date(data.createdAt), true)} /></FormLabel>
+                </FormControl>
+
+                <FormControl>
+                    <FormLabel>Last online: <Chip label={localDateTime(new Date(data.lastSeen), true)} /></FormLabel>
                 </FormControl>
             </Stack>
 

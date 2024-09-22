@@ -16,6 +16,29 @@ export type Progress = {
     percentage: number;
 }
 
+function millisecondsToX(ms: number, target: "day" | "hour" | "minute" | "second") {
+    switch (target) {
+        case "day":
+            return ms / 1000 / 60 / 60 / 24
+        case "hour":
+            return ms / 1000 / 60 / 60
+        case "minute":
+            return ms / 1000 / 60
+        case "second":
+            return ms / 1000
+    }
+}
+
+export function localDateTime(date: Date, withHumanDiff: boolean) {
+    let output = date.toLocaleString()
+    if (withHumanDiff) {
+        const diffDays = millisecondsToX(Date.now() - date.valueOf(), "day")
+        if (diffDays <= 1) output += " (< day ago)"
+        else output += ` (${Math.floor(diffDays).toLocaleString()} days ago)`
+    }
+    return output
+}
+
 export function calculateSizeUsed(files: Array<FileInfo>) {
     let total = 0
     files.forEach(file => total += file.size)

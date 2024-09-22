@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react"
 import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
 import { Box, Button, Chip, Collapse, Divider, FormLabel, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
-import { FileInfo, formatSize, getErrorString, getFileIcon, Progress, triggerDownload } from "../utilities/utils"
+import { FileInfo, formatSize, getErrorString, getFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
 import FileLinkDialog from "./modal_file_link"
@@ -140,7 +140,7 @@ function FilesView(props: IProps) {
                                 <Collapse in={openIdx == idx} timeout="auto" sx={{ textAlign: 'center' }}>
                                     <Paper sx={{ padding: 2 }}>
                                         <FormLabel>
-                                            Uploaded on: <Chip label={new Date(file.added).toLocaleString()} />
+                                            Uploaded on: <Chip label={localDateTime(new Date(file.added), true)} />
                                         </FormLabel>
                                     </Paper>
                                 </Collapse>
