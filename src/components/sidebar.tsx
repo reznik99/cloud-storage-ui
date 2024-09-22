@@ -32,7 +32,7 @@ function Sidebar(props: IProps) {
                 </a>
                 <Box sx={{ width: '100%', textAlign: 'center' }}>
                     <Typography>Space used:</Typography>
-                    <Typography>{sizeUsed} MiB/1,000 MiB</Typography>
+                    <Typography>{sizeUsed} MB/1,000 MB</Typography>
                     <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />
                 </Box>
 

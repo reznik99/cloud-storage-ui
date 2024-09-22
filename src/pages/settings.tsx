@@ -1,21 +1,30 @@
 import { AccountCircle, ArrowBack, Edit, Password } from '@mui/icons-material'
-import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, LinearProgress, Paper, Stack, Switch, TextField, Typography, useColorScheme } from '@mui/material'
+import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, LinearProgress, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useSnackbar } from "notistack"
 
 import { RootState } from '../store/store'
 import { calculateSizePercentageUsed, calculateSizeUsed, sizePercentageToColor } from '../utilities/utils'
+import { useCallback } from 'react'
 
 function Settings() {
     const navigate = useNavigate()
-    const data = useSelector((state: RootState) => state.user)
     const { mode, setMode } = useColorScheme()
+    const data = useSelector((state: RootState) => state.user)
+    const { enqueueSnackbar } = useSnackbar()
+
+    const editField = useCallback(() => {
+        enqueueSnackbar("Not implemented", { variant: "warning" })
+    }, [])
 
     const sizeUsed = calculateSizeUsed(data.files)
     const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
     return (
         <Container component={Paper} sx={{ padding: 5 }}>
-            <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
+            <Tooltip title="Go back" disableInteractive>
+                <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
+            </Tooltip>
 
             <Stack direction='column'
                 spacing={2}
@@ -38,7 +47,9 @@ function Settings() {
                                 ),
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton><Edit /></IconButton>
+                                        <Tooltip title="Edit" disableInteractive>
+                                            <IconButton onClick={editField}><Edit /></IconButton>
+                                        </Tooltip>
                                     </InputAdornment>
                                 )
                             },
@@ -62,7 +73,9 @@ function Settings() {
                                 ),
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton><Edit /></IconButton>
+                                        <Tooltip title="Edit" disableInteractive>
+                                            <IconButton onClick={editField}><Edit /></IconButton>
+                                        </Tooltip>
                                     </InputAdornment>
                                 )
                             },
@@ -82,7 +95,7 @@ function Settings() {
                     <FormLabel>Files stored: <Chip label={data.files?.length || 0} /></FormLabel>
                 </FormControl>
                 <FormControl>
-                    <FormLabel>Storage used: <Chip label={`${sizeUsed} MiB/1,000 MiB (${sizeUsedPercentage}%)`} /></FormLabel>
+                    <FormLabel>Storage used: <Chip label={`${sizeUsed} MB/1,000 MB (${sizeUsedPercentage}%)`} /></FormLabel>
                 </FormControl>
                 <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />
             </Stack>
