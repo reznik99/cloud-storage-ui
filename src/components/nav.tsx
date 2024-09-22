@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Logout, Password, Settings } from "@mui/icons-material"
-import { Avatar, Box, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from "@mui/material"
+import { Folder, Logout, Settings } from "@mui/icons-material"
+import { Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from "@mui/material"
 import logo from '/logo.png'
 import api from "../networking/endpoints";
 
@@ -16,6 +16,16 @@ function Nav() {
     const handleCloseUserMenu = useCallback(() => {
         setAnchorElUser(null);
     }, [])
+
+    const openDashboard = useCallback(() => {
+        handleCloseUserMenu()
+        navigate("/dashboard")
+    }, [navigate, handleCloseUserMenu])
+
+    const openSettings = useCallback(() => {
+        handleCloseUserMenu()
+        navigate("/settings")
+    }, [navigate, handleCloseUserMenu])
 
     const logout = useCallback(async () => {
         try {
@@ -39,43 +49,35 @@ function Nav() {
 
             <Typography variant="h4">Welcome</Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <Tooltip title="Open settings">
+                <IconButton onClick={handleOpenUserMenu} sx={{ py: 0 }}>
+                    <Avatar />
+                </IconButton>
+            </Tooltip>
 
-                <Tooltip title="Open settings">
-                    <IconButton onClick={handleOpenUserMenu} sx={{ py: 0 }}>
-                        <Avatar />
-                    </IconButton>
-                </Tooltip>
-                <Menu sx={{ mt: '45px' }}
-                    id="menu-appbar"
-                    keepMounted
-                    anchorEl={anchorElUser}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    open={Boolean(anchorElUser)}
-                    onClose={handleCloseUserMenu}>
+            <Menu sx={{ mt: '45px' }}
+                id="menu-appbar"
+                keepMounted
+                anchorEl={anchorElUser}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}>
 
-                    <MenuItem onClick={() => { handleCloseUserMenu(); navigate("/settings"); }}>
-                        <ListItemIcon>
-                            <Settings fontSize="small" />
-                        </ListItemIcon>
-                        Settings
-                    </MenuItem>
-                    <MenuItem onClick={() => { }} disabled>
-                        <ListItemIcon>
-                            <Password fontSize="small" />
-                        </ListItemIcon>
-                        Change Password
-                    </MenuItem>
-                    <Divider />
-                    <MenuItem onClick={logout}>
-                        <ListItemIcon>
-                            <Logout fontSize="small" />
-                        </ListItemIcon>
-                        Logout
-                    </MenuItem>
-                </Menu>
-            </Box>
+                <MenuItem onClick={openDashboard} sx={{ paddingX: 5 }}>
+                    <ListItemIcon><Folder fontSize="small" color="primary" /></ListItemIcon>
+                    My Files
+                </MenuItem>
+                <MenuItem onClick={openSettings} sx={{ paddingX: 5 }}>
+                    <ListItemIcon><Settings fontSize="small" color="primary" /></ListItemIcon>
+                    Settings
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={logout} sx={{ paddingX: 5 }}>
+                    <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
+                    Logout
+                </MenuItem>
+            </Menu>
 
         </Stack>
     )
