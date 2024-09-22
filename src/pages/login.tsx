@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useDispatch } from "react-redux"
 import { ArrowForward, LoginOutlined } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
 import logo from '/logo.png'
+import { saveCreds } from "../store/reducer"
 
 function Login() {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const [checkingAuth, setCheckingAuth] = useState(true)
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<Feedback | null>()
@@ -49,6 +52,11 @@ function Login() {
             setLoading(true)
             if (!checkValues()) return
             await api.login(emailAddress, password)
+            dispatch(saveCreds({
+                emailAddress: emailAddress,
+                password: password,
+                createdAt: new Date().toLocaleString() // TODO: get from response
+            }))
             navigate("/dashboard")
         } catch (err: unknown) {
             const error = getErrorString(err)

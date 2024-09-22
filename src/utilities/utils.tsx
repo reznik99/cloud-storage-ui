@@ -27,6 +27,13 @@ export function calculateSizePercentageUsed(used: number, total: number) {
     return Math.min(Math.round((used / total) * 100), 100)
 }
 
+export function sizePercentageToColor(used: number): "error" | "info" | "success" | "warning" | "primary" | "inherit" | "secondary" {
+    if (used < 25) return 'primary';
+    if (used < 50) return 'info';
+    if (used < 75) return 'warning';
+    else return 'error';
+}
+
 export function formatSize(byteSize: number) {
     if (byteSize < 1_000) {
         return "<1 kB"
@@ -66,7 +73,7 @@ export function getFileIcon(fileName: string): JSX.Element {
     }
 }
 
-export async function triggerDownload(name: string, fileBlob: Blob): Promise<void> {
+export function triggerDownload(name: string, fileBlob: Blob): void {
     const objectUrl = URL.createObjectURL(fileBlob);
     const link: HTMLAnchorElement = document.createElement('a');
     link.href = objectUrl;

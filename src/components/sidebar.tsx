@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { Alert, Box, Button, Card, Divider, FormControlLabel, LinearProgress, Link, Switch, Typography, useColorScheme } from "@mui/material"
 import { Circle, Upload } from "@mui/icons-material"
-import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo } from "../utilities/utils"
+import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, sizePercentageToColor } from "../utilities/utils"
 import viteLogo from '/vite.svg'
 import FileUploadDialog from "./modal_file_upload"
 
@@ -15,6 +15,8 @@ function Sidebar(props: IProps) {
     const { mode, setMode } = useColorScheme()
     const [fileModalOpen, setFileModalOpen] = useState(false)
 
+    const sizeUsed = calculateSizeUsed(props.files)
+    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
     return (
         <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{
@@ -30,8 +32,8 @@ function Sidebar(props: IProps) {
                 </a>
                 <Box sx={{ width: '100%', textAlign: 'center' }}>
                     <Typography>Space used:</Typography>
-                    <Typography>{calculateSizeUsed(props.files)} MiB/1,000 MiB</Typography>
-                    <LinearProgress variant="determinate" value={calculateSizePercentageUsed(calculateSizeUsed(props.files), 1000)} />
+                    <Typography>{sizeUsed} MiB/1,000 MiB</Typography>
+                    <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />
                 </Box>
 
                 {mode &&
