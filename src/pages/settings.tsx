@@ -1,18 +1,22 @@
-import { AccountCircle, ArrowBack, Edit, Password } from '@mui/icons-material'
-import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useSnackbar } from "notistack"
+import { AccountCircle, ArrowBack, Edit, Password } from '@mui/icons-material'
+import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
 
 import { RootState } from '../store/store'
 import { calculateSizePercentageUsed, calculateSizeUsed, localDateTime } from '../utilities/utils'
 import CircularProgressWithLabel from '../components/circular_progress_w_label'
+import ChangePasswordDialog from '../components/modal_change_password'
 
 function Settings() {
     const navigate = useNavigate()
-    const { mode, setMode } = useColorScheme()
     const data = useSelector((state: RootState) => state.user)
     const { enqueueSnackbar } = useSnackbar()
+    const { mode, setMode } = useColorScheme()
+
+    const [dialogOpen, setDialogOpen] = useState("")
 
     const editField = () => {
         enqueueSnackbar("Not implemented", { variant: "warning" })
@@ -77,7 +81,7 @@ function Settings() {
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <Tooltip title="Edit" disableInteractive>
-                                            <IconButton onClick={editField}><Edit /></IconButton>
+                                            <IconButton onClick={() => setDialogOpen("password")}><Edit /></IconButton>
                                         </Tooltip>
                                     </InputAdornment>
                                 )
@@ -126,6 +130,9 @@ function Settings() {
                     />
                 </Box>
             </Stack>
+
+            <ChangePasswordDialog open={dialogOpen === "password"}
+                closeDialog={() => setDialogOpen("")} />
         </Container>
     )
 }
