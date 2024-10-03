@@ -2,8 +2,8 @@ import axios from "axios"
 import { FileInfo, noopProgressCallback, Progress } from "../utilities/utils"
 
 
-// const API_URL = "http://localhost:8080/api"
-const API_URL = "https://storage.francescogorini.com/api"
+// export const API_URL = "http://localhost:8080/api"
+export const API_URL = "https://storage.francescogorini.com/api"
 
 const client = axios.create({
     withCredentials: true,

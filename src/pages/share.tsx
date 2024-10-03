@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack"
 import { ArrowBack, Download } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, FormControl, FormLabel, IconButton, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import { FileInfo, formatSize, getErrorString, Progress, triggerDownload } from "../utilities/utils"
-import api from "../networking/endpoints"
+import api, { API_URL } from "../networking/endpoints"
 import logo from '/logo.png'
 import ProgressBar from "../components/progress_bar"
 
@@ -51,13 +51,15 @@ function LinkShare() {
     useEffect(() => {
         loadLinkInfo()
     }, [loadLinkInfo])
-    
+
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
             {/* Loader */}
-            {loading && <Box sx={{ width: '50%' }}>
-                <LinearProgress variant="indeterminate" />
-            </Box>}
+            {loading &&
+                <Box sx={{ width: '50%' }}>
+                    <LinearProgress variant="indeterminate" />
+                </Box>
+            }
             <Card sx={{ padding: 5, width: '50%' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
@@ -65,11 +67,19 @@ function LinkShare() {
                     <img src={logo} style={{ maxHeight: 40 }} />
                 </Box>
                 <Divider sx={{ mt: 2 }} />
-                {file
-                    ? <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+
+                {(!file && !loading) &&
+                    <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
+                        <AlertTitle>File not found</AlertTitle>
+                        <Typography variant="body2">This link is either invalid or no longer available</Typography>
+                    </Alert>
+                }
+                {file &&
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Box>
                             <Typography variant="body1">Uploaded on: {new Date(file?.added || 0).toLocaleDateString()}</Typography>
                             <Typography variant="body1">Size: {formatSize(file?.size || 0)}</Typography>
+                            <Typography variant="body1">Type: {file.type || "Unknown"}</Typography>
                         </Box>
                         <FormControl>
                             <FormLabel htmlFor="password">Decryption Password (optional)</FormLabel>
@@ -92,11 +102,13 @@ function LinkShare() {
                             progress={progress}
                             file={file} />
                         }
+                        {file.type === "video/mp4" &&
+                            <video controls
+                                src={`${API_URL}/link_download?access_key=${params.access_key}`}>
+
+                            </video>
+                        }
                     </CardContent>
-                    : !loading && <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
-                        <AlertTitle>File not found</AlertTitle>
-                        <Typography variant="body2">This link is either invalid or no longer available</Typography>
-                    </Alert>
                 }
             </Card>
         </Stack>
