@@ -23,10 +23,10 @@ export const dataSlice = createSlice({
     initialState: initialState,
     reducers: {
         saveCreds: (state, action) => {
-            state.emailAddress = action.payload.emailAddress;
+            state.emailAddress = action.payload.emailAddress || state.emailAddress;
             state.password = action.payload.password || state.password;
-            state.createdAt = action.payload.createdAt;
-            state.lastSeen = action.payload.lastSeen;
+            state.createdAt = action.payload.createdAt || state.createdAt;
+            state.lastSeen = action.payload.lastSeen || state.lastSeen;
         },
         saveFiles: (state, action) => {
             state.files = action.payload.files;

@@ -28,11 +28,11 @@ function PrivateRoute({ children }: IProps) {
             console.warn("Authentication required:", message)
             navigate("/login")
         }
-    }, [navigate])
+    }, [navigate, dispatch])
 
     useEffect(() => {
         checkAuth()
-    }, [])
+    }, [checkAuth])
 
     return (
         <>

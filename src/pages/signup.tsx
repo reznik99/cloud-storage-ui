@@ -8,9 +8,12 @@ import { ValidatePassword } from "../utilities/security"
 import api from "../networking/endpoints"
 import logo from '/logo.png'
 import PasswordMeter from "../components/password_meter"
+import { useDispatch } from "react-redux"
+import { saveCreds } from "../store/reducer"
 
 function Signup() {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const { enqueueSnackbar } = useSnackbar()
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<Feedback | null>()
@@ -56,6 +59,8 @@ function Signup() {
             setLoading(true)
             if (!checkValues()) return
             await api.signup(emailAddress, password)
+            dispatch(saveCreds({ emailAddress: emailAddress }))
+            navigate('/login')
             enqueueSnackbar("Account created successfully", { variant: "success" })
         } catch (err) {
             const error = getErrorString(err)
@@ -64,7 +69,7 @@ function Signup() {
         } finally {
             setLoading(false)
         }
-    }, [emailAddress, password, checkValues, enqueueSnackbar])
+    }, [emailAddress, password, checkValues, dispatch, navigate, enqueueSnackbar])
 
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>

@@ -1,19 +1,21 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { ArrowForward, LoginOutlined } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
 import logo from '/logo.png'
 import { saveCreds } from "../store/reducer"
+import { RootState } from "../store/store"
 
 function Login() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const user = useSelector((store: RootState) => store.user)
     const [loading, setLoading] = useState(false)
     const [feedback, setFeedback] = useState<Feedback | null>()
-    const [emailAddress, setEmailAddress] = useState('')
+    const [emailAddress, setEmailAddress] = useState(user.emailAddress || '')
     const [emailError, setEmailError] = useState('')
     const [password, setPassword] = useState('')
     const [passwordError, setPasswordError] = useState('')
