@@ -24,7 +24,7 @@ export const dataSlice = createSlice({
     reducers: {
         saveCreds: (state, action) => {
             state.emailAddress = action.payload.emailAddress;
-            state.password = action.payload.password;
+            state.password = action.payload.password || state.password;
             state.createdAt = action.payload.createdAt;
             state.lastSeen = action.payload.lastSeen;
         },

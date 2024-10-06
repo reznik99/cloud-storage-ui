@@ -121,10 +121,15 @@ async function logout() {
     return client.post("/logout")
 }
 
+async function getSession() {
+    return client.get("/session")
+}
+
 const api = {
     login,
     signup,
     logout,
+    getSession,
     getFiles,
     uploadFile,
     downloadFile,
