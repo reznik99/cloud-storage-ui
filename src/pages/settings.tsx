@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useSnackbar } from "notistack"
-import { AccountCircle, ArrowBack, Edit, Password } from '@mui/icons-material'
-import { Box, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
+import { AccountCircle, ArrowBack, Delete, Password } from '@mui/icons-material'
+import { Box, Button, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
 
 import { RootState } from '../store/store'
 import { calculateSizePercentageUsed, calculateSizeUsed, localDateTime } from '../utilities/utils'
@@ -12,18 +12,18 @@ import ChangePasswordDialog from '../components/modal_change_password'
 
 function Settings() {
     const navigate = useNavigate()
-    const data = useSelector((state: RootState) => state.user)
+    const user = useSelector((state: RootState) => state.user)
     const { enqueueSnackbar } = useSnackbar()
     const { mode, setMode } = useColorScheme()
-
     const [dialogOpen, setDialogOpen] = useState("")
+
+    const sizeUsed = calculateSizeUsed(user.files)
+    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
 
     const editField = () => {
         enqueueSnackbar("Not implemented", { variant: "warning" })
     }
 
-    const sizeUsed = calculateSizeUsed(data.files)
-    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
     return (
         <Container component={Paper} sx={{ padding: 5 }}>
             <Stack direction='row' alignItems='center' spacing={2}>
@@ -33,78 +33,37 @@ function Settings() {
                 <Typography variant="h5">Settings</Typography>
             </Stack>
 
-            <Stack direction='column'
-                spacing={2}
-                sx={{ padding: 2 }}>
-
+            <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
                 <Divider><Typography variant='h6'>Account Details</Typography></Divider>
                 <FormControl>
                     <FormLabel>Email Address</FormLabel>
                     <TextField fullWidth
                         variant="standard"
                         color="primary"
-                        defaultValue={data.emailAddress}
-                        disabled
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <AccountCircle />
-                                    </InputAdornment>
-                                ),
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <Tooltip title="Edit" disableInteractive>
-                                            <IconButton onClick={editField}><Edit /></IconButton>
-                                        </Tooltip>
-                                    </InputAdornment>
-                                )
-                            },
-                        }} />
+                        value={user.emailAddress}
+                        onChange={() => { }}
+                        disabled />
                 </FormControl>
-
                 <FormControl>
                     <FormLabel>Password</FormLabel>
                     <TextField fullWidth
                         variant="standard"
                         color="primary"
-                        type='password'
-                        defaultValue={"a".repeat(data.password?.length)}
-                        disabled
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <Password />
-                                    </InputAdornment>
-                                ),
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <Tooltip title="Edit" disableInteractive>
-                                            <IconButton onClick={() => setDialogOpen("password")}><Edit /></IconButton>
-                                        </Tooltip>
-                                    </InputAdornment>
-                                )
-                            },
-                        }} />
+                        value={'*'.repeat(user.password?.length || 10)}
+                        onChange={() => { }}
+                        disabled />
                 </FormControl>
-
-                <FormControl>
-                    <FormLabel>Account created: <Chip label={localDateTime(new Date(data.createdAt), true)} /></FormLabel>
-                </FormControl>
-
-                <FormControl>
-                    <FormLabel>Last online: <Chip label={localDateTime(new Date(data.lastSeen), true)} /></FormLabel>
-                </FormControl>
+                <Stack direction='row' justifyContent='space-evenly'>
+                    <FormLabel>Account created: <Chip label={localDateTime(new Date(user.createdAt), true)} /></FormLabel>
+                    <FormLabel>Last online: <Chip label={localDateTime(new Date(user.lastSeen), true)} /></FormLabel>
+                </Stack>
             </Stack>
 
-            <Stack direction='column'
-                spacing={2}
-                sx={{ padding: 2 }}>
+            <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
                 <Divider><Typography variant='h6'>File Details</Typography></Divider>
                 <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                     <FormLabel>Files stored:</FormLabel>
-                    <Chip label={data.files?.length || 0} />
+                    <Chip label={user.files?.length || 0} />
                 </FormControl>
                 <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                     <FormLabel>Storage used:</FormLabel>
@@ -116,9 +75,7 @@ function Settings() {
                 </FormControl>
             </Stack>
 
-            <Stack direction='column'
-                spacing={2}
-                sx={{ padding: 2 }}>
+            <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
                 <Divider><Typography variant='h6'>Preferences</Typography></Divider>
                 <Box>
                     <FormLabel>Color Theme</FormLabel>
@@ -129,6 +86,25 @@ function Settings() {
                         labelPlacement="start"
                     />
                 </Box>
+            </Stack>
+
+            <Stack direction='column' spacing={2} sx={{ padding: 1, }}>
+                <Divider><Typography variant='h6'>Actions</Typography></Divider>
+
+                <Button onClick={editField}
+                    startIcon={<AccountCircle />}>
+                    Update email address
+                </Button>
+                <Button onClick={() => setDialogOpen("password")}
+                    startIcon={<Password />}>
+                    Change password
+                </Button>
+                <Button variant='outlined'
+                    color='error'
+                    onClick={editField}
+                    startIcon={<Delete />}>
+                    Delete account
+                </Button>
             </Stack>
 
             <ChangePasswordDialog open={dialogOpen === "password"}
