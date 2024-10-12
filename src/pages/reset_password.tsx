@@ -45,7 +45,7 @@ function ResetPassword() {
             console.error(error)
             enqueueSnackbar("Error resetting password: " + error, { variant: "error" })
         }
-    }, [password, checkValues, navigate])
+    }, [password, hash, checkValues, navigate, enqueueSnackbar])
 
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>

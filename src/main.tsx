@@ -22,6 +22,12 @@ const theme = createTheme({
     dark: true,
     light: true,
   },
+  palette: {
+    mode: 'light',
+    background: {
+      default: '#DEDEDE',
+    },
+  }
 });
 
 const router = createBrowserRouter([

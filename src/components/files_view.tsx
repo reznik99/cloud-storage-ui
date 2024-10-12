@@ -111,20 +111,20 @@ function FilesView(props: IProps) {
                                             </Button>
                                         </Tooltip>
                                         : <Tooltip title="Download" disableInteractive>
-                                            <Button onClick={() => downloadFile(idx)}>
+                                            <Button onClick={() => downloadFile(idx)} color="success">
                                                 <Download />
                                             </Button>
                                         </Tooltip>
                                     }
 
                                     <Tooltip title="Delete" disableInteractive>
-                                        <Button onClick={() => deleteFile(idx)}>
+                                        <Button onClick={() => deleteFile(idx)} color="error">
                                             <Delete />
                                         </Button>
                                     </Tooltip>
 
                                     <Tooltip title="Details" disableInteractive>
-                                        <Button onClick={() => toggleDetails(idx)}>
+                                        <Button onClick={() => toggleDetails(idx)} color="secondary">
                                             {openIdx === idx ? <ExpandLess /> : <ExpandMore />}
                                         </Button>
                                     </Tooltip>

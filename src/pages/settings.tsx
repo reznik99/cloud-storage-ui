@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useSnackbar } from "notistack"
 import { AccountCircle, ArrowBack, Delete, Password } from '@mui/icons-material'
-import { Box, Button, Chip, Container, Divider, FormControl, FormControlLabel, FormLabel, IconButton, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
+import { Box, Button, Chip, Container, Divider, FormControl, FormControlLabel, IconButton, Paper, Stack, Switch, TextField, Tooltip, Typography, useColorScheme } from '@mui/material'
 
 import { RootState } from '../store/store'
 import { calculateSizePercentageUsed, calculateSizeUsed, localDateTime } from '../utilities/utils'
@@ -36,7 +36,7 @@ function Settings() {
             <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
                 <Divider><Typography variant='h6'>Account Details</Typography></Divider>
                 <FormControl>
-                    <FormLabel>Email Address</FormLabel>
+                    <Typography>Email Address</Typography>
                     <TextField fullWidth
                         variant="standard"
                         color="primary"
@@ -45,7 +45,7 @@ function Settings() {
                         disabled />
                 </FormControl>
                 <FormControl>
-                    <FormLabel>Password</FormLabel>
+                    <Typography>Password</Typography>
                     <TextField fullWidth
                         variant="standard"
                         color="primary"
@@ -54,23 +54,23 @@ function Settings() {
                         disabled />
                 </FormControl>
                 <Stack direction='row' justifyContent='space-evenly'>
-                    <FormLabel>Account created: <Chip label={localDateTime(new Date(user.createdAt), true)} /></FormLabel>
-                    <FormLabel>Last online: <Chip label={localDateTime(new Date(user.lastSeen), true)} /></FormLabel>
+                    <Typography>Account created: <Chip label={localDateTime(new Date(user.createdAt), true)} /></Typography>
+                    <Typography>Last online: <Chip label={localDateTime(new Date(user.lastSeen), true)} /></Typography>
                 </Stack>
             </Stack>
 
             <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
                 <Divider><Typography variant='h6'>File Details</Typography></Divider>
                 <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                    <FormLabel>Files stored:</FormLabel>
+                    <Typography>Files stored:</Typography>
                     <Chip label={user.files?.length || 0} />
                 </FormControl>
                 <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                    <FormLabel>Storage used:</FormLabel>
+                    <Typography>Storage used:</Typography>
                     <Chip label={`${sizeUsed} MB/1,000 MB`} />
                 </FormControl>
                 <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                    <FormLabel>Storage used:</FormLabel>
+                    <Typography>Storage used:</Typography>
                     <CircularProgressWithLabel value={sizeUsedPercentage} size={40} />
                 </FormControl>
             </Stack>
@@ -78,7 +78,7 @@ function Settings() {
             <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
                 <Divider><Typography variant='h6'>Preferences</Typography></Divider>
                 <Box>
-                    <FormLabel>Color Theme</FormLabel>
+                    <Typography>Color Theme</Typography>
                     <FormControlLabel checked={mode === 'dark'}
                         onChange={() => setMode(mode === 'light' ? 'dark' : 'light')}
                         control={<Switch color="primary" />}

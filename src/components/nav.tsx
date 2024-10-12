@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Folder, Logout, Settings } from "@mui/icons-material"
-import { Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from "@mui/material"
+import { Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip } from "@mui/material"
 import logo from '/logo.png'
 import api from "../networking/endpoints";
 
@@ -43,14 +43,12 @@ function Nav() {
             justifyContent="space-between"
             alignItems="center"
             width="100vw"
-            sx={{ backgroundColor: "#747bff", paddingY: 2, paddingX: 4 }}>
+            sx={{ backgroundColor: "#747bff", paddingY: 2, paddingX: 6 }}>
 
             <img src={logo} style={{ maxHeight: 40 }} />
 
-            <Typography variant="h4">Welcome</Typography>
-
-            <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ py: 0 }}>
+            <Tooltip title="My Account">
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar />
                 </IconButton>
             </Tooltip>
