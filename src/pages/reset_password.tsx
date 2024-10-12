@@ -7,6 +7,7 @@ import { ValidatePassword } from "../utilities/security"
 import { getErrorString } from "../utilities/utils"
 import { useSnackbar } from "notistack"
 import PasswordMeter from "../components/password_meter"
+import api from "../networking/endpoints"
 
 function ResetPassword() {
     const navigate = useNavigate()
@@ -36,7 +37,9 @@ function ResetPassword() {
         setPasswordError("")
         try {
             if (!checkValues()) return
+            await api.resetPassword(password, hash.slice(1))
             enqueueSnackbar("Password reset successfully", { variant: "success" })
+            navigate('/login')
         } catch (err) {
             const error = getErrorString(err)
             console.error(error)

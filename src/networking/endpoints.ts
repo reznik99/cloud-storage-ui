@@ -125,11 +125,16 @@ async function getSession() {
     return client.get("/session")
 }
 
+async function resetPassword(new_password: string, reset_code: string) {
+    return client.post("/reset_password", { new_password, reset_code})
+}
+
 const api = {
     login,
     signup,
     logout,
     getSession,
+    resetPassword,
     getFiles,
     uploadFile,
     downloadFile,
