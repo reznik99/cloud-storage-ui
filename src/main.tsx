@@ -7,13 +7,15 @@ import { Provider } from 'react-redux'
 
 import './index.css'
 import store from './store/store.ts'
+import PrivateRoute from './private_route.tsx'
+// Pages
 import Dashboard from './pages/dashboard.tsx'
-import Nav from './components/nav.tsx'
 import Login from './pages/login.tsx'
 import Signup from './pages/signup.tsx'
 import LinkShare from './pages/share.tsx'
 import Settings from './pages/settings.tsx'
-import PrivateRoute from './private_route.tsx'
+import ResetPassword from './pages/reset_password.tsx'
+import Nav from './components/nav.tsx'
 
 const theme = createTheme({
   colorSchemes: {
@@ -29,6 +31,9 @@ const router = createBrowserRouter([
   }, {
     path: "/signup",
     element: <Signup />,
+  }, {
+    path: "/reset-password",
+    element: <ResetPassword />,
   }, {
     path: "/share/:access_key",
     element: <LinkShare />,

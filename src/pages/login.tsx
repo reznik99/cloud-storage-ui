@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { ArrowForward, LoginOutlined } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
@@ -118,6 +118,9 @@ function Login() {
                             endIcon={<LoginOutlined />}>
                             Login
                         </Button>
+
+                        {/* TODO: show modal with email address to request password reset email */}
+                        <Link to={{ pathname: "/reset-password" }}>Forgot Password?</Link>
                     </Box>
 
                     <Divider sx={{ mb: 3 }}>or</Divider>
