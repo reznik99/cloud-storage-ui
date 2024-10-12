@@ -125,8 +125,12 @@ async function getSession() {
     return client.get("/session")
 }
 
+async function requestResetPassword(email_address: string) {
+    return client.get("/reset_password", { params: { email_address } })
+}
+
 async function resetPassword(new_password: string, reset_code: string) {
-    return client.post("/reset_password", { new_password, reset_code})
+    return client.post("/reset_password", { new_password, reset_code })
 }
 
 const api = {
@@ -135,6 +139,7 @@ const api = {
     logout,
     getSession,
     resetPassword,
+    requestResetPassword,
     getFiles,
     uploadFile,
     downloadFile,
