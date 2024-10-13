@@ -8,7 +8,8 @@ import { Box, Button, Chip, Container, Divider, FormControl, FormControlLabel, I
 import { RootState } from '../store/store'
 import { calculateSizePercentageUsed, calculateSizeUsed, localDateTime } from '../utilities/utils'
 import CircularProgressWithLabel from '../components/circular_progress_w_label'
-import ChangePasswordDialog from '../components/modal_change_password'
+import ChangePasswordDialog from '../components/dialog_change_password'
+import DeleteAccountDialog from '../components/dialog_delete_account'
 
 function Settings() {
     const navigate = useNavigate()
@@ -101,13 +102,16 @@ function Settings() {
                 </Button>
                 <Button variant='outlined'
                     color='error'
-                    onClick={editField}
+                    onClick={() => setDialogOpen("delete_account")}
                     startIcon={<Delete />}>
                     Delete account
                 </Button>
             </Stack>
 
             <ChangePasswordDialog open={dialogOpen === "password"}
+                closeDialog={() => setDialogOpen("")} />
+
+            <DeleteAccountDialog open={dialogOpen === "delete_account"}
                 closeDialog={() => setDialogOpen("")} />
         </Container>
     )

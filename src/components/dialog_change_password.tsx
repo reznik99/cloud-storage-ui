@@ -5,6 +5,7 @@ import PasswordMeter from "./password_meter";
 import { useCallback, useState } from "react";
 import { ValidatePassword } from "../utilities/security";
 import { getErrorString } from "../utilities/utils";
+import api from "../networking/endpoints";
 
 type IProps = {
     open: boolean;
@@ -41,7 +42,8 @@ function ChangePasswordDialog(props: IProps) {
         try {
             setLoading(true)
             if (!checkValues()) return
-            enqueueSnackbar("Password changed successfully (not really)", { variant: "success" })
+            api.changePassword(oldPassword, password)
+            enqueueSnackbar("Password changed successfully", { variant: "success" })
         } catch (err) {
             const error = getErrorString(err)
             console.error(error)
@@ -49,7 +51,7 @@ function ChangePasswordDialog(props: IProps) {
         } finally {
             setLoading(false)
         }
-    }, [checkValues, enqueueSnackbar])
+    }, [oldPassword, password, checkValues, enqueueSnackbar])
 
     return (
         <Dialog open={props.open}

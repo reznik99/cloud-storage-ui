@@ -133,11 +133,21 @@ async function resetPassword(new_password: string, reset_code: string) {
     return client.post("/reset_password", { new_password, reset_code })
 }
 
+async function changePassword(password: string, new_password: string) {
+    return client.post("/change_password", { password, new_password })
+}
+
+async function deleteAccount(password: string) {
+    return client.post("/delete_account", { password })
+}
+
 const api = {
     login,
     signup,
     logout,
     getSession,
+    changePassword,
+    deleteAccount,
     resetPassword,
     requestResetPassword,
     getFiles,
