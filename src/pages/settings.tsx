@@ -89,17 +89,21 @@ function Settings() {
                 </Box>
             </Stack>
 
-            <Stack direction='column' spacing={2} sx={{ padding: 1, }}>
+            <Stack direction='column' spacing={2}>
                 <Divider><Typography variant='h6'>Actions</Typography></Divider>
 
-                <Button onClick={editField}
-                    startIcon={<AccountCircle />}>
-                    Update email address
-                </Button>
-                <Button onClick={() => setDialogOpen("password")}
-                    startIcon={<Password />}>
-                    Change password
-                </Button>
+                <Stack direction="row" justifyContent="center">
+                    <Button variant='outlined'
+                        onClick={editField}
+                        startIcon={<AccountCircle />}>
+                        Update email address
+                    </Button>
+                    <Button variant='outlined'
+                        onClick={() => setDialogOpen("password")}
+                        startIcon={<Password />}>
+                        Change password
+                    </Button>
+                </Stack>
                 <Button variant='outlined'
                     color='error'
                     onClick={() => setDialogOpen("delete_account")}

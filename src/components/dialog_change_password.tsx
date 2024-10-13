@@ -44,6 +44,7 @@ function ChangePasswordDialog(props: IProps) {
             if (!checkValues()) return
             api.changePassword(oldPassword, password)
             enqueueSnackbar("Password changed successfully", { variant: "success" })
+            props.closeDialog()
         } catch (err) {
             const error = getErrorString(err)
             console.error(error)

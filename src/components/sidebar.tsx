@@ -4,7 +4,7 @@ import { Alert, Box, Button, Card, Divider, FormControlLabel, LinearProgress, Li
 import { Circle, Upload } from "@mui/icons-material"
 import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, sizePercentageToColor } from "../utilities/utils"
 import viteLogo from '/vite.svg'
-import FileUploadDialog from "./modal_file_upload"
+import FileUploadDialog from "./dialog_file_upload"
 
 type IProps = {
     files: Array<FileInfo>;
