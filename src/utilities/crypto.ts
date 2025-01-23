@@ -1,5 +1,6 @@
 import { Buffer } from "buffer"
 import { FileInfo } from "./utils"
+import { API_URL } from "../networking/endpoints"
 
 type KeyOpts = {
     algo: string,
@@ -33,9 +34,10 @@ const PBKDF2_hash_algo = "SHA-512"  // PBKDF2 Hash algorithm for derivation
 const PBKDF2_salt_len = 16          // PBKDF2 Salt byte length
 const AESGCM_iv_len = 12            // AES-GCM IV byte length
 const AESKW_iv_len = 8              // AES-KW IV byte length
+const CRV_len = 12                  // CRV byte length
 
 // Generates random bytes with given length using browser CSPRNG 
-function generateRandomBytes(length: number): Uint8Array {
+function GenerateRandomBytes(length: number): Uint8Array {
     return window.crypto.getRandomValues(new Uint8Array(length))
 }
 
@@ -102,14 +104,33 @@ async function decryptFileEncryptionKey(masterKey: CryptoKey, fileKeyBytes: Arra
     )
 }
 
+// Pads a raw CRV hex string with appropriate padding (URL + 'P' repeated to 200char length)
+function padCRV(rawCRVHex: string) {
+    // Hex decode CRV
+    const raw_crv = Buffer.from(rawCRVHex, 'hex')
+    // API URL + P to 200 char length into Arraybuffer
+    const padding = Buffer.from(API_URL.padEnd(200, "P"))
+    // Concatenate padding with raw_crv buffer
+    return Buffer.concat([padding, raw_crv])
+}
+
+// Returns a 32byte(256bit) salt derived from the raw CRV and padding
+async function GenerateSaltFromCRV(rawCRV: string) {
+    const crv = padCRV(rawCRV)
+    return window.crypto.subtle.digest('sha-256', Buffer.from(crv))
+}
+
 // Derives Master Encryption and Authentication keys from password and salt (if any). Salt is null on signup and filled on login
-async function DeriveKeysFromPassword(password: string, salt: Uint8Array | null) {
-    const timerKey = "DeriveKeysFromPassword-" + Date.now()
-    console.time(timerKey)
+async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
+    if (salt.byteLength < PBKDF2_salt_len) {
+        throw new Error(`Salt length ${salt.byteLength}bytes is below the set minimum of ${PBKDF2_salt_len}bytes!`)
+    }
+    const startTime = Date.now()
+
     // Convert ascii password to bytes
     const passwordBytes = Buffer.from(password)
 
-    // Initialise PBKDF2 key
+    // Initialise PBKDF2 key from password
     const keyMaterial = await window.crypto.subtle.importKey(
         'raw',                  // Format
         passwordBytes,          // Source
@@ -117,9 +138,6 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array | null)
         false,                  // Exportable
         DeriveKeyOpts.usages    // Key usage
     )
-
-    // Generate salt if necessary (during signup)
-    if (!salt) { salt = generateRandomBytes(PBKDF2_salt_len) }
 
     // Derive bits for Encryption and Authentication Key
     const derivedBits = await window.crypto.subtle.deriveBits(
@@ -141,7 +159,7 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array | null)
     const hashedAuthenticationKeyBytes = await Hash(authenticationKeyBytes, "SHA-256")
     const encryptionKey = await importKey(encryptionKeyBytes, MasterKeyOpts)
 
-    console.timeEnd(timerKey)
+    console.info(`DeriveKeysFromPassword took ${Date.now() - startTime}ms`)
     return {
         mEncKey: encryptionKey,
         hAuthKey: hashedAuthenticationKeyBytes,
@@ -158,7 +176,7 @@ async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
     const fileKey = await generateFileEncryptionKey()
 
     // Generate random IV for this file
-    const iv = generateRandomBytes(AESGCM_iv_len)
+    const iv = GenerateRandomBytes(AESGCM_iv_len)
 
     // Get file contents as a byte array
     const data = await file.arrayBuffer()
@@ -214,9 +232,12 @@ async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: A
 }
 
 export {
+    GenerateRandomBytes,
+    GenerateSaltFromCRV,
     DeriveKeysFromPassword,
     EncryptFile,
     DecryptFile,
     Hash,
-    BufferEquals
+    BufferEquals,
+    CRV_len
 }

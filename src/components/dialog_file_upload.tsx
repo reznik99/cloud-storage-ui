@@ -3,9 +3,10 @@ import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
-import { BufferEquals, DecryptFile, DeriveKeysFromPassword, EncryptFile, Hash } from "../utilities/crypto"
+import { BufferEquals, CRV_len, DecryptFile, DeriveKeysFromPassword, EncryptFile, GenerateRandomBytes, GenerateSaltFromCRV, Hash } from "../utilities/crypto"
 import api from "../networking/endpoints"
 import ProgressBar from "./progress_bar"
+import { Buffer } from "buffer"
 
 type IProps = {
     open: boolean;
@@ -51,9 +52,13 @@ function FileUploadDialog(props: IProps) {
         if (!selectedFile) return
         try {
             setTestLoading(true)
+            // Generate random CRV (Client Random Value)
+            const rawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
+            // Derive salt from CRV
+            const salt = await GenerateSaltFromCRV(rawCrv)
             // Derive master key from password
-            const derive1 = await DeriveKeysFromPassword(encPassword, null)
-            // Decrypt file with random key and wrap with master key
+            const derive1 = await DeriveKeysFromPassword(encPassword, new Uint8Array(salt))
+            // Encrypt file with random key and wrap with master key
             const encFile = await EncryptFile(derive1.mEncKey, selectedFile)
 
             // Derive master key from password
