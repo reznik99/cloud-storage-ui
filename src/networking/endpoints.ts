@@ -1,5 +1,7 @@
 import axios from "axios"
 import { FileInfo, noopProgressCallback, Progress } from "../utilities/utils"
+import { CRV_len, DeriveKeysFromPassword, GenerateRandomBytes, GenerateSaltFromCRV } from "../utilities/crypto"
+import { Buffer } from "buffer"
 
 
 // export const API_URL = "http://localhost:8080/api"
@@ -104,16 +106,32 @@ async function deleteFile(file: FileInfo) {
 }
 
 async function login(email_address: string, password: string) {
+    // Get client CRV (Client Random Value) from server
+    const res = await client.get("/client_random_value", { params: { email_address: email_address } })
+    const rawCrv = res.data?.client_random_value as string
+    // Derive salt from CRV
+    const salt = await GenerateSaltFromCRV(rawCrv)
+    // Derive Master Auth and Enc Key from salt
+    const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    // Login with email and derived auth key
     return client.post("/login", {
-        email_address,
-        password
+        email_address: email_address,
+        password: Buffer.from(keys.hAuthKey).toString('base64')
     })
 }
 
 async function signup(email_address: string, password: string) {
+    // Generate random CRV (Client Random Value)
+    const rawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
+    // Derive salt from CRV
+    const salt = await GenerateSaltFromCRV(rawCrv)
+    // Derive Master Auth and Enc Key from salt
+    const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    // Signup with email, derived auth key and client_random_value
     return client.post("/signup", {
-        email_address,
-        password
+        email_address: email_address,
+        password: Buffer.from(keys.hAuthKey).toString('base64'),
+        client_random_value: rawCrv
     })
 }
 
@@ -130,14 +148,17 @@ async function requestResetPassword(email_address: string) {
 }
 
 async function resetPassword(new_password: string, reset_code: string) {
+    // TODO: use hAuthKey
     return client.post("/reset_password", { new_password, reset_code })
 }
 
 async function changePassword(password: string, new_password: string) {
+    // TODO: use hAuthKey
     return client.post("/change_password", { password, new_password })
 }
 
 async function deleteAccount(password: string) {
+    // TODO: use hAuthKey
     return client.post("/delete_account", { password })
 }
 
