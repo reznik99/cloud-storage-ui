@@ -105,9 +105,9 @@ async function deleteFile(file: FileInfo) {
     })
 }
 
-async function login(email_address: string, password: string) {
+async function login(emailAddress: string, password: string) {
     // Get client CRV (Client Random Value) from server
-    const res = await client.get("/client_random_value", { params: { email_address: email_address } })
+    const res = await client.get("/client_random_value", { params: { email_address: emailAddress } })
     const rawCrv = res.data?.client_random_value as string
     // Derive salt from CRV
     const salt = await GenerateSaltFromCRV(rawCrv)
@@ -115,7 +115,7 @@ async function login(email_address: string, password: string) {
     const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
     // Login with email and derived auth key
     const resp = await client.post("/login", {
-        email_address: email_address,
+        email_address: emailAddress,
         password: Buffer.from(keys.hAuthKey).toString('base64')
     })
 
@@ -130,7 +130,7 @@ async function login(email_address: string, password: string) {
     }
 }
 
-async function signup(email_address: string, password: string) {
+async function signup(emailAddress: string, password: string) {
     // Generate random CRV (Client Random Value)
     const rawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
     // Derive salt from CRV
@@ -139,7 +139,7 @@ async function signup(email_address: string, password: string) {
     const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
     // Signup with email, derived auth key and client_random_value
     return client.post("/signup", {
-        email_address: email_address,
+        email_address: emailAddress,
         password: Buffer.from(keys.hAuthKey).toString('base64'),
         client_random_value: rawCrv
     })
@@ -153,18 +153,18 @@ async function getSession() {
     return client.get("/session")
 }
 
-async function requestResetPassword(email_address: string) {
-    return client.get("/reset_password", { params: { email_address } })
+async function requestResetPassword(emailAddress: string) {
+    return client.get("/reset_password", { params: { email_address: emailAddress } })
 }
 
-async function resetPassword(new_password: string, reset_code: string) {
+async function resetPassword(newPassword: string, reset_code: string) {
     // TODO: use hAuthKey
-    return client.post("/reset_password", { new_password, reset_code })
+    return client.post("/reset_password", { new_password: newPassword, reset_code })
 }
 
-async function changePassword(password: string, new_password: string) {
+async function changePassword(password: string, newPassword: string) {
     // TODO: use hAuthKey
-    return client.post("/change_password", { password, new_password })
+    return client.post("/change_password", { password, new_password: newPassword })
 }
 
 async function deleteAccount(password: string) {

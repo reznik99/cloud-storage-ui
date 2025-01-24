@@ -114,22 +114,14 @@ async function GenerateSaltFromCRV(rawCRV: string) {
 
 // Derives Master Encryption and Authentication keys from password and salt (if any). Salt is null on signup and filled on login
 async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
+    const startTime = performance.now()
     if (salt.byteLength < PBKDF2_salt_len) {
         throw new Error(`Salt length ${salt.byteLength}bytes is below the set minimum of ${PBKDF2_salt_len}bytes!`)
     }
-    const startTime = performance.now()
 
-    // Convert ascii password to bytes
+    // Convert string password to bytes and initialise PBKDF2 key from password
     const passwordBytes = Buffer.from(password)
-
-    // Initialise PBKDF2 key from password
-    const keyMaterial = await window.crypto.subtle.importKey(
-        'raw',                  // Format
-        passwordBytes,          // Source
-        DeriveKeyOpts.algo,     // Output algorithm
-        false,                  // Exportable
-        DeriveKeyOpts.usages    // Key usage
-    )
+    const keyMaterial = await importKey(passwordBytes, DeriveKeyOpts)
 
     // Derive bits for Encryption and Authentication Key
     const derivedBits = await window.crypto.subtle.deriveBits(
