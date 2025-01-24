@@ -61,14 +61,6 @@ async function importKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoK
     )
 }
 
-// Exports a key from the browser to be prepended to a file
-// async function exportKey(encKey: CryptoKey): Promise<ArrayBuffer> {
-//     return window.crypto.subtle.exportKey(
-//         "raw",
-//         encKey
-//     )
-// }
-
 // Generates a per file encryption key
 async function generateFileEncryptionKey(): Promise<CryptoKey> {
     return window.crypto.subtle.generateKey(
@@ -125,7 +117,7 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
     if (salt.byteLength < PBKDF2_salt_len) {
         throw new Error(`Salt length ${salt.byteLength}bytes is below the set minimum of ${PBKDF2_salt_len}bytes!`)
     }
-    const startTime = Date.now()
+    const startTime = performance.now()
 
     // Convert ascii password to bytes
     const passwordBytes = Buffer.from(password)
@@ -142,13 +134,13 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
     // Derive bits for Encryption and Authentication Key
     const derivedBits = await window.crypto.subtle.deriveBits(
         {
-            name: DeriveKeyOpts.algo,
-            salt: salt,
-            iterations: PBKDF2_iterations,
-            hash: PBKDF2_hash_algo,
+            name: DeriveKeyOpts.algo,       // pbkdf2
+            salt: salt,                     // salt derived from CRV
+            iterations: PBKDF2_iterations,  // pbkdf2 iterations (500k)
+            hash: PBKDF2_hash_algo,         // hash algo (sha-512)
         },
-        keyMaterial,
-        512
+        keyMaterial,                        // Imported password
+        512                                 // bit-length of output
     )
 
     // Get the first 32 bytes as the Encryption Key and the next 32 bytes as the Authentication Key
@@ -159,7 +151,7 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
     const hashedAuthenticationKeyBytes = await Hash(authenticationKeyBytes, "SHA-256")
     const encryptionKey = await importKey(encryptionKeyBytes, MasterKeyOpts)
 
-    console.info(`DeriveKeysFromPassword took ${Date.now() - startTime}ms`)
+    console.info(`DeriveKeysFromPassword took ${performance.now() - startTime}ms`)
     return {
         mEncKey: encryptionKey,
         hAuthKey: hashedAuthenticationKeyBytes,
@@ -169,8 +161,7 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
 
 // EncryptFile encrypts a file with the given password. Salt and IV are pre-pended to ciphertext.
 async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
-    const timerKey = "EncryptFile-" + Date.now()
-    console.time(timerKey)
+    const startTime = performance.now()
 
     // Generate file encryption key
     const fileKey = await generateFileEncryptionKey()
@@ -199,15 +190,14 @@ async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
     outputBuffer.set(iv, encryptedFileKey.byteLength)
     outputBuffer.set(new Uint8Array(ciphertext), encryptedFileKey.byteLength + iv.byteLength)
 
-    console.timeEnd(timerKey)
+    console.info(`EncryptFile took ${performance.now() - startTime}ms`)
     // Return a new 'File' with plaintext replaced by ciphertext
     return new File([outputBuffer], file.name, { type: file.type, lastModified: file.lastModified })
 }
 
 // DecryptFile decrypts a file with the given password. Salt and IV are extracted from ciphertext.
 async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: ArrayBuffer): Promise<File> {
-    const timerKey = "DecryptFile-" + Date.now()
-    console.time(timerKey)
+    const startTime = performance.now()
 
     const encryptedKeyLen = (FileKeyOpts.length / 8) + AESKW_iv_len
 
@@ -225,7 +215,7 @@ async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: A
         fileKey,
         data
     )
-    console.timeEnd(timerKey)
+    console.info(`DecryptFile took ${performance.now() - startTime}ms`)
 
     // Return a new 'File' with ciphertext replaced by plaintext // TODO: filetype?
     return new File([plaintext], fileInfo.name)
