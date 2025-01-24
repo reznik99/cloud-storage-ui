@@ -50,7 +50,7 @@ function Settings() {
                     <TextField fullWidth
                         variant="standard"
                         color="primary"
-                        value={'*'.repeat(user.password?.length || 10)}
+                        value={'*'.repeat(15)}
                         onChange={() => { }}
                         disabled />
                 </FormControl>

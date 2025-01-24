@@ -43,10 +43,13 @@ function Login() {
             if (!checkValues()) return
             const resp = await api.login(emailAddress, password)
             dispatch(saveCreds({
-                emailAddress: resp.data.email_address,
+                emailAddress: resp.emailAddress,
+                createdAt: resp.createdAt,
+                lastSeen: resp.lastSeen,
                 password: password,
-                createdAt: resp.data.created_at,
-                lastSeen: resp.data.last_seen,
+                mEncKey: resp.mEncKey,
+                hAuthKey: resp.hAuthKey,
+                clientRandomValue: resp.clientRandomValue
             }))
             navigate("/dashboard")
         } catch (err: unknown) {

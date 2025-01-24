@@ -114,10 +114,20 @@ async function login(email_address: string, password: string) {
     // Derive Master Auth and Enc Key from salt
     const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
     // Login with email and derived auth key
-    return client.post("/login", {
+    const resp = await client.post("/login", {
         email_address: email_address,
         password: Buffer.from(keys.hAuthKey).toString('base64')
     })
+
+    return {
+        emailAddress: resp.data.email_address as string,
+        createdAt: resp.data.created_at as number,
+        lastSeen: resp.data.last_seen as number,
+        password: password,
+        mEncKey: keys.mEncKey,
+        hAuthKey: keys.hAuthKey,
+        clientRandomValue: rawCrv
+    }
 }
 
 async function signup(email_address: string, password: string) {

@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { FileInfo } from '../utilities/utils'
+import { Buffer } from 'buffer';
 
 interface UserState {
     emailAddress: string;
@@ -7,6 +8,9 @@ interface UserState {
     createdAt: string;
     lastSeen: string;
     files: Array<FileInfo>;
+    mEncKey: CryptoKey | undefined;
+    hAuthKey: ArrayBuffer | undefined;
+    clientRandomValue: string;
 }
 
 // Define the initial state using that type
@@ -16,6 +20,9 @@ const initialState: UserState = {
     createdAt: '',
     lastSeen: '',
     files: [],
+    mEncKey: undefined,
+    hAuthKey: Buffer.alloc(0),
+    clientRandomValue: ''
 }
 
 export const dataSlice = createSlice({
@@ -23,10 +30,13 @@ export const dataSlice = createSlice({
     initialState: initialState,
     reducers: {
         saveCreds: (state, action) => {
-            state.emailAddress = action.payload.emailAddress || state.emailAddress;
-            state.password = action.payload.password || state.password;
-            state.createdAt = action.payload.createdAt || state.createdAt;
-            state.lastSeen = action.payload.lastSeen || state.lastSeen;
+            action.payload.emailAddress || state.emailAddress;
+            action.payload.createdAt || state.createdAt;
+            action.payload.lastSeen || state.lastSeen;
+            action.payload.password || state.password;
+            action.payload.mEncKey || state.mEncKey;
+            action.payload.hAuthKey || state.hAuthKey;
+            action.payload.clientRandomValue || state.clientRandomValue;
         },
         saveFiles: (state, action) => {
             state.files = action.payload.files;
