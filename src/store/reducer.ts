@@ -30,13 +30,13 @@ export const dataSlice = createSlice({
     initialState: initialState,
     reducers: {
         saveCreds: (state, action) => {
-            action.payload.emailAddress || state.emailAddress;
-            action.payload.createdAt || state.createdAt;
-            action.payload.lastSeen || state.lastSeen;
-            action.payload.password || state.password;
-            action.payload.mEncKey || state.mEncKey;
-            action.payload.hAuthKey || state.hAuthKey;
-            action.payload.clientRandomValue || state.clientRandomValue;
+            state.emailAddress = action.payload.emailAddress || state.emailAddress;
+            state.createdAt = action.payload.createdAt || state.createdAt;
+            state.lastSeen = action.payload.lastSeen || state.lastSeen;
+            state.password = action.payload.password || state.password;
+            state.mEncKey = action.payload.mEncKey || state.mEncKey;
+            state.hAuthKey = action.payload.hAuthKey || state.hAuthKey;
+            state.clientRandomValue = action.payload.clientRandomValue || state.clientRandomValue;
         },
         saveFiles: (state, action) => {
             state.files = action.payload.files;

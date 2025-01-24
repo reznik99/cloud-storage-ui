@@ -52,7 +52,7 @@ function ChangePasswordDialog(props: IProps) {
         } finally {
             setLoading(false)
         }
-    }, [oldPassword, password, checkValues, enqueueSnackbar])
+    }, [oldPassword, password, checkValues, enqueueSnackbar, props])
 
     return (
         <Dialog open={props.open}
