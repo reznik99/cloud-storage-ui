@@ -2,6 +2,7 @@ import axios from "axios"
 import { FileInfo, noopProgressCallback, Progress } from "../utilities/utils"
 import { CRV_len, DeriveKeysFromPassword, GenerateRandomBytes, GenerateSaltFromCRV } from "../utilities/crypto"
 import { Buffer } from "buffer"
+import store from "../store/store"
 
 
 // export const API_URL = "http://localhost:8080/api"
@@ -118,7 +119,6 @@ async function login(emailAddress: string, password: string) {
         email_address: emailAddress,
         password: Buffer.from(keys.hAuthKey).toString('base64')
     })
-
     return {
         emailAddress: resp.data.email_address as string,
         createdAt: resp.data.created_at as number,
@@ -157,19 +157,44 @@ async function requestResetPassword(emailAddress: string) {
     return client.get("/reset_password", { params: { email_address: emailAddress } })
 }
 
-async function resetPassword(newPassword: string, reset_code: string) {
-    // TODO: use hAuthKey
-    return client.post("/reset_password", { new_password: newPassword, reset_code })
+async function resetPassword(newPassword: string, resetCode: string) {
+    const rawCRV = store.getState().user.clientRandomValue
+    // Derive salt from CRV
+    const salt = await GenerateSaltFromCRV(rawCRV)
+    // Derive new Master Auth and Enc Key from salt
+    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(salt))
+    // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
+
+    return client.post("/reset_password", {
+        new_password: Buffer.from(newKeys.hAuthKey).toString('base64'),
+        reset_code: resetCode
+    })
 }
 
 async function changePassword(password: string, newPassword: string) {
-    // TODO: use hAuthKey
-    return client.post("/change_password", { password, new_password: newPassword })
+    const rawCRV = store.getState().user.clientRandomValue
+    // Derive salt from CRV
+    const salt = await GenerateSaltFromCRV(rawCRV)
+    // Derive existing Master Auth and Enc Key from salt
+    const currentKeys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    // Derive new Master Auth and Enc Key from salt
+    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(salt))
+    // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
+
+    return client.post("/change_password", {
+        password: Buffer.from(currentKeys.hAuthKey).toString('base64'),
+        new_password: Buffer.from(newKeys.hAuthKey).toString('base64')
+    })
 }
 
 async function deleteAccount(password: string) {
-    // TODO: use hAuthKey
-    return client.post("/delete_account", { password })
+    const rawCRV = store.getState().user.clientRandomValue
+    // Derive salt from CRV
+    const salt = await GenerateSaltFromCRV(rawCRV)
+    // Derive Master Auth and Enc Key from salt
+    const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+
+    return client.post("/delete_account", { password: Buffer.from(keys.hAuthKey).toString('base64') })
 }
 
 const api = {
