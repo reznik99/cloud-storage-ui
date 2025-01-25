@@ -48,7 +48,7 @@ function AuthenticateDialog(props: IProps) {
         } finally {
             setLoading(false)
         }
-    }, [password, emailAddress, enqueueSnackbar, dispatch, props])
+    }, [password, emailAddress, enqueueSnackbar, dispatch, navigate, props])
 
     return (
         <Dialog open={props.open}

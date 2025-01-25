@@ -6,8 +6,6 @@ import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
 import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"
 import api from "../networking/endpoints"
 import ProgressBar from "./progress_bar"
-import { useSelector } from "react-redux"
-import { RootState } from "../store/store"
 
 type IProps = {
     open: boolean;
@@ -19,7 +17,6 @@ function FileUploadDialog(props: IProps) {
     const { enqueueSnackbar } = useSnackbar()
     const controller = useRef(new AbortController())
 
-    const password = useSelector((state: RootState) => state.user.password)
     const [selectedFile, setSelectedFile] = useState<File | null>()
     const [progress, setProgress] = useState<Progress | null>()
     const [testLoading, setTestLoading] = useState(false)
@@ -74,7 +71,7 @@ function FileUploadDialog(props: IProps) {
         } finally {
             setTestLoading(false)
         }
-    }, [selectedFile, password, enqueueSnackbar])
+    }, [selectedFile, enqueueSnackbar])
 
     return (
         <Dialog open={props.open}

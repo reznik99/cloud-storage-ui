@@ -54,7 +54,7 @@ function LinkShare() {
             setLoading(false)
             setProgress(null)
         }
-    }, [file, params.access_key, enqueueSnackbar])
+    }, [file, hash, params.access_key, enqueueSnackbar])
 
     useEffect(() => {
         loadLinkInfo()
