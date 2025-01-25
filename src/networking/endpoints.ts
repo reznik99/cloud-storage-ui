@@ -196,6 +196,7 @@ async function changePassword(password: string, newPassword: string) {
     const currentSalt = await GenerateSaltFromCRV(user.clientRandomValue)
     // Derive existing Master Auth and Enc Key from salt
     const currentKeys = await DeriveKeysFromPassword(password, new Uint8Array(currentSalt))
+    const curentmEncKey = await ImportKey(currentKeys.mEncKey, MasterKeyOpts)
 
     // Generate new random CRV (Client Random Value)
     const newRawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
@@ -203,18 +204,17 @@ async function changePassword(password: string, newPassword: string) {
     const newSalt = await GenerateSaltFromCRV(newRawCrv)
     // Derive new Master Auth and Enc Key from new salt
     const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
+    const newmEncKey = await ImportKey(newKeys.mEncKey, MasterKeyOpts)
 
     // Decrypt account key with current keys and re-encrypt account key with new master key
-    const mEncKey = await ImportKey(currentKeys.mEncKey, MasterKeyOpts)
-    const acctKey = await UnwrapKey(Buffer.from(user.wrappedAccountKey, 'base64'), mEncKey, AccountKeyOpts)
-    const newWrappedAcctKey = await WrapKey(acctKey, mEncKey)
-
+    const acctKey = await UnwrapKey(Buffer.from(user.wrappedAccountKey, 'base64'), curentmEncKey, AccountKeyOpts)
+    const newWrappedAcctKey = await WrapKey(acctKey, newmEncKey)
 
     // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
     await client.post("/change_password", {
         password: Buffer.from(currentKeys.hAuthKey).toString('base64'),
         new_password: Buffer.from(newKeys.hAuthKey).toString('base64'),
-        wrapped_account_key: Buffer.from(newWrappedAcctKey).toString('base64'),
+        new_wrapped_account_key: Buffer.from(newWrappedAcctKey).toString('base64'),
         new_client_random_value: newRawCrv
     })
     return {
