@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack"
-import { Cancel, Password } from "@mui/icons-material"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField } from "@mui/material"
+import { Article, Cancel, Link, Password } from "@mui/icons-material"
+import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react";
 import { getErrorString } from "../utilities/utils";
 import api from "../networking/endpoints";
@@ -16,6 +16,7 @@ function DeleteAccountDialog(props: IProps) {
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [password, setPassword] = useState('')
+    const [acceptedTerms, setAcceptedTerms] = useState(false)
 
     const changePassword = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -70,11 +71,31 @@ function DeleteAccountDialog(props: IProps) {
                             onChange={(e) => setPassword(e.target.value)} />
                     </FormControl>
 
+                    <Alert severity="warning">
+                        <AlertTitle><b>WARNING</b>: This operation is <b>DESTRUCTIVE</b></AlertTitle>
+                        <Typography>
+                            This action will delete your account.
+                            All your previously uploaded files will be deleted.
+                            This action cannot be undone.
+                        </Typography>
+                        <ul>
+                            <li>All your files will be lost <Article fontSize="small" color="primary" /> </li>
+                            <li>All previously shared links will no longer work <Link fontSize="small" color="primary" /> </li>
+                        </ul>
+                        <Stack alignItems="center">
+                            <FormControlLabel
+                                label="I understand and wish to continue"
+                                control={<Checkbox checked={acceptedTerms}
+                                    onChange={e => setAcceptedTerms(e.target.checked)} />
+                                } />
+                        </Stack>
+                    </Alert>
+
                     <Button fullWidth
                         color="error"
                         variant="contained"
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !password || !acceptedTerms}
                         startIcon={<Password />}>
                         Delete Account
                     </Button>

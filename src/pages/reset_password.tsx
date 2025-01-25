@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom"
-import { ArrowBack, Password } from "@mui/icons-material"
-import { Box, Button, Card, CardContent, Divider, FormControl, FormLabel, IconButton, Stack, TextField, Typography } from "@mui/material"
+import { ArrowBack, Article, Password, Link } from "@mui/icons-material"
+import { Alert, AlertTitle, Box, Button, Card, CardContent, Checkbox, Divider, FormControl, FormControlLabel, FormLabel, IconButton, Stack, TextField, Typography } from "@mui/material"
 import logo from '/logo.png'
 import { useCallback, useState } from "react"
 import { ValidatePassword } from "../utilities/security"
@@ -17,6 +17,7 @@ function ResetPassword() {
     const [password, setPassword] = useState('')
     const [passwordError, setPasswordError] = useState('')
     const [passwordConfirmation, setPasswordConfirmation] = useState('')
+    const [acceptedTerms, setAcceptedTerms] = useState(false)
 
     const checkValues = useCallback(() => {
         if (!password.trim()) setPasswordError("Password is required")
@@ -96,9 +97,30 @@ function ResetPassword() {
                     </FormControl>
                     {password && <PasswordMeter password={password || passwordConfirmation} />}
 
+                    <Alert severity="warning">
+                        <AlertTitle><b>WARNING</b>: This operation is <b>DESTRUCTIVE</b></AlertTitle>
+                        <Typography>
+                            This action will change your Account and Master encryption keys.
+                            This means that all your previously uploaded files will become unaccessible, and in turn will be deleted.
+                            This action cannot be undone, and your files will not be recoverable.
+                        </Typography>
+                        <ul>
+                            <li>All your files will be lost <Article fontSize="small" color="primary" /> </li>
+                            <li>All previously shared links will no longer work <Link fontSize="small" color="primary" /> </li>
+                        </ul>
+                        <Stack alignItems="center">
+                            <FormControlLabel
+                                label="I understand and wish to continue"
+                                control={<Checkbox checked={acceptedTerms}
+                                    onChange={e => setAcceptedTerms(e.target.checked)} />
+                                } />
+                        </Stack>
+                    </Alert>
+
                     <Button fullWidth
                         variant="contained"
                         type="submit"
+                        disabled={!acceptedTerms || !password || !passwordConfirmation}
                         startIcon={<Password />}>
                         Reset Password
                     </Button>
