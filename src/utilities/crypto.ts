@@ -6,27 +6,36 @@ type KeyOpts = {
     algo: string,
     length: number,
     usages: Array<KeyUsage>
+    exportable: boolean
 }
 
-// Options for derived master keys
-const MasterKeyOpts: KeyOpts = {
-    algo: "AES-KW",
-    length: 256,
-    usages: ["wrapKey", "unwrapKey"]
-}
-
-// Options for file encryption keys
-const FileKeyOpts: KeyOpts = {
-    algo: "AES-GCM",
-    length: 256,
-    usages: ["encrypt", "decrypt"]
-}
-
-// Options during key derivation from password
-const DeriveKeyOpts: KeyOpts = {
+// Options for key derivation from password (used for generating master keys)
+export const DeriveKeyOpts: KeyOpts = {
     algo: "PBKDF2",
     length: 512,
-    usages: ["deriveBits", "deriveKey"]
+    usages: ["deriveBits", "deriveKey"],
+    exportable: false
+}
+// Options for derived master keys (used for encrypting account keys)
+export const MasterKeyOpts: KeyOpts = {
+    algo: "AES-KW",
+    length: 256,
+    usages: ["wrapKey", "unwrapKey"],
+    exportable: false
+}
+// Options for account encryption keys (used for encrypting file keys)
+export const AccountKeyOpts: KeyOpts = {
+    algo: "AES-KW",
+    length: 256,
+    usages: ["wrapKey", "unwrapKey"],
+    exportable: false
+}
+// Options for file encryption keys (used for encrypting files)
+export const FileKeyOpts: KeyOpts = {
+    algo: "AES-GCM",
+    length: 256,
+    usages: ["encrypt", "decrypt"],
+    exportable: true
 }
 
 const PBKDF2_iterations = 500_000   // PBKDF2 Iterations
@@ -41,13 +50,49 @@ function GenerateRandomBytes(length: number): Uint8Array {
     return window.crypto.getRandomValues(new Uint8Array(length))
 }
 
+// Checks if two arraybuffers are equal
 async function BufferEquals(first: Uint8Array, second: Uint8Array) {
     return first.length === second.length && first.every((value, index) => value === second[index]);
 }
 
 // Hashes/Digests a buffer with the given SHA algorithm
-async function Hash(buffer: ArrayBuffer, hashAlgo: string): Promise<ArrayBuffer> {
+async function Hash(buffer: ArrayBuffer, hashAlgo: string) {
     return window.crypto.subtle.digest({ name: hashAlgo }, buffer)
+}
+
+// Generates a symmetric key with given options
+async function GenerateKey(opts: KeyOpts) {
+    return window.crypto.subtle.generateKey(
+        {
+            name: opts.algo,
+            length: opts.length,
+        },
+        opts.exportable,
+        FileKeyOpts.usages
+    )
+}
+
+// Wrap a symmetric key with another symmetric key
+async function WrapKey(key: CryptoKey, wrappingKey: CryptoKey) {
+    return window.crypto.subtle.wrapKey(
+        "raw", 
+        key, 
+        wrappingKey, 
+        "AES-KW"
+    )
+}
+
+// Unwrap a wrapped symmetric key with another symmetric key
+async function UnwrapKey(wrappedKey: ArrayBuffer, wrappingKey: CryptoKey, opts: KeyOpts) {
+    return window.crypto.subtle.unwrapKey(
+        "raw", 
+        wrappedKey, 
+        wrappingKey, 
+        "AES-KW",
+        opts.algo,
+        opts.exportable,
+        opts.usages
+    )
 }
 
 // Imports a key buffer into browser for cryptographic use
@@ -61,58 +106,23 @@ async function importKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoK
     )
 }
 
-// Generates a per file encryption key
-async function generateFileEncryptionKey(): Promise<CryptoKey> {
-    return window.crypto.subtle.generateKey(
-        {
-            name: FileKeyOpts.algo,
-            length: 256,
-        },
-        true,
-        FileKeyOpts.usages
-    )
-}
-
-// Encrypts a file encryption key with the master key
-async function encryptFileEncryptionKey(masterKey: CryptoKey, fileKey: CryptoKey): Promise<ArrayBuffer> {
-    return window.crypto.subtle.wrapKey(
-        "raw",
-        fileKey,
-        masterKey,
-        MasterKeyOpts.algo
-    )
-}
-
-// Decrypts a file encryption key with the master key
-async function decryptFileEncryptionKey(masterKey: CryptoKey, fileKeyBytes: ArrayBuffer): Promise<CryptoKey> {
-    return window.crypto.subtle.unwrapKey(
-        "raw",
-        fileKeyBytes,
-        masterKey,
-        MasterKeyOpts.algo,
-        { name: FileKeyOpts.algo, length: FileKeyOpts.length },
-        true,
-        FileKeyOpts.usages
-    )
-}
-
-// Pads a raw CRV hex string with appropriate padding (URL + 'P' repeated to 200char length)
-function padCRV(rawCRVHex: string) {
+// Pads a raw CRV hex string with appropriate padding (URL + 'P' repeated to 200char length) for domain separation
+function padCRV(rawCrvHex: string) {
     // Hex decode CRV
-    const raw_crv = Buffer.from(rawCRVHex, 'hex')
+    const rawCrv = Buffer.from(rawCrvHex, 'hex')
     // API URL + P to 200 char length into Arraybuffer
     const padding = Buffer.from(API_URL.padEnd(200, "P"))
     // Concatenate padding with raw_crv buffer
-    return Buffer.concat([padding, raw_crv])
+    return Buffer.concat([padding, rawCrv])
 }
 
 // Returns a 32byte(256bit) salt derived from the raw CRV and padding
-async function GenerateSaltFromCRV(rawCRV: string) {
-    const crv = padCRV(rawCRV)
+async function GenerateSaltFromCRV(rawCrvHex: string) {
+    const crv = padCRV(rawCrvHex)
     return window.crypto.subtle.digest('sha-256', Buffer.from(crv))
 }
 
-// Derives Master Encryption and Authentication keys from password and salt (if any). Salt is null on signup and filled on login
+// Derives Master Encryption and Authentication keys from password and salt.
 async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
     const startTime = performance.now()
     if (salt.byteLength < PBKDF2_salt_len) {
@@ -151,12 +161,12 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
     }
 }
 
-// EncryptFile encrypts a file with the given password. Salt and IV are pre-pended to ciphertext.
+// EncryptFile encrypts a file with the given key. Salt, IV and Wrapped File Key are pre-pended to ciphertext.
 async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
     const startTime = performance.now()
 
     // Generate file encryption key
-    const fileKey = await generateFileEncryptionKey()
+    const fileKey = await GenerateKey(FileKeyOpts)
 
     // Generate random IV for this file
     const iv = GenerateRandomBytes(AESGCM_iv_len)
@@ -172,7 +182,7 @@ async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
     )
 
     // Encrypt file encryption key
-    const encryptedFileKey = await encryptFileEncryptionKey(masterKey, fileKey)
+    const encryptedFileKey = await WrapKey(fileKey, masterKey)
 
     // Calculate total ciphertext output length
     const outputBuffer = new Uint8Array(encryptedFileKey.byteLength + iv.byteLength + ciphertext.byteLength)
@@ -187,7 +197,7 @@ async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
     return new File([outputBuffer], file.name, { type: file.type, lastModified: file.lastModified })
 }
 
-// DecryptFile decrypts a file with the given password. Salt and IV are extracted from ciphertext.
+// DecryptFile decrypts a file with the given key. Salt, IV and Wrapped File Key are extracted from ciphertext.
 async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: ArrayBuffer): Promise<File> {
     const startTime = performance.now()
 
@@ -199,7 +209,7 @@ async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: A
     const data = fileData.slice(encryptedKeyLen + AESGCM_iv_len)
 
     // Decrypt file encryption key
-    const fileKey = await decryptFileEncryptionKey(masterKey, encryptedFileKey)
+    const fileKey = await UnwrapKey(encryptedFileKey, masterKey, FileKeyOpts)
 
     // Decrypt contents of the file
     const plaintext = await window.crypto.subtle.decrypt(
@@ -216,10 +226,13 @@ async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: A
 export {
     GenerateRandomBytes,
     GenerateSaltFromCRV,
+    GenerateKey,
     DeriveKeysFromPassword,
     EncryptFile,
     DecryptFile,
     Hash,
     BufferEquals,
+    WrapKey,
+    UnwrapKey,
     CRV_len
 }

@@ -10,6 +10,7 @@ interface UserState {
     files: Array<FileInfo>;
     mEncKey: CryptoKey | undefined;
     hAuthKey: ArrayBuffer | undefined;
+    wrappedAccountKey: ArrayBuffer | undefined;
     clientRandomValue: string;
 }
 
@@ -22,6 +23,7 @@ const initialState: UserState = {
     files: [],
     mEncKey: undefined,
     hAuthKey: Buffer.alloc(0),
+    wrappedAccountKey: Buffer.alloc(0),
     clientRandomValue: ''
 }
 
@@ -36,6 +38,7 @@ export const dataSlice = createSlice({
             state.password = action.payload.password || state.password;
             state.mEncKey = action.payload.mEncKey || state.mEncKey;
             state.hAuthKey = action.payload.hAuthKey || state.hAuthKey;
+            state.wrappedAccountKey = action.payload.wrappedAccountKey || state.wrappedAccountKey;
             state.clientRandomValue = action.payload.clientRandomValue || state.clientRandomValue;
         },
         saveFiles: (state, action) => {

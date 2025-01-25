@@ -1,6 +1,6 @@
 import axios from "axios"
 import { FileInfo, noopProgressCallback, Progress } from "../utilities/utils"
-import { CRV_len, DeriveKeysFromPassword, GenerateRandomBytes, GenerateSaltFromCRV } from "../utilities/crypto"
+import { AccountKeyOpts, CRV_len, DeriveKeysFromPassword, GenerateKey, GenerateRandomBytes, GenerateSaltFromCRV, UnwrapKey, WrapKey } from "../utilities/crypto"
 import { Buffer } from "buffer"
 import store from "../store/store"
 
@@ -137,10 +137,16 @@ async function signup(emailAddress: string, password: string) {
     const salt = await GenerateSaltFromCRV(rawCrv)
     // Derive Master Auth and Enc Key from salt
     const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    // Generate account key
+    const acctKey = await GenerateKey(AccountKeyOpts)
+    // Wrap account key
+    const acctKeyWrapped = await WrapKey(acctKey, keys.mEncKey)
+
     // Signup with email, derived auth key and client_random_value
     return client.post("/signup", {
         email_address: emailAddress,
         password: Buffer.from(keys.hAuthKey).toString('base64'),
+        wrapped_account_key: Buffer.from(acctKeyWrapped).toString('base64'),
         client_random_value: rawCrv
     })
 }
@@ -166,20 +172,26 @@ async function resetPassword(newPassword: string, resetCode: string) {
     const newSalt = await GenerateSaltFromCRV(newRawCrv)
     // Derive new Master Auth and Enc Key from new salt
     const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
-    // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
+    // Generate account key
+    const newAcctKey = await GenerateKey(AccountKeyOpts)
+    // Wrap account key
+    const newAcctKeyWrapped = await WrapKey(newAcctKey, newKeys.mEncKey)
 
     return client.post("/reset_password", {
         reset_code: resetCode,
         new_password: Buffer.from(newKeys.hAuthKey).toString('base64'),
+        new_wrapped_account_key: Buffer.from(newAcctKeyWrapped).toString('base64'),
         new_client_random_value: newRawCrv
     })
 }
 
 // Reset/change password using existing password in logged in session
 async function changePassword(password: string, newPassword: string) {
-    const currentRawCrv = store.getState().user.clientRandomValue
-    // Derive salt from CRV
-    const currentSalt = await GenerateSaltFromCRV(currentRawCrv)
+    const user = store.getState().user
+    if (!user.wrappedAccountKey) throw new Error("Wrapped account key not loaded. Refresh page and try again!")
+
+    // Derive salt from existing CRV
+    const currentSalt = await GenerateSaltFromCRV(user.clientRandomValue)
     // Derive existing Master Auth and Enc Key from salt
     const currentKeys = await DeriveKeysFromPassword(password, new Uint8Array(currentSalt))
 
@@ -189,26 +201,34 @@ async function changePassword(password: string, newPassword: string) {
     const newSalt = await GenerateSaltFromCRV(newRawCrv)
     // Derive new Master Auth and Enc Key from new salt
     const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
-    // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
 
+    // Decrypt account key with current keys
+    const acctKey = await UnwrapKey(user.wrappedAccountKey, currentKeys.mEncKey, AccountKeyOpts)
+    // Encrypt account key with new keys
+    const newWrappedAcctKey = await WrapKey(acctKey, newKeys.mEncKey)
+
+
+    // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
     await client.post("/change_password", {
         password: Buffer.from(currentKeys.hAuthKey).toString('base64'),
         new_password: Buffer.from(newKeys.hAuthKey).toString('base64'),
+        wrapped_account_key: Buffer.from(newWrappedAcctKey).toString('base64'),
         new_client_random_value: newRawCrv
     })
     return {
         password: password,
         mEncKey: newKeys.mEncKey,
         hAuthKey: newKeys.hAuthKey,
+        wrappedAccountKey: newWrappedAcctKey,
         clientRandomValue: newRawCrv
     }
 }
 
 // Delete account using existing password in logged in session
 async function deleteAccount(password: string) {
-    const rawCRV = store.getState().user.clientRandomValue
+    const rawCrv = store.getState().user.clientRandomValue
     // Derive salt from CRV
-    const salt = await GenerateSaltFromCRV(rawCRV)
+    const salt = await GenerateSaltFromCRV(rawCrv)
     // Derive Master Auth and Enc Key from salt
     const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
 

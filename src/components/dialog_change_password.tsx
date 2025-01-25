@@ -50,6 +50,7 @@ function ChangePasswordDialog(props: IProps) {
                 password: resp.password,
                 mEncKey: resp.mEncKey,
                 hAuthKey: resp.hAuthKey,
+                wrappedAccountKey: resp.wrappedAccountKey,
                 clientRandomValue: resp.clientRandomValue
             }))
             enqueueSnackbar("Password changed successfully", { variant: "success" })
