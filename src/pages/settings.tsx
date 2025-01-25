@@ -55,8 +55,14 @@ function Settings() {
                         disabled />
                 </FormControl>
                 <Stack direction='row' justifyContent='space-evenly'>
-                    <Typography>Account created: <Chip label={localDateTime(new Date(user.createdAt), true)} /></Typography>
-                    <Typography>Last online: <Chip label={localDateTime(new Date(user.lastSeen), true)} /></Typography>
+                    <Stack direction='row' justifyContent='space-evenly'>
+                        <Typography>Account created: </Typography>
+                        <Chip label={localDateTime(new Date(user.createdAt), true)} />
+                    </Stack>
+                    <Stack direction='row' justifyContent='space-evenly'>
+                        <Typography>Last online: </Typography>
+                        <Chip label={localDateTime(new Date(user.lastSeen), true)} />
+                    </Stack>
                 </Stack>
             </Stack>
 
