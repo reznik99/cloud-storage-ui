@@ -114,7 +114,7 @@ function AuthenticateDialog(props: IProps) {
             <DialogActions>
                 <Button variant="text"
                     startIcon={<Cancel />}
-                    onClick={props.closeDialog}>
+                    onClick={() => { }}>
                     Close
                 </Button>
             </DialogActions>
