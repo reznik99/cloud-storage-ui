@@ -49,6 +49,7 @@ function Login() {
                 password: password,
                 mEncKey: resp.mEncKey,
                 hAuthKey: resp.hAuthKey,
+                wrappedAccountKey: resp.wrappedAccountKey,
                 clientRandomValue: resp.clientRandomValue
             }))
             navigate("/dashboard")

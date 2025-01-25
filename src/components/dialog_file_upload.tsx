@@ -1,12 +1,13 @@
 import { useCallback, useRef, useState } from "react"
 import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
-import { BufferEquals, CRV_len, DecryptFile, DeriveKeysFromPassword, EncryptFile, GenerateRandomBytes, GenerateSaltFromCRV, Hash } from "../utilities/crypto"
+import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"
 import api from "../networking/endpoints"
 import ProgressBar from "./progress_bar"
-import { Buffer } from "buffer"
+import { useSelector } from "react-redux"
+import { RootState } from "../store/store"
 
 type IProps = {
     open: boolean;
@@ -16,10 +17,11 @@ type IProps = {
 
 function FileUploadDialog(props: IProps) {
     const { enqueueSnackbar } = useSnackbar()
+    const controller = useRef(new AbortController())
+
+    const password = useSelector((state: RootState) => state.user.password)
     const [selectedFile, setSelectedFile] = useState<File | null>()
     const [progress, setProgress] = useState<Progress | null>()
-    const controller = useRef(new AbortController())
-    const [encPassword, setEncPassword] = useState('')
     const [testLoading, setTestLoading] = useState(false)
 
     const handleFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,15 +35,18 @@ function FileUploadDialog(props: IProps) {
     }, [props])
 
     const uploadFile = useCallback(async () => {
+        if (!selectedFile) return
+
         controller.current = new AbortController()
         try {
-            await api.uploadFile(selectedFile as File, setProgress, controller.current.signal)
+            const encFile = await EncryptFile(selectedFile)
+            await api.uploadFile(encFile.encryptedFile, encFile.encryptedFileKey, setProgress, controller.current.signal)
             handleCancel()
             props.loadFileList()
             enqueueSnackbar("File uploaded successfully", { variant: "success" })
         } catch (err: unknown) {
             const error = getErrorString(err)
-            console.error(error)
+            console.error(err)
             enqueueSnackbar("Upload failed: " + error, { variant: "error" })
         } finally {
             setProgress(null)
@@ -52,25 +57,13 @@ function FileUploadDialog(props: IProps) {
         if (!selectedFile) return
         try {
             setTestLoading(true)
-            // Generate random CRV (Client Random Value)
-            const rawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
-            // Derive salt from CRV
-            const salt = await GenerateSaltFromCRV(rawCrv)
-            // Derive master key from password
-            const derive1 = await DeriveKeysFromPassword(encPassword, new Uint8Array(salt))
-            // Encrypt file with random key and wrap with master key
-            const encFile = await EncryptFile(derive1.mEncKey, selectedFile)
+            const encFile = await EncryptFile(selectedFile)
 
-            // Derive master key from password
-            const derive2 = await DeriveKeysFromPassword(encPassword, derive1.salt)
-            // Decrypt random key with master key and decrypt file
-            const decFile = await DecryptFile(derive2.mEncKey, fileToFileInfo(selectedFile), await encFile.arrayBuffer())
+            const decFile = await DecryptFile(encFile.encryptedFileKey, fileToFileInfo(selectedFile), encFile.encryptedFile)
 
             // Hash both original file data and decrypted file data to check they match
-            const originalFileData = await selectedFile.arrayBuffer()
-            const decryptedFileData = await decFile.arrayBuffer()
-            const originalHash = await Hash(originalFileData, "SHA-256")
-            const decryptedHash = await Hash(decryptedFileData, "SHA-256")
+            const originalHash = await Hash(await selectedFile.arrayBuffer(), "SHA-256")
+            const decryptedHash = await Hash(await decFile.arrayBuffer(), "SHA-256")
             const equal = BufferEquals(new Uint8Array(originalHash), new Uint8Array(decryptedHash))
             if (!equal) throw new Error("Decrypted file doesn't match original")
 
@@ -81,7 +74,7 @@ function FileUploadDialog(props: IProps) {
         } finally {
             setTestLoading(false)
         }
-    }, [selectedFile, encPassword, enqueueSnackbar])
+    }, [selectedFile, password, enqueueSnackbar])
 
     return (
         <Dialog open={props.open}
@@ -107,19 +100,6 @@ function FileUploadDialog(props: IProps) {
                     <AccordionDetails>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
                             <Typography variant="body2">Encrypt your file with a password to provide End to End encryption!</Typography>
-                            <FormControl sx={{ width: '80%' }}>
-                                <FormLabel htmlFor="password">Encryption Password</FormLabel>
-                                <TextField fullWidth
-                                    name="password"
-                                    type="password"
-                                    id="password"
-                                    autoComplete="new-password"
-                                    placeholder="••••••"
-                                    variant="outlined"
-                                    color="primary"
-                                    value={encPassword}
-                                    onChange={(e) => setEncPassword(e.target.value)} />
-                            </FormControl>
                             <Button variant="text"
                                 startIcon={testLoading ? <CircularProgress /> : <Key />}
                                 onClick={testEncryption}
@@ -143,7 +123,7 @@ function FileUploadDialog(props: IProps) {
                     Cancel
                 </Button>
                 <Button variant="contained"
-                    disabled={!selectedFile}
+                    disabled={testLoading || !selectedFile}
                     startIcon={<UploadFile />}
                     onClick={uploadFile} autoFocus>
                     Upload

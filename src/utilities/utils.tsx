@@ -6,6 +6,7 @@ export type FileInfo = {
     size: number;
     type: string;
     added: string;
+    wrapped_file_key: string;
 }
 export type Feedback = {
     message: string,
@@ -119,12 +120,13 @@ export function assembleShareLink(accessKey: string) {
 }
 
 export function fileToFileInfo(file: File | null | undefined): FileInfo {
-    if (!file) return { name: '', type: '', size: 0, added: new Date(0).toLocaleString() }
+    if (!file) return { name: '', type: '', size: 0, added: new Date(0).toLocaleString(), wrapped_file_key: '' }
     return {
         name: file.name,
         type: file.type,
         size: file.size,
-        added: new Date().toLocaleString()
+        added: new Date().toLocaleString(),
+        wrapped_file_key: ''
     }
 }
 

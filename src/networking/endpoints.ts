@@ -57,10 +57,11 @@ async function getFiles() {
     return client.get("/files")
 }
 
-async function uploadFile(file: File, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
+async function uploadFile(file: File, encryptedFileKey: ArrayBuffer, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
     if (!progressCallback) progressCallback = noopProgressCallback
 
     const formData = new FormData()
+    formData.append("wrapped_file_key", Buffer.from(encryptedFileKey).toString('base64'))
     formData.append("file", file)
 
     return client.post("/file", formData, {
@@ -124,7 +125,7 @@ async function login(emailAddress: string, password: string) {
         createdAt: resp.data.created_at as number,
         lastSeen: resp.data.last_seen as number,
         password: password,
-        mEncKey:  Buffer.from(keys.mEncKey).toString('base64'),
+        mEncKey: Buffer.from(keys.mEncKey).toString('base64'),
         hAuthKey: Buffer.from(keys.hAuthKey).toString('base64'),
         wrappedAccountKey: resp.data.wrapped_account_key as string,
         clientRandomValue: rawCrv

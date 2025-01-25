@@ -1,6 +1,7 @@
 import { Buffer } from "buffer"
 import { FileInfo } from "./utils"
 import { API_URL } from "../networking/endpoints"
+import store from "../store/store"
 
 type KeyOpts = {
     algo: string,
@@ -42,7 +43,6 @@ const PBKDF2_iterations = 500_000   // PBKDF2 Iterations
 const PBKDF2_hash_algo = "SHA-512"  // PBKDF2 Hash algorithm for derivation
 const PBKDF2_salt_len = 16          // PBKDF2 Salt byte length
 const AESGCM_iv_len = 12            // AES-GCM IV byte length
-const AESKW_iv_len = 8              // AES-KW IV byte length
 const CRV_len = 12                  // CRV byte length
 
 // Generates random bytes with given length using browser CSPRNG 
@@ -75,9 +75,9 @@ async function GenerateKey(opts: KeyOpts) {
 // Wrap a symmetric key with another symmetric key
 async function WrapKey(key: CryptoKey, wrappingKey: CryptoKey) {
     return window.crypto.subtle.wrapKey(
-        "raw", 
-        key, 
-        wrappingKey, 
+        "raw",
+        key,
+        wrappingKey,
         "AES-KW"
     )
 }
@@ -85,9 +85,9 @@ async function WrapKey(key: CryptoKey, wrappingKey: CryptoKey) {
 // Unwrap a wrapped symmetric key with another symmetric key
 async function UnwrapKey(wrappedKey: ArrayBuffer, wrappingKey: CryptoKey, opts: KeyOpts) {
     return window.crypto.subtle.unwrapKey(
-        "raw", 
-        wrappedKey, 
-        wrappingKey, 
+        "raw",
+        wrappedKey,
+        wrappingKey,
         "AES-KW",
         opts.algo,
         opts.exportable,
@@ -161,15 +161,16 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
 }
 
 // EncryptFile encrypts a file with the given key. Salt, IV and Wrapped File Key are pre-pended to ciphertext.
-async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
+async function EncryptFile(file: File) {
     const startTime = performance.now()
 
-    // Generate file encryption key
+    // Get master key, decrypt account key and generate file key
+    const masterKey = await ImportKey(Buffer.from(store.getState().user.mEncKey, 'base64'), MasterKeyOpts)
+    const accountKey = await UnwrapKey(Buffer.from(store.getState().user.wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
     const fileKey = await GenerateKey(FileKeyOpts)
 
     // Generate random IV for this file
     const iv = GenerateRandomBytes(AESGCM_iv_len)
-
     // Get file contents as a byte array
     const data = await file.arrayBuffer()
 
@@ -179,36 +180,34 @@ async function EncryptFile(masterKey: CryptoKey, file: File): Promise<File> {
         fileKey,
         data
     )
-
     // Encrypt file encryption key
-    const encryptedFileKey = await WrapKey(fileKey, masterKey)
+    const encryptedFileKey = await WrapKey(fileKey, accountKey)
 
-    // Calculate total ciphertext output length
-    const outputBuffer = new Uint8Array(encryptedFileKey.byteLength + iv.byteLength + ciphertext.byteLength)
-
-    // Prepend Encrypted File Key and IV to file ciphertext
-    outputBuffer.set(new Uint8Array(encryptedFileKey), 0)
-    outputBuffer.set(iv, encryptedFileKey.byteLength)
-    outputBuffer.set(new Uint8Array(ciphertext), encryptedFileKey.byteLength + iv.byteLength)
+    // Prepend IV to file ciphertext
+    const outputBuffer = new Uint8Array(iv.byteLength + ciphertext.byteLength)
+    outputBuffer.set(iv, 0)
+    outputBuffer.set(new Uint8Array(ciphertext), iv.byteLength)
+    const encryptedFile = new File([outputBuffer], file.name, { type: file.type, lastModified: file.lastModified })
 
     console.info(`EncryptFile took ${performance.now() - startTime}ms`)
-    // Return a new 'File' with plaintext replaced by ciphertext
-    return new File([outputBuffer], file.name, { type: file.type, lastModified: file.lastModified })
+    return {
+        encryptedFileKey: encryptedFileKey,
+        encryptedFile: encryptedFile
+    }
 }
 
 // DecryptFile decrypts a file with the given key. Salt, IV and Wrapped File Key are extracted from ciphertext.
-async function DecryptFile(masterKey: CryptoKey, fileInfo: FileInfo, fileData: ArrayBuffer): Promise<File> {
+async function DecryptFile(encryptedFileKey: ArrayBuffer, fileInfo: FileInfo, fileData: Blob): Promise<File> {
     const startTime = performance.now()
 
-    const encryptedKeyLen = (FileKeyOpts.length / 8) + AESKW_iv_len
+    // Split prepended iv and file from ciphertext
+    const iv = await fileData.slice(0, AESGCM_iv_len).arrayBuffer()
+    const data = await fileData.slice(AESGCM_iv_len).arrayBuffer()
 
-    // Split prepended fileKey, iv and file from ciphertext
-    const encryptedFileKey = fileData.slice(0, encryptedKeyLen)
-    const iv = fileData.slice(encryptedKeyLen, encryptedKeyLen + AESGCM_iv_len)
-    const data = fileData.slice(encryptedKeyLen + AESGCM_iv_len)
-
-    // Decrypt file encryption key
-    const fileKey = await UnwrapKey(encryptedFileKey, masterKey, FileKeyOpts)
+    // Get master key, decrypt account key and decrypt file encryption key
+    const masterKey = await ImportKey(Buffer.from(store.getState().user.mEncKey, 'base64'), MasterKeyOpts)
+    const accountKey = await UnwrapKey(Buffer.from(store.getState().user.wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
+    const fileKey = await UnwrapKey(encryptedFileKey, accountKey, FileKeyOpts)
 
     // Decrypt contents of the file
     const plaintext = await window.crypto.subtle.decrypt(

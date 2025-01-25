@@ -7,6 +7,8 @@ import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
 import FileLinkDialog from "./dialog_file_link"
 import ProgressBar from "./progress_bar"
+import { DecryptFile } from "../utilities/crypto"
+import { Buffer } from "buffer"
 
 type IProps = {
     files: Array<FileInfo>;
@@ -29,11 +31,14 @@ function FilesView(props: IProps) {
         try {
             setLoadingIdx(idx)
             const resp = await api.downloadFile(file, setProgress, controller.current.signal)
-            triggerDownload(file.name, resp.data)
+            console.log("Data received:", resp.data)
+            const decFile = await DecryptFile(Buffer.from(file.wrapped_file_key, 'base64'), file, resp.data)
+
+            triggerDownload(decFile.name, decFile)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: unknown) {
             const error = getErrorString(err)
-            console.error(error)
+            console.error(err)
             enqueueSnackbar("Download failed: " + error, { variant: "error" })
         } finally {
             setLoadingIdx(-1)
