@@ -153,40 +153,58 @@ async function getSession() {
     return client.get("/session")
 }
 
+// Request a reset password code by email in logged out session
 async function requestResetPassword(emailAddress: string) {
     return client.get("/reset_password", { params: { email_address: emailAddress } })
 }
 
+// Reset user password using email code in logged out session
 async function resetPassword(newPassword: string, resetCode: string) {
-    const rawCRV = store.getState().user.clientRandomValue
-    // Derive salt from CRV
-    const salt = await GenerateSaltFromCRV(rawCRV)
-    // Derive new Master Auth and Enc Key from salt
-    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(salt))
+    // Generate new random CRV (Client Random Value)
+    const newRawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
+    // Derive new salt from new CRV
+    const newSalt = await GenerateSaltFromCRV(newRawCrv)
+    // Derive new Master Auth and Enc Key from new salt
+    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
     // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
 
     return client.post("/reset_password", {
+        reset_code: resetCode,
         new_password: Buffer.from(newKeys.hAuthKey).toString('base64'),
-        reset_code: resetCode
+        new_client_random_value: newRawCrv
     })
 }
 
+// Reset/change password using existing password in logged in session
 async function changePassword(password: string, newPassword: string) {
-    const rawCRV = store.getState().user.clientRandomValue
+    const currentRawCrv = store.getState().user.clientRandomValue
     // Derive salt from CRV
-    const salt = await GenerateSaltFromCRV(rawCRV)
+    const currentSalt = await GenerateSaltFromCRV(currentRawCrv)
     // Derive existing Master Auth and Enc Key from salt
-    const currentKeys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
-    // Derive new Master Auth and Enc Key from salt
-    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(salt))
+    const currentKeys = await DeriveKeysFromPassword(password, new Uint8Array(currentSalt))
+
+    // Generate new random CRV (Client Random Value)
+    const newRawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
+    // Derive new salt from new CRV
+    const newSalt = await GenerateSaltFromCRV(newRawCrv)
+    // Derive new Master Auth and Enc Key from new salt
+    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
     // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
 
-    return client.post("/change_password", {
+    await client.post("/change_password", {
         password: Buffer.from(currentKeys.hAuthKey).toString('base64'),
-        new_password: Buffer.from(newKeys.hAuthKey).toString('base64')
+        new_password: Buffer.from(newKeys.hAuthKey).toString('base64'),
+        new_client_random_value: newRawCrv
     })
+    return {
+        password: password,
+        mEncKey: newKeys.mEncKey,
+        hAuthKey: newKeys.hAuthKey,
+        clientRandomValue: newRawCrv
+    }
 }
 
+// Delete account using existing password in logged in session
 async function deleteAccount(password: string) {
     const rawCRV = store.getState().user.clientRandomValue
     // Derive salt from CRV

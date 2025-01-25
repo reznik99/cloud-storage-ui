@@ -13,6 +13,8 @@ function P2PFileSharing() {
         setSelectedFile(event.target?.files?.[0])
     }, [])
 
+    // TODO: WebRTC logic for peer setup, qr-code & url signaling, file sharing
+
     return (
         <Container component={Paper} sx={{ padding: 5 }}>
             <Stack direction='row' alignItems='center' spacing={2}>

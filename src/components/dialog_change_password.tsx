@@ -6,6 +6,8 @@ import { useCallback, useState } from "react";
 import { ValidatePassword } from "../utilities/security";
 import { getErrorString } from "../utilities/utils";
 import api from "../networking/endpoints";
+import { useDispatch } from "react-redux";
+import { saveCreds } from "../store/reducer";
 
 type IProps = {
     open: boolean;
@@ -13,6 +15,7 @@ type IProps = {
 }
 
 function ChangePasswordDialog(props: IProps) {
+    const dispatch = useDispatch()
     const { enqueueSnackbar } = useSnackbar()
 
     const [loading, setLoading] = useState(false)
@@ -42,7 +45,13 @@ function ChangePasswordDialog(props: IProps) {
         try {
             setLoading(true)
             if (!checkValues()) return
-            api.changePassword(oldPassword, password)
+            const resp = await api.changePassword(oldPassword, password)
+            dispatch(saveCreds({
+                password: resp.password,
+                mEncKey: resp.mEncKey,
+                hAuthKey: resp.hAuthKey,
+                clientRandomValue: resp.clientRandomValue
+            }))
             enqueueSnackbar("Password changed successfully", { variant: "success" })
             props.closeDialog()
         } catch (err) {
