@@ -120,7 +120,7 @@ function FileLinkDialog(props: IProps) {
                         : link
                             ? <Link link={link} deleteLink={deleteLink} enqueueSnackbar={enqueueSnackbar} />
                             : <Alert severity="info">
-                                <AlertTitle>This file is not currently being shared.</AlertTitle>
+                                <AlertTitle>This file is <b>not</b> currently being shared.</AlertTitle>
                             </Alert>
                     }
                 </List>
@@ -152,15 +152,16 @@ type LinkProps = {
 }
 
 function Link(props: LinkProps) {
+    const shareLink = assembleShareLink(props.link.access_key, props.link.file_key)
     return (
         <Box>
             <ListItem>
                 <ListItemIcon><InsertLink /></ListItemIcon>
                 <ListItemButton sx={{ overflowWrap: "break-all" }} onClick={() => {
-                    navigator.clipboard.writeText(assembleShareLink(props.link.access_key, props.link.file_key))
+                    navigator.clipboard.writeText(shareLink)
                     props.enqueueSnackbar("Copied URL to clipboard!")
                 }}>
-                    {assembleShareLink(props.link.access_key, props.link.file_key)}
+                    {shareLink.split("#")[0] + " #" + shareLink.split("#")[1]}
                 </ListItemButton>
                 <Tooltip title="Delete" disableInteractive>
                     <Button onClick={props.deleteLink}>
@@ -169,8 +170,8 @@ function Link(props: LinkProps) {
                 </Tooltip>
             </ListItem>
             <Alert severity="success">
-                <AlertTitle>This file is available for sharing</AlertTitle>
-                <Typography>Created on: {localDateTime(new Date(props.link.created_at), true)}</Typography>
+                <AlertTitle>This file is currently being shared!</AlertTitle>
+                <Typography>Shared since: {localDateTime(new Date(props.link.created_at), true)}</Typography>
                 <Typography>Downloads: {props.link.access_count}</Typography>
             </Alert>
         </Box>

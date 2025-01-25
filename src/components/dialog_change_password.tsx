@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack"
 import { Cancel, Password } from "@mui/icons-material"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField } from "@mui/material"
+import { Alert, AlertTitle, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, LinearProgress, TextField, Typography } from "@mui/material"
 import PasswordMeter from "./password_meter";
 import { useCallback, useState } from "react";
 import { ValidatePassword } from "../utilities/security";
@@ -74,9 +74,12 @@ function ChangePasswordDialog(props: IProps) {
             aria-describedby="link-dialog-description">
             <DialogTitle id="link-dialog-title">Change your password</DialogTitle>
             <DialogContent>
-                <DialogContentText id="link-dialog-description-2">
-                    Input your old and new passwords below. Encrypted files will remain available.
-                </DialogContentText>
+                <Alert severity="info">
+                    <Typography>
+                        Input your current and new passwords below.<br />
+                        Encrypted files will remain available.
+                    </Typography>
+                </Alert>
 
                 <Box component="form"
                     noValidate={true}
@@ -140,7 +143,7 @@ function ChangePasswordDialog(props: IProps) {
                     <Button fullWidth
                         variant="contained"
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !oldPassword || !password || !passwordConfirmation}
                         startIcon={<Password />}>
                         Change Password
                     </Button>
@@ -154,6 +157,8 @@ function ChangePasswordDialog(props: IProps) {
                     Close
                 </Button>
             </DialogActions>
+
+            {loading && <LinearProgress variant="indeterminate" />}
         </Dialog>
     )
 }

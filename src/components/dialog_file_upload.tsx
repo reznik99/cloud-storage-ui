@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
 import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"
@@ -79,20 +79,25 @@ function FileUploadDialog(props: IProps) {
             onClose={handleCancel}
             aria-labelledby="file-dialog-title"
             aria-describedby="file-dialog-description">
-            <DialogTitle id="file-dialog-title">Select file</DialogTitle>
+            <DialogTitle id="file-dialog-title">File Upload</DialogTitle>
             <DialogContent>
-                <DialogContentText id="file-dialog-description">
-                    Select a file to upload to store on the cloud.
-                </DialogContentText>
+                <Alert severity="info">
+                    <Typography>
+                        Select a file to upload.<br />
+                        Files are End-To-End encrypted by default!
+                    </Typography>
+                </Alert>
 
                 <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                    <Button variant={selectedFile?.name ? "contained" : "outlined"} component="label">
+                    <Button sx={{ paddingX: 5 }}
+                        component="label"
+                        variant={selectedFile?.name ? "contained" : "outlined"} >
                         {selectedFile?.name ?? "Select File"}
                         <input onChange={handleFile} type="file" hidden />
                     </Button>
                 </Box>
 
-                <Accordion>
+                {selectedFile && <Accordion>
                     <AccordionSummary expandIcon={<ExpandMore />}>Advanced Options</AccordionSummary>
                     <AccordionDetails>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
@@ -105,7 +110,7 @@ function FileUploadDialog(props: IProps) {
                             </Button>
                         </Box>
                     </AccordionDetails>
-                </Accordion>
+                </Accordion>}
 
                 {progress && <ProgressBar sx={{ mt: 2 }}
                     onCancel={() => controller.current.abort()}

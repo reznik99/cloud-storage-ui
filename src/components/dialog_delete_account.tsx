@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack"
 import { Article, Cancel, Link, Password } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, Stack, TextField, Typography } from "@mui/material"
+import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react";
 import { getErrorString } from "../utilities/utils";
 import api from "../networking/endpoints";
@@ -42,9 +42,26 @@ function DeleteAccountDialog(props: IProps) {
             onClose={props.closeDialog}>
             <DialogTitle>Delete Account</DialogTitle>
             <DialogContent>
-                <DialogContentText >
-                    Warning! This will delete all your files. Shared links will become unavailable.
-                </DialogContentText>
+                <Alert severity="warning">
+                    <AlertTitle><b>WARNING</b>: This operation is <b>DESTRUCTIVE</b></AlertTitle>
+                    <Typography>
+                        This action will delete your account.
+                        All your previously uploaded files will be deleted.
+                        This action cannot be undone.
+                    </Typography>
+                    <ul>
+                        <li>All your files will be lost <Article fontSize="small" color="primary" /> </li>
+                        <li>All previously shared links will no longer work <Link fontSize="small" color="primary" /> </li>
+                    </ul>
+                    <Stack alignItems="center">
+                        <FormControlLabel
+                            label="I understand and wish to continue"
+                            control={<Checkbox checked={acceptedTerms}
+                                onChange={e => setAcceptedTerms(e.target.checked)} />
+                            } />
+                    </Stack>
+                </Alert>
+
 
                 <Box component="form"
                     noValidate={true}
@@ -53,7 +70,6 @@ function DeleteAccountDialog(props: IProps) {
                         display: 'flex',
                         flexDirection: 'column',
                         width: '100%',
-                        gap: 3,
                         my: 3,
                     }}>
 
@@ -70,28 +86,9 @@ function DeleteAccountDialog(props: IProps) {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)} />
                     </FormControl>
-
-                    <Alert severity="warning">
-                        <AlertTitle><b>WARNING</b>: This operation is <b>DESTRUCTIVE</b></AlertTitle>
-                        <Typography>
-                            This action will delete your account.
-                            All your previously uploaded files will be deleted.
-                            This action cannot be undone.
-                        </Typography>
-                        <ul>
-                            <li>All your files will be lost <Article fontSize="small" color="primary" /> </li>
-                            <li>All previously shared links will no longer work <Link fontSize="small" color="primary" /> </li>
-                        </ul>
-                        <Stack alignItems="center">
-                            <FormControlLabel
-                                label="I understand and wish to continue"
-                                control={<Checkbox checked={acceptedTerms}
-                                    onChange={e => setAcceptedTerms(e.target.checked)} />
-                                } />
-                        </Stack>
-                    </Alert>
-
-                    <Button fullWidth
+                </Box>
+                <Stack direction="row" justifyContent="center">
+                    <Button
                         color="error"
                         variant="contained"
                         type="submit"
@@ -99,9 +96,9 @@ function DeleteAccountDialog(props: IProps) {
                         startIcon={<Password />}>
                         Delete Account
                     </Button>
-                </Box>
-
+                </Stack>
             </DialogContent>
+
             <DialogActions>
                 <Button variant="text"
                     startIcon={<Cancel />}
@@ -109,6 +106,8 @@ function DeleteAccountDialog(props: IProps) {
                     Close
                 </Button>
             </DialogActions>
+
+            {loading && <LinearProgress variant="indeterminate" />}
         </Dialog>
     )
 }
