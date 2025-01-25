@@ -115,8 +115,8 @@ export function getErrorString(err: Error | AxiosError | unknown): string {
     return err?.toString() || "unknown error"
 }
 
-export function assembleShareLink(accessKey: string) {
-    return `${window.location.protocol}//${window.location.host}/share/${accessKey}`
+export function assembleShareLink(accessKey: string, fileKey: string) {
+    return `${window.location.protocol}//${window.location.host}/share/${accessKey}#${fileKey}`
 }
 
 export function fileToFileInfo(file: File | null | undefined): FileInfo {

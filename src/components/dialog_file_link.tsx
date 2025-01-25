@@ -5,6 +5,7 @@ import { Add, Cancel, Delete, InsertLink } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, Tooltip, Typography } from "@mui/material"
 import { assembleShareLink, FileInfo, getErrorString, localDateTime, } from "../utilities/utils"
 import api from "../networking/endpoints"
+import { DecryptFileKey } from "../utilities/crypto"
 
 type IProps = {
     open: boolean;
@@ -21,7 +22,16 @@ function FileLinkDialog(props: IProps) {
         try {
             setLoading(true)
             const resp = await api.getLink(props.file)
-            setLink(resp.data as Link)
+            const fileKey = await DecryptFileKey(props.file.wrapped_file_key)
+            const link: Link = {
+                access_count: resp.data.access_count,
+                access_key: resp.data.access_key,
+                file_id: resp.data.file_id,
+                created_by: resp.data.created_by,
+                created_at: resp.data.created_at,
+                file_key: fileKey
+            }
+            setLink(link)
         } catch (err: unknown) {
             if (!axios.isAxiosError(err) || err.status !== 404) {
                 const error = getErrorString(err)
@@ -37,7 +47,16 @@ function FileLinkDialog(props: IProps) {
         try {
             setLoading(true)
             const resp = await api.createLink(props.file)
-            setLink(resp.data as Link)
+            const fileKey = await DecryptFileKey(props.file.wrapped_file_key)
+            const link: Link = {
+                access_count: resp.data.access_count,
+                access_key: resp.data.access_key,
+                file_id: resp.data.file_id,
+                created_by: resp.data.created_by,
+                created_at: resp.data.created_at,
+                file_key: fileKey
+            }
+            setLink(link)
             enqueueSnackbar("File link created successfully", { variant: "success" })
         } catch (err: unknown) {
             const error = getErrorString(err)
@@ -123,6 +142,7 @@ type Link = {
     file_id: number;
     created_by: number;
     created_at: string;
+    file_key: string;
 }
 
 type LinkProps = {
@@ -136,11 +156,11 @@ function Link(props: LinkProps) {
         <Box>
             <ListItem>
                 <ListItemIcon><InsertLink /></ListItemIcon>
-                <ListItemButton onClick={() => {
-                    navigator.clipboard.writeText(assembleShareLink(props.link.access_key))
+                <ListItemButton sx={{ overflowWrap: "break-all" }} onClick={() => {
+                    navigator.clipboard.writeText(assembleShareLink(props.link.access_key, props.link.file_key))
                     props.enqueueSnackbar("Copied URL to clipboard!")
                 }}>
-                    {assembleShareLink(props.link.access_key)}
+                    {assembleShareLink(props.link.access_key, props.link.file_key)}
                 </ListItemButton>
                 <Tooltip title="Delete" disableInteractive>
                     <Button onClick={props.deleteLink}>

@@ -160,6 +160,9 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
     }
 }
 
+// TODO: Refreshing page causes loss of user password and master keys. Page unable to download/upload until login is performed again
+// Cache password or master keys in storage?
+
 // EncryptFile encrypts a file with the given key. Salt, IV and Wrapped File Key are pre-pended to ciphertext.
 async function EncryptFile(file: File) {
     const startTime = performance.now()
@@ -227,6 +230,38 @@ async function DecryptFile(encryptedFileKey: ArrayBuffer, fileInfo: FileInfo, fi
     return new File([plaintext], fileInfo.name)
 }
 
+// DecryptFileKey is a helper function to decrypt just the file key for link generation
+async function DecryptFileKey(encryptedFileKey: string) {
+    const mEncKey = store.getState().user.mEncKey
+    const wrappedAccountKey = store.getState().user.wrappedAccountKey
+    if (mEncKey === "" || wrappedAccountKey === "") throw new Error("Missing credentials, please re-login!")
+
+    // Get master key, decrypt account key and decrypt file encryption key
+    const masterKey = await ImportKey(Buffer.from(mEncKey, 'base64'), MasterKeyOpts)
+    const accountKey = await UnwrapKey(Buffer.from(wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
+    const fileKey = await UnwrapKey(Buffer.from(encryptedFileKey, 'base64'), accountKey, FileKeyOpts)
+    const fileKeyBuf = await window.crypto.subtle.exportKey('raw', fileKey)
+
+    return Buffer.from(fileKeyBuf).toString('base64')
+}
+
+async function DecryptFileLink(fileKeyStr: string, fileInfo: FileInfo, fileData: Blob) {
+    // Split prepended iv and file from ciphertext
+    const iv = await fileData.slice(0, AESGCM_iv_len).arrayBuffer()
+    const data = await fileData.slice(AESGCM_iv_len).arrayBuffer()
+    // Import file key
+    const fileKey = await ImportKey(Buffer.from(fileKeyStr, 'base64'), FileKeyOpts)
+
+    // Decrypt contents of the file
+    const plaintext = await window.crypto.subtle.decrypt(
+        { name: FileKeyOpts.algo, iv: iv },
+        fileKey,
+        data
+    )
+    // Return a new 'File' with ciphertext replaced by plaintext // TODO: filetype?
+    return new File([plaintext], fileInfo.name)
+}
+
 export {
     GenerateRandomBytes,
     GenerateSaltFromCRV,
@@ -239,5 +274,7 @@ export {
     WrapKey,
     UnwrapKey,
     ImportKey,
+    DecryptFileKey,
+    DecryptFileLink,
     CRV_len
 }

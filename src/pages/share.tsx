@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import { ArrowBack, Download } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, FormControl, FormLabel, IconButton, LinearProgress, Stack, TextField, Typography } from "@mui/material"
+import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, IconButton, LinearProgress, Stack, Typography } from "@mui/material"
 import { FileInfo, formatSize, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api, { API_URL } from "../networking/endpoints"
 import logo from '/logo.png'
 import ProgressBar from "../components/progress_bar"
+import { DecryptFileLink } from "../utilities/crypto"
 
 function LinkShare() {
     const navigate = useNavigate()
+    const { hash } = useLocation()
+
     const { enqueueSnackbar } = useSnackbar()
     const params = useParams();
     const [loading, setLoading] = useState<boolean>(false)
@@ -35,8 +38,13 @@ function LinkShare() {
         controller.current = new AbortController()
         try {
             setLoading(true)
+            // Download encrypted file with link access_key
             const resp = await api.downloadLink(params.access_key as string, setProgress, controller.current.signal)
-            triggerDownload(file.name, resp.data)
+            // Decrypt file with URL file key
+            const fileKey = hash.slice(1)
+            const decryptedFile = await DecryptFileLink(fileKey, file, resp.data)
+            // Trigger download
+            triggerDownload(file.name, decryptedFile)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: unknown) {
             const error = getErrorString(err)
@@ -80,17 +88,8 @@ function LinkShare() {
                             <Typography variant="body1">Uploaded on: {new Date(file?.added || 0).toLocaleDateString()}</Typography>
                             <Typography variant="body1">Size: {formatSize(file?.size || 0)}</Typography>
                             <Typography variant="body1">Type: {file.type || "Unknown"}</Typography>
+                            <Typography variant="body1">Decryption Key: {hash.slice(1) || "Unknown"}</Typography>
                         </Box>
-                        <FormControl>
-                            <FormLabel htmlFor="password">Decryption Password (optional)</FormLabel>
-                            <TextField fullWidth
-                                autoComplete='off'
-                                name="password"
-                                type="password"
-                                id="password"
-                                placeholder="••••••"
-                                variant="outlined" />
-                        </FormControl>
                         <Button variant="outlined"
                             onClick={downloadLink}
                             disabled={loading}
@@ -102,10 +101,10 @@ function LinkShare() {
                             progress={progress}
                             file={file} />
                         }
+                        {/* TODO: This stopped working with end-to-end encryption */}
                         {file.type === "video/mp4" &&
                             <video controls
                                 src={`${API_URL}/link_download?access_key=${params.access_key}`}>
-
                             </video>
                         }
                     </CardContent>
