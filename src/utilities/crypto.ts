@@ -107,9 +107,9 @@ async function ImportKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoK
 }
 
 // Pads a raw CRV hex string with appropriate padding (URL + 'P' repeated to 200char length) for domain separation
-function padCRV(rawCrvHex: string) {
+function padCRV(rawCrvStr: string) {
     // Hex decode CRV
-    const rawCrv = Buffer.from(rawCrvHex, 'hex')
+    const rawCrv = Buffer.from(rawCrvStr, 'base64')
     // API URL + P to 200 char length into Arraybuffer
     const padding = Buffer.from(API_URL.padEnd(200, "P"))
     // Concatenate padding with raw_crv buffer
@@ -117,8 +117,8 @@ function padCRV(rawCrvHex: string) {
 }
 
 // Returns a 32byte(256bit) salt derived from the raw CRV and padding
-async function GenerateSaltFromCRV(rawCrvHex: string) {
-    const crv = padCRV(rawCrvHex)
+async function GenerateSaltFromCRV(rawCrv: string) {
+    const crv = padCRV(rawCrv)
     return window.crypto.subtle.digest('sha-256', Buffer.from(crv))
 }
 
