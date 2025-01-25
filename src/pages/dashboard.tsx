@@ -10,12 +10,15 @@ import api from '../networking/endpoints'
 import { getErrorString } from '../utilities/utils'
 import { RootState } from '../store/store'
 import { saveFiles } from '../store/reducer'
+import AuthenticateDialog from '../components/dialog_authenticate'
 
 function Dashboard() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const keys = useSelector((store: RootState) => { return { mEncKey: store.user.mEncKey, hAuthKey: store.user.hAuthKey, wrappedAccountKey: store.user.wrappedAccountKey } })
     const files = useSelector((store: RootState) => store.user.files)
     const [loading, setLoading] = useState(false)
+    const [authModalOpen, setAuthModalOpen] = useState(false)
 
     const loadFileList = useCallback(async () => {
         try {
@@ -35,6 +38,13 @@ function Dashboard() {
         loadFileList()
     }, [loadFileList])
 
+    useEffect(() => {
+        if (keys.mEncKey === "" || keys.hAuthKey === "" || keys.wrappedAccountKey === "") {
+            // We lost track of imporant keys, page cannot function, ask for password to re-initialise keys
+            setAuthModalOpen(true)
+        }
+    }, [keys])
+
     return (
         <Box sx={{
             display: 'flex',
@@ -49,6 +59,8 @@ function Dashboard() {
             {/* Side menu */}
             <Sidebar files={files || []} loadFileList={loadFileList} />
 
+            {/* Auth dialolg */}
+            <AuthenticateDialog open={authModalOpen} closeDialog={() => setAuthModalOpen(false)} />
         </Box>
     )
 }
