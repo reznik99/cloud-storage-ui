@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack"
 import { Cancel, Password } from "@mui/icons-material"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, TextField } from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, LinearProgress, TextField } from "@mui/material"
 import { useCallback, useState } from "react";
 import { getErrorString } from "../utilities/utils";
 import { useDispatch, useSelector } from "react-redux";
@@ -110,7 +110,6 @@ function AuthenticateDialog(props: IProps) {
                         Authenticate
                     </Button>
                 </Box>
-
             </DialogContent>
             <DialogActions>
                 <Button variant="text"
@@ -119,6 +118,7 @@ function AuthenticateDialog(props: IProps) {
                     Close
                 </Button>
             </DialogActions>
+            {loading && <LinearProgress variant="indeterminate" />}
         </Dialog>
     )
 }

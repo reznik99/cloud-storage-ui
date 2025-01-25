@@ -15,7 +15,9 @@ import AuthenticateDialog from '../components/dialog_authenticate'
 function Dashboard() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const keys = useSelector((store: RootState) => { return { mEncKey: store.user.mEncKey, hAuthKey: store.user.hAuthKey, wrappedAccountKey: store.user.wrappedAccountKey } })
+    const mEncKey = useSelector((store: RootState) => store.user.mEncKey)
+    const hAuthKey = useSelector((store: RootState) => store.user.hAuthKey)
+    const wrappedAccountKey = useSelector((store: RootState) => store.user.wrappedAccountKey)
     const files = useSelector((store: RootState) => store.user.files)
     const [loading, setLoading] = useState(false)
     const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -39,11 +41,11 @@ function Dashboard() {
     }, [loadFileList])
 
     useEffect(() => {
-        if (keys.mEncKey === "" || keys.hAuthKey === "" || keys.wrappedAccountKey === "") {
+        if (!authModalOpen && (mEncKey === "" || hAuthKey === "" || wrappedAccountKey === "")) {
             // We lost track of imporant keys, page cannot function, ask for password to re-initialise keys
             setAuthModalOpen(true)
         }
-    }, [keys])
+    }, [mEncKey, hAuthKey, wrappedAccountKey])
 
     return (
         <Box sx={{
