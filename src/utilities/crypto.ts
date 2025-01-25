@@ -163,10 +163,13 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
 // EncryptFile encrypts a file with the given key. Salt, IV and Wrapped File Key are pre-pended to ciphertext.
 async function EncryptFile(file: File) {
     const startTime = performance.now()
+    const mEncKey = store.getState().user.mEncKey
+    const wrappedAccountKey = store.getState().user.wrappedAccountKey
+    if (mEncKey === "" || wrappedAccountKey === "") throw new Error("Missing credentials, please re-login!")
 
     // Get master key, decrypt account key and generate file key
-    const masterKey = await ImportKey(Buffer.from(store.getState().user.mEncKey, 'base64'), MasterKeyOpts)
-    const accountKey = await UnwrapKey(Buffer.from(store.getState().user.wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
+    const masterKey = await ImportKey(Buffer.from(mEncKey, 'base64'), MasterKeyOpts)
+    const accountKey = await UnwrapKey(Buffer.from(wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
     const fileKey = await GenerateKey(FileKeyOpts)
 
     // Generate random IV for this file
@@ -199,14 +202,17 @@ async function EncryptFile(file: File) {
 // DecryptFile decrypts a file with the given key. Salt, IV and Wrapped File Key are extracted from ciphertext.
 async function DecryptFile(encryptedFileKey: ArrayBuffer, fileInfo: FileInfo, fileData: Blob): Promise<File> {
     const startTime = performance.now()
+    const mEncKey = store.getState().user.mEncKey
+    const wrappedAccountKey = store.getState().user.wrappedAccountKey
+    if (mEncKey === "" || wrappedAccountKey === "") throw new Error("Missing credentials, please re-login!")
 
     // Split prepended iv and file from ciphertext
     const iv = await fileData.slice(0, AESGCM_iv_len).arrayBuffer()
     const data = await fileData.slice(AESGCM_iv_len).arrayBuffer()
 
     // Get master key, decrypt account key and decrypt file encryption key
-    const masterKey = await ImportKey(Buffer.from(store.getState().user.mEncKey, 'base64'), MasterKeyOpts)
-    const accountKey = await UnwrapKey(Buffer.from(store.getState().user.wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
+    const masterKey = await ImportKey(Buffer.from(mEncKey, 'base64'), MasterKeyOpts)
+    const accountKey = await UnwrapKey(Buffer.from(wrappedAccountKey, 'base64'), masterKey, AccountKeyOpts)
     const fileKey = await UnwrapKey(encryptedFileKey, accountKey, FileKeyOpts)
 
     // Decrypt contents of the file
