@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { FileInfo } from '../utilities/utils'
-import { Buffer } from 'buffer';
 
 interface UserState {
     emailAddress: string;
@@ -8,9 +7,9 @@ interface UserState {
     createdAt: string;
     lastSeen: string;
     files: Array<FileInfo>;
-    mEncKey: CryptoKey | undefined;
-    hAuthKey: ArrayBuffer | undefined;
-    wrappedAccountKey: ArrayBuffer | undefined;
+    mEncKey: string;
+    hAuthKey: string;
+    wrappedAccountKey: string;
     clientRandomValue: string;
 }
 
@@ -21,9 +20,9 @@ const initialState: UserState = {
     createdAt: '',
     lastSeen: '',
     files: [],
-    mEncKey: undefined,
-    hAuthKey: Buffer.alloc(0),
-    wrappedAccountKey: Buffer.alloc(0),
+    mEncKey: '',
+    hAuthKey: '',
+    wrappedAccountKey: '',
     clientRandomValue: ''
 }
 

@@ -28,7 +28,7 @@ export const AccountKeyOpts: KeyOpts = {
     algo: "AES-KW",
     length: 256,
     usages: ["wrapKey", "unwrapKey"],
-    exportable: false
+    exportable: true
 }
 // Options for file encryption keys (used for encrypting files)
 export const FileKeyOpts: KeyOpts = {
@@ -68,7 +68,7 @@ async function GenerateKey(opts: KeyOpts) {
             length: opts.length,
         },
         opts.exportable,
-        FileKeyOpts.usages
+        opts.usages
     )
 }
 
@@ -96,12 +96,12 @@ async function UnwrapKey(wrappedKey: ArrayBuffer, wrappingKey: CryptoKey, opts: 
 }
 
 // Imports a key buffer into browser for cryptographic use
-async function importKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoKey> {
+async function ImportKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoKey> {
     return window.crypto.subtle.importKey(
         "raw",
         keyBuffer,
         opts.algo,
-        false,
+        opts.exportable,
         opts.usages
     )
 }
@@ -131,7 +131,7 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
 
     // Convert string password to bytes and initialise PBKDF2 key from password
     const passwordBytes = Buffer.from(password)
-    const keyMaterial = await importKey(passwordBytes, DeriveKeyOpts)
+    const keyMaterial = await ImportKey(passwordBytes, DeriveKeyOpts)
 
     // Derive bits for Encryption and Authentication Key
     const derivedBits = await window.crypto.subtle.deriveBits(
@@ -151,11 +151,10 @@ async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
 
     // Hash authentication key for authenticating to API
     const hashedAuthenticationKeyBytes = await Hash(authenticationKeyBytes, "SHA-256")
-    const encryptionKey = await importKey(encryptionKeyBytes, MasterKeyOpts)
 
     console.info(`DeriveKeysFromPassword took ${performance.now() - startTime}ms`)
     return {
-        mEncKey: encryptionKey,
+        mEncKey: encryptionKeyBytes,
         hAuthKey: hashedAuthenticationKeyBytes,
         salt: Buffer.from(salt)
     }
@@ -234,5 +233,6 @@ export {
     BufferEquals,
     WrapKey,
     UnwrapKey,
+    ImportKey,
     CRV_len
 }

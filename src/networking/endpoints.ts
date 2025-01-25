@@ -1,6 +1,6 @@
 import axios from "axios"
 import { FileInfo, noopProgressCallback, Progress } from "../utilities/utils"
-import { AccountKeyOpts, CRV_len, DeriveKeysFromPassword, GenerateKey, GenerateRandomBytes, GenerateSaltFromCRV, UnwrapKey, WrapKey } from "../utilities/crypto"
+import { AccountKeyOpts, CRV_len, DeriveKeysFromPassword, GenerateKey, GenerateRandomBytes, GenerateSaltFromCRV, ImportKey, MasterKeyOpts, UnwrapKey, WrapKey } from "../utilities/crypto"
 import { Buffer } from "buffer"
 import store from "../store/store"
 
@@ -124,8 +124,9 @@ async function login(emailAddress: string, password: string) {
         createdAt: resp.data.created_at as number,
         lastSeen: resp.data.last_seen as number,
         password: password,
-        mEncKey: keys.mEncKey,
-        hAuthKey: keys.hAuthKey,
+        mEncKey:  Buffer.from(keys.mEncKey).toString('base64'),
+        hAuthKey: Buffer.from(keys.hAuthKey).toString('base64'),
+        wrappedAccountKey: resp.data.wrapped_account_key as string,
         clientRandomValue: rawCrv
     }
 }
@@ -137,10 +138,10 @@ async function signup(emailAddress: string, password: string) {
     const salt = await GenerateSaltFromCRV(rawCrv)
     // Derive Master Auth and Enc Key from salt
     const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
-    // Generate account key
+    // Generate account key and wrap account key with master key
     const acctKey = await GenerateKey(AccountKeyOpts)
-    // Wrap account key
-    const acctKeyWrapped = await WrapKey(acctKey, keys.mEncKey)
+    const mEncKey = await ImportKey(keys.mEncKey, MasterKeyOpts)
+    const acctKeyWrapped = await WrapKey(acctKey, mEncKey)
 
     // Signup with email, derived auth key and client_random_value
     return client.post("/signup", {
@@ -172,10 +173,10 @@ async function resetPassword(newPassword: string, resetCode: string) {
     const newSalt = await GenerateSaltFromCRV(newRawCrv)
     // Derive new Master Auth and Enc Key from new salt
     const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
-    // Generate account key
+    // Generate new account key and Wrap new account key with new master key
     const newAcctKey = await GenerateKey(AccountKeyOpts)
-    // Wrap account key
-    const newAcctKeyWrapped = await WrapKey(newAcctKey, newKeys.mEncKey)
+    const mEncKey = await ImportKey(newKeys.mEncKey, MasterKeyOpts)
+    const newAcctKeyWrapped = await WrapKey(newAcctKey, mEncKey)
 
     return client.post("/reset_password", {
         reset_code: resetCode,
@@ -202,10 +203,10 @@ async function changePassword(password: string, newPassword: string) {
     // Derive new Master Auth and Enc Key from new salt
     const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
 
-    // Decrypt account key with current keys
-    const acctKey = await UnwrapKey(user.wrappedAccountKey, currentKeys.mEncKey, AccountKeyOpts)
-    // Encrypt account key with new keys
-    const newWrappedAcctKey = await WrapKey(acctKey, newKeys.mEncKey)
+    // Decrypt account key with current keys and re-encrypt account key with new master key
+    const mEncKey = await ImportKey(currentKeys.mEncKey, MasterKeyOpts)
+    const acctKey = await UnwrapKey(Buffer.from(user.wrappedAccountKey, 'base64'), mEncKey, AccountKeyOpts)
+    const newWrappedAcctKey = await WrapKey(acctKey, mEncKey)
 
 
     // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
@@ -216,10 +217,10 @@ async function changePassword(password: string, newPassword: string) {
         new_client_random_value: newRawCrv
     })
     return {
-        password: password,
-        mEncKey: newKeys.mEncKey,
-        hAuthKey: newKeys.hAuthKey,
-        wrappedAccountKey: newWrappedAcctKey,
+        password: newPassword,
+        mEncKey: Buffer.from(newKeys.mEncKey).toString('base64'),
+        hAuthKey: Buffer.from(newKeys.hAuthKey).toString('base64'),
+        wrappedAccountKey: Buffer.from(newWrappedAcctKey).toString('base64'),
         clientRandomValue: newRawCrv
     }
 }
