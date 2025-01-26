@@ -49,7 +49,7 @@ const router = createBrowserRouter([
     element: <P2PFileSharing />,
   }, {
     path: "/settings",
-    element: <PrivateRoute><Settings /></PrivateRoute>,
+    element: <PrivateRoute><Nav /><Settings /></PrivateRoute>,
   }, {
     path: "/dashboard",
     element: <PrivateRoute><Nav /><Dashboard /></PrivateRoute>,

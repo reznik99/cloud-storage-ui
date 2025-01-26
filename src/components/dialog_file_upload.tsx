@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormGroup, FormLabel, Switch, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
 import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"
@@ -19,13 +19,14 @@ function FileUploadDialog(props: IProps) {
 
     const [selectedFile, setSelectedFile] = useState<File | null>()
     const [progress, setProgress] = useState<Progress | null>()
-    const [testLoading, setTestLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [encryptionEnabled, setEncryptionEnabled] = useState(true)
 
     const handleFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedFile(event.target?.files?.[0])
     }, [])
 
-    const handleCancel = useCallback(() => {
+    const closeDialog = useCallback(() => {
         props.closeDialog()
         setSelectedFile(null)
         controller.current.abort()
@@ -33,12 +34,14 @@ function FileUploadDialog(props: IProps) {
 
     const uploadFile = useCallback(async () => {
         if (!selectedFile) return
-
-        controller.current = new AbortController()
         try {
+            setLoading(true)
+            controller.current = new AbortController()
+
             const encFile = await EncryptFile(selectedFile)
             await api.uploadFile(encFile.encryptedFile, encFile.encryptedFileKey, setProgress, controller.current.signal)
-            handleCancel()
+
+            closeDialog()
             props.loadFileList()
             enqueueSnackbar("File uploaded successfully", { variant: "success" })
         } catch (err: unknown) {
@@ -47,13 +50,14 @@ function FileUploadDialog(props: IProps) {
             enqueueSnackbar("Upload failed: " + error, { variant: "error" })
         } finally {
             setProgress(null)
+            setLoading(false)
         }
-    }, [selectedFile, props, handleCancel, enqueueSnackbar])
+    }, [selectedFile, props, closeDialog, enqueueSnackbar])
 
     const testEncryption = useCallback(async () => {
         if (!selectedFile) return
         try {
-            setTestLoading(true)
+            setLoading(true)
             const encFile = await EncryptFile(selectedFile)
 
             const decFile = await DecryptFile(encFile.encryptedFileKey, fileToFileInfo(selectedFile), encFile.encryptedFile)
@@ -69,23 +73,26 @@ function FileUploadDialog(props: IProps) {
             console.error(err)
             enqueueSnackbar("Encryption tests failed: " + err, { variant: "error" })
         } finally {
-            setTestLoading(false)
+            setLoading(false)
         }
     }, [selectedFile, enqueueSnackbar])
 
     return (
         <Dialog open={props.open}
             fullWidth={true}
-            onClose={handleCancel}
+            onClose={closeDialog}
             aria-labelledby="file-dialog-title"
             aria-describedby="file-dialog-description">
             <DialogTitle id="file-dialog-title">File Upload</DialogTitle>
             <DialogContent>
-                <Alert severity="info">
-                    <Typography>
-                        Select a file to upload.<br />
-                        Files are End-To-End encrypted by default!
-                    </Typography>
+                <Alert severity={encryptionEnabled ? "info" : "warning"}>
+                    {encryptionEnabled
+                        ? <Typography>File will be End-To-End encrypted!</Typography>
+                        : <Typography>File will not be encrypted!<br />
+                            Only disable encryption if video/mp4 files are to be shared.<br />
+                            This will allow a shared link to be used for streaming the video to the browser.
+                        </Typography>
+                    }
                 </Alert>
 
                 <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
@@ -100,12 +107,16 @@ function FileUploadDialog(props: IProps) {
                 {selectedFile && <Accordion>
                     <AccordionSummary expandIcon={<ExpandMore />}>Advanced Options</AccordionSummary>
                     <AccordionDetails>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
-                            <Typography variant="body2">Encrypt your file with a password to provide End to End encryption!</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
+                            <FormGroup>
+                                <FormLabel>File Encryption</FormLabel>
+                                <Switch checked={encryptionEnabled}
+                                    onChange={e => setEncryptionEnabled(e.target.checked)} />
+                            </FormGroup>
                             <Button variant="text"
-                                startIcon={testLoading ? <CircularProgress /> : <Key />}
+                                startIcon={loading ? <CircularProgress size={15} /> : <Key />}
                                 onClick={testEncryption}
-                                disabled={testLoading || !selectedFile}>
+                                disabled={loading || !selectedFile}>
                                 Test Encryption
                             </Button>
                         </Box>
@@ -121,11 +132,11 @@ function FileUploadDialog(props: IProps) {
             <DialogActions>
                 <Button variant="text"
                     startIcon={<Cancel />}
-                    onClick={handleCancel}>
+                    onClick={closeDialog}>
                     Cancel
                 </Button>
                 <Button variant="contained"
-                    disabled={testLoading || !selectedFile}
+                    disabled={loading || !selectedFile}
                     startIcon={<UploadFile />}
                     onClick={uploadFile} autoFocus>
                     Upload

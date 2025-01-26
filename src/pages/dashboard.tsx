@@ -45,7 +45,7 @@ function Dashboard() {
             // We lost track of imporant keys, page cannot function, ask for password to re-initialise keys
             setAuthModalOpen(true)
         }
-    }, [mEncKey, hAuthKey, wrappedAccountKey])
+    }, [authModalOpen, mEncKey, hAuthKey, wrappedAccountKey])
 
     return (
         <Box sx={{

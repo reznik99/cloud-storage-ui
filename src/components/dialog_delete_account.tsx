@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack"
 import { Article, Cancel, Link, Password } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
+import { Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
 import { useCallback, useState } from "react";
 import { getErrorString } from "../utilities/utils";
 import api from "../networking/endpoints";

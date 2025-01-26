@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
-import { ArrowForward, Cancel, LoginOutlined, Mail } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
+import { Cancel, LoginOutlined, Mail } from "@mui/icons-material"
+import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormLabel, LinearProgress, Link, Stack, TextField, Typography } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
 import logo from '/logo.png'
@@ -130,27 +130,29 @@ function Login() {
                                 error={!!passwordError}
                                 helperText={passwordError}
                                 onChange={(e) => setPassword(e.target.value)} />
+                            <Stack direction="row" marginTop={2}>
+                                <Link href="#" onClick={() => setShowResetDialog(true)}>Forgot Password?</Link>
+                            </Stack>
                         </FormControl>
 
-                        <Button fullWidth
-                            variant="contained"
-                            type="submit"
-                            disabled={loading}
-                            endIcon={<LoginOutlined />}>
-                            Login
-                        </Button>
-
-                        <a href="#" onClick={() => setShowResetDialog(true)}>Forgot Password?</a>
+                        <Stack direction="row" justifyContent="center">
+                            <Button variant="contained"
+                                type="submit"
+                                disabled={loading}
+                                endIcon={<LoginOutlined />}>
+                                Log in
+                            </Button>
+                        </Stack>
                     </Box>
 
-                    <Divider sx={{ mb: 3 }}>or</Divider>
+                    <Divider sx={{ mb: 3 }}>Don't have an account?</Divider>
 
-                    <Button fullWidth
-                        variant="outlined"
-                        endIcon={<ArrowForward />}
-                        onClick={() => navigate('/signup')}>
-                        Signup
-                    </Button>
+                    <Stack direction="row" justifyContent="center">
+                        <Button variant="outlined"
+                            onClick={() => navigate('/signup')}>
+                            Create new account
+                        </Button>
+                    </Stack>
 
                 </Card>
                 <Box sx={{ width: '50%' }}>

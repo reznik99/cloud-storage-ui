@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack"
 import { Cancel, Password } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, LinearProgress, TextField, Typography } from "@mui/material"
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormLabel, LinearProgress, TextField, Typography } from "@mui/material"
 import PasswordMeter from "./password_meter";
 import { useCallback, useState } from "react";
 import { ValidatePassword } from "../utilities/security";

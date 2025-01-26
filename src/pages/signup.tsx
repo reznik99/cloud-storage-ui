@@ -143,23 +143,26 @@ function Signup() {
                     </FormControl>
                     {password && <PasswordMeter password={password || passwordConfirmation} />}
 
-                    <Button fullWidth
-                        variant="contained"
-                        type="submit"
-                        disabled={loading}
-                        startIcon={<AccountCircle />}>
-                        Signup
-                    </Button>
+                    <Stack direction="row" justifyContent="center">
+                        <Button variant="contained"
+                            type="submit"
+                            disabled={loading}
+                            startIcon={<AccountCircle />}>
+                            Create Account
+                        </Button>
+                    </Stack>
+
                 </Box>
 
-                <Divider sx={{ mb: 3 }}>or</Divider>
+                <Divider sx={{ mb: 3 }}>Already have an account?</Divider>
 
-                <Button fullWidth
-                    variant="outlined"
-                    startIcon={<ArrowBack />}
-                    onClick={() => navigate('/login')}>
-                    Login
-                </Button>
+                <Stack direction="row" justifyContent="center">
+                    <Button variant="outlined"
+                        startIcon={<ArrowBack />}
+                        onClick={() => navigate('/login')}>
+                        Log in
+                    </Button>
+                </Stack>
 
             </Card>
 
