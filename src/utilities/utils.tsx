@@ -72,11 +72,14 @@ export function formatSize(byteSize: number) {
 
 export function getFileIcon(fileName: string): JSX.Element {
     const fileExt = fileName.substring(fileName.lastIndexOf('.'), fileName.length)
-    switch (fileExt) {
+    switch (fileExt.toLowerCase()) {
         // Folders
+        case ".tar":
+        case ".gz":
         case ".gzip":
         case ".zip":
-        case ".tar":
+        case ".7z":
+        case ".7zip":
             return (<FolderZip color="primary" />)
         case "":
             return (<Folder color="primary" />)

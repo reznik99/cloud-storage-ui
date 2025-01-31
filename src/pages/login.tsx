@@ -188,7 +188,7 @@ function Login() {
                         <Typography variant="h5">Need to share files directly?</Typography>
                     </AlertTitle>
                     <Typography>
-                        Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with
+                        Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with 
                         <b>server-less peer-to-peer</b> file sharing!<br />
                     </Typography>
                     <ul>
