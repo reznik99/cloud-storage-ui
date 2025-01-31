@@ -59,18 +59,22 @@ function P2PFileSharing() {
                     <Typography sx={{ my: 3 }}>This page allow you to share files directly (without a server) to your friends!</Typography>
 
                     <Accordion defaultExpanded>
-                        <AccordionSummary>Sending a file?</AccordionSummary>
+                        <AccordionSummary><Typography component="span">Sending a file?</Typography></AccordionSummary>
                         <AccordionDetails>
-                            Select a file, once selected you will be able to copy a <b>share link</b> or copy a QR code.<br />
-                            Share this link or QR code with a friend, once they open the link they will be able to download the file <br />
-                            directly from you! <b>Make sure not to close this tab</b> while the file is being transfered.
+                            <Typography>
+                                Select a file, once selected you will be able to copy a <b>share link</b> or copy a QR code.<br />
+                                Share this link or QR code with a friend, once they open the link they will be able to download the file <br />
+                                directly from you! <b>Make sure not to close this tab</b> while the file is being transfered.
+                            </Typography>
                         </AccordionDetails>
                     </Accordion>
                     <Accordion>
-                        <AccordionSummary>Receiving a file?</AccordionSummary>
+                        <AccordionSummary><Typography component="span">Receiving a file?</Typography></AccordionSummary>
                         <AccordionDetails>
-                            Simply clicking on the share link or scanning the QR code you received should initiate the download.<br />
-                            Otherwise, paste the link on the left side and click <b>connect</b>.
+                            <Typography>
+                                Simply clicking on the share link or scanning the QR code you received should initiate the download.<br />
+                                Otherwise, paste the link on the left side and click <b>connect</b>.
+                            </Typography>
                         </AccordionDetails>
                     </Accordion>
 
