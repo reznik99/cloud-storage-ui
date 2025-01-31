@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link as RouterLink, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { Cancel, LoginOutlined, Mail } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormLabel, LinearProgress, Link, Stack, TextField, Typography } from "@mui/material"
+import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography, Link } from "@mui/material"
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
 import logo from '/logo.png'
@@ -134,7 +134,7 @@ function Login() {
                                 helperText={passwordError}
                                 onChange={(e) => setPassword(e.target.value)} />
                             <Stack direction="row" marginTop={2}>
-                                <Link href="#" onClick={() => setShowResetDialog(true)}>Forgot Password?</Link>
+                                <Link to="#" component={RouterLink} onClick={() => setShowResetDialog(true)}>Forgot Password?</Link>
                             </Stack>
                         </FormControl>
 
@@ -166,52 +166,6 @@ function Login() {
                     }
                     {loading && <LinearProgress variant="indeterminate" />}
                 </Box>
-                <Dialog open={showResetDialog}
-                    fullWidth={true}
-                    keepMounted={true}
-                    onClose={() => setShowResetDialog(false)}>
-                    <DialogTitle id="pw-reset-dialog-title">Reset Password</DialogTitle>
-                    <DialogContent>
-                        <Box sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            width: '100%',
-                            gap: 3,
-                        }}>
-                            <FormControl>
-                                <FormLabel htmlFor="email">Email Address</FormLabel>
-                                <TextField fullWidth
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    autoComplete="email"
-                                    placeholder="your@email.com"
-                                    variant="outlined"
-                                    color="primary"
-                                    value={emailAddress}
-                                    error={!!emailError}
-                                    helperText={emailError}
-                                    onChange={(e) => setEmailAddress(e.target.value)} />
-                            </FormControl>
-
-                            <Button fullWidth
-                                variant="contained"
-                                disabled={dialogLoading}
-                                startIcon={dialogLoading ? <CircularProgress /> : <Mail />}
-                                onClick={requestPasswordReset}>
-                                Request Password Reset
-                            </Button>
-                        </Box>
-
-                    </DialogContent>
-                    <DialogActions>
-                        <Button variant="text"
-                            startIcon={<Cancel />}
-                            onClick={() => setShowResetDialog(false)}>
-                            Close
-                        </Button>
-                    </DialogActions>
-                </Dialog>
             </Stack>
             <Stack sx={{ paddingX: 5 }} flexGrow={1}>
                 <Alert variant="filled" severity="info" icon="">
@@ -219,7 +173,7 @@ function Login() {
                         <Typography variant="h4">Gorini Drive Storage</Typography>
                     </AlertTitle>
                     <Typography>
-                        End-To-End encrypted file storage based on the <Link href="https://mega.nz/SecurityWhitepaper.pdf" target="_blank">Mega.nz whitepaper</Link>.<br />
+                        End-To-End encrypted file storage based on the <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}>Mega.nz whitepaper</Link>.<br />
                         Free accounts can have up to 1GB of storage.
                     </Typography>
                 </Alert>
@@ -228,11 +182,58 @@ function Login() {
                         <Typography variant="h5">Need to share files directly?</Typography>
                     </AlertTitle>
                     <Typography>
-                        Click <Link href="/p2p-file-share">here</Link> to share files with <b>server-less peer-to-peer</b> file sharing!<br />
+                        Click <Link to="/p2p-file-share" component={RouterLink}>here</Link> to share files with <b>server-less peer-to-peer</b> file sharing!<br />
                         Files are end-to-end encrypted.
                     </Typography>
                 </Alert>
             </Stack>
+
+            <Dialog open={showResetDialog}
+                fullWidth={true}
+                keepMounted={true}
+                onClose={() => setShowResetDialog(false)}>
+                <DialogTitle id="pw-reset-dialog-title">Reset Password</DialogTitle>
+                <DialogContent>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        width: '100%',
+                        gap: 3,
+                    }}>
+                        <FormControl>
+                            <FormLabel htmlFor="email">Email Address</FormLabel>
+                            <TextField fullWidth
+                                id="email"
+                                type="email"
+                                name="email"
+                                autoComplete="email"
+                                placeholder="your@email.com"
+                                variant="outlined"
+                                color="primary"
+                                value={emailAddress}
+                                error={!!emailError}
+                                helperText={emailError}
+                                onChange={(e) => setEmailAddress(e.target.value)} />
+                        </FormControl>
+
+                        <Button fullWidth
+                            variant="contained"
+                            disabled={dialogLoading}
+                            startIcon={dialogLoading ? <CircularProgress /> : <Mail />}
+                            onClick={requestPasswordReset}>
+                            Request Password Reset
+                        </Button>
+                    </Box>
+
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="text"
+                        startIcon={<Cancel />}
+                        onClick={() => setShowResetDialog(false)}>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Stack>
     )
 }
