@@ -170,11 +170,16 @@ function Login() {
             <Stack sx={{ paddingX: 5 }} flexGrow={1}>
                 <Alert variant="filled" severity="info" icon="">
                     <AlertTitle>
-                        <Typography variant="h4">Gorini Drive Storage</Typography>
+                        <Typography variant="h5">Gorini Drive Storage</Typography>
                     </AlertTitle>
                     <Typography>
                         End-To-End encrypted file storage based on the <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}>Mega.nz whitepaper</Link>.<br />
-                        Free accounts can have up to 1GB of storage.
+                        <ul>
+                            <li>Up to 1GB of storage for free</li>
+                            <li>End-To-End encryption</li>
+                            <li>Files sharing is easy! Download without an account</li>
+                            <li>Open Source</li>
+                        </ul>
                     </Typography>
                 </Alert>
                 <Alert variant="standard" severity="info" sx={{ marginTop: 10 }}>
@@ -182,8 +187,13 @@ function Login() {
                         <Typography variant="h5">Need to share files directly?</Typography>
                     </AlertTitle>
                     <Typography>
-                        Click <Link to="/p2p-file-share" component={RouterLink}>here</Link> to share files with <b>server-less peer-to-peer</b> file sharing!<br />
-                        Files are end-to-end encrypted.
+                        Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with <b>server-less peer-to-peer</b> file sharing!<br />
+                        <ul>
+                            <li><b>Unlimited</b> file sharing</li>
+                            <li>Peer-To-Peer & Server-less</li>
+                            <li>End-To-End encryption</li>
+                            <li>Open Source</li>
+                        </ul>
                     </Typography>
                 </Alert>
             </Stack>
