@@ -18,8 +18,7 @@ function DeleteAccountDialog(props: IProps) {
     const [password, setPassword] = useState('')
     const [acceptedTerms, setAcceptedTerms] = useState(false)
 
-    const changePassword = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+    const deleteAccount = useCallback(async () => {
         try {
             setLoading(true)
             await api.deleteAccount(password)
@@ -62,17 +61,15 @@ function DeleteAccountDialog(props: IProps) {
                     </Stack>
                 </Alert>
 
-
                 <Box component="form"
                     noValidate={true}
-                    onSubmit={changePassword}
+                    gap={3}
                     sx={{
                         display: 'flex',
                         flexDirection: 'column',
                         width: '100%',
-                        my: 3,
+                        marginTop: 3,
                     }}>
-
                     <FormControl>
                         <FormLabel htmlFor="password">Password</FormLabel>
                         <TextField fullWidth
@@ -86,17 +83,17 @@ function DeleteAccountDialog(props: IProps) {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)} />
                     </FormControl>
+                    <Stack direction="row" justifyContent="center">
+                        <Button color="error"
+                            variant="contained"
+                            onClick={deleteAccount}
+                            disabled={loading || !password || !acceptedTerms}
+                            startIcon={<Password />}>
+                            Delete Account
+                        </Button>
+                    </Stack>
                 </Box>
-                <Stack direction="row" justifyContent="center">
-                    <Button
-                        color="error"
-                        variant="contained"
-                        type="submit"
-                        disabled={loading || !password || !acceptedTerms}
-                        startIcon={<Password />}>
-                        Delete Account
-                    </Button>
-                </Stack>
+
             </DialogContent>
 
             <DialogActions>
