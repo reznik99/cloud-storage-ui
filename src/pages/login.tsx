@@ -78,10 +78,13 @@ function Login() {
     }, [emailAddress])
 
     return (
-        <>
-            <Stack sx={{ alignItems: 'center', mt: 5 }}>
-                <Card sx={{ padding: 5, width: '50%' }}>
-
+        <Stack sx={{ paddingTop: 10 }}
+            direction="row"
+            width="100vw"
+            height="100vh"
+            className="login-container">
+            <Stack sx={{ paddingX: 5 }} flexGrow={1}>
+                <Card sx={{ padding: 5 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography
                             component="h1"
@@ -155,7 +158,7 @@ function Login() {
                     </Stack>
 
                 </Card>
-                <Box sx={{ width: '50%' }}>
+                <Box>
                     {feedback &&
                         <Alert severity={feedback.severity}>
                             <AlertTitle>{feedback.message}</AlertTitle>
@@ -163,7 +166,6 @@ function Login() {
                     }
                     {loading && <LinearProgress variant="indeterminate" />}
                 </Box>
-
                 <Dialog open={showResetDialog}
                     fullWidth={true}
                     keepMounted={true}
@@ -211,7 +213,27 @@ function Login() {
                     </DialogActions>
                 </Dialog>
             </Stack>
-        </>
+            <Stack sx={{ paddingX: 5 }} flexGrow={1}>
+                <Alert variant="filled" severity="info" icon="">
+                    <AlertTitle>
+                        <Typography variant="h4">Gorini Drive Storage</Typography>
+                    </AlertTitle>
+                    <Typography>
+                        End-To-End encrypted file storage based on the <Link href="https://mega.nz/SecurityWhitepaper.pdf" target="_blank">Mega.nz whitepaper</Link>.<br />
+                        Free accounts can have up to 1GB of storage.
+                    </Typography>
+                </Alert>
+                <Alert variant="standard" severity="info" sx={{ marginTop: 10 }}>
+                    <AlertTitle>
+                        <Typography variant="h5">Need to share files directly?</Typography>
+                    </AlertTitle>
+                    <Typography>
+                        Click <Link href="/p2p-file-share">here</Link> to share files with <b>server-less peer-to-peer</b> file sharing!<br />
+                        Files are end-to-end encrypted.
+                    </Typography>
+                </Alert>
+            </Stack>
+        </Stack>
     )
 }
 
