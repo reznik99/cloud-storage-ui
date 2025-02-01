@@ -55,6 +55,7 @@ function P2PFileSharing() {
         return () => {
             getWebSocket()?.close?.()
             sendChannel?.close?.()
+            localConn?.close?.()
         }
     }, [])
 
@@ -270,16 +271,17 @@ function P2PFileSharing() {
                                     <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
                                 )}
                             </Stack>
-                            <Stack direction="row" gap={1}>
+                            <Stack component="form" direction="row" gap={1}
+                                onSubmit={(e) => {
+                                    e.preventDefault()
+                                    channelSendMessage(message)
+                                    setMessage("")
+                                }}>
                                 <TextField fullWidth
                                     placeholder='Say hi to your friend while you wait for the download'
                                     value={message}
                                     onChange={e => setMessage(e.target.value)} />
-                                <IconButton color="primary" sx={{ p: '10px' }}
-                                    onClick={() => {
-                                        channelSendMessage(message);
-                                        setMessage("")
-                                    }}>
+                                <IconButton color="primary" type='submit' sx={{ p: '10px' }}>
                                     <Send />
                                 </IconButton>
                             </Stack>
