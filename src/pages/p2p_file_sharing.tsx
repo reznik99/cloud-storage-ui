@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowBack } from '@mui/icons-material'
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, IconButton, LinearProgress, Stack, Tooltip, Typography } from '@mui/material'
+import { ArrowBack, Send } from '@mui/icons-material'
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Divider, IconButton, LinearProgress, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import { Buffer } from 'buffer'
 import useWebSocket from 'react-use-websocket'
 
-import { CreateConnection } from '../networking/webrtc'
+import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import { GetWebsocketURL } from '../networking/websocket'
 import { getWebRTCStatus, getWebsocketStatus } from '../utilities/utils'
 
@@ -23,6 +23,11 @@ const parseLink = (urlData: string) => {
     }
 }
 
+type ChannelMessage = {
+    sent: boolean;
+    message: string;
+}
+
 function P2PFileSharing() {
     const navigate = useNavigate()
     const { hash } = useLocation()
@@ -36,8 +41,8 @@ function P2PFileSharing() {
             onError: wsOnError
         }
     );
-    const [webSocketKey, setWebSocketKey] = useState('')
-    const [peerWebSocketKey, setPeerWebSocketKey] = useState('')
+    const [webSocketKey, setWebSocketKey] = useState("")
+    const [peerWebSocketKey, setPeerWebSocketKey] = useState("")
     // WebRTC stuff
     const [localConn, setLocalConn] = useState<RTCPeerConnection | undefined>()
     const [sendChannel, setSendChannel] = useState<RTCDataChannel | undefined>()
@@ -45,8 +50,10 @@ function P2PFileSharing() {
     const [iceCandidates, setIceCandidates] = useState<Array<string>>([])
     // Page stuff
     const [selectedFile, setSelectedFile] = useState<File | undefined>()
-    const [peerURL, setPeerURL] = useState('')
+    const [peerURL, setPeerURL] = useState("")
     const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState("")
+    const [messages, setMessages] = useState<Array<ChannelMessage>>([])
 
     useEffect(() => {
         return () => {
@@ -58,7 +65,7 @@ function P2PFileSharing() {
         if (!webSocketKey.length || !peerWebSocketKey.length) return
         // We have a peer websocket, let's send our queued icecandidates
         iceCandidates.forEach(iceCandidateStr => {
-            console.log("Sending icecandidate to peer (effect)")
+            console.log("[WS] Sending icecandidate to peer (effect)")
             sendJsonMessage({
                 from: webSocketKey,
                 to: peerWebSocketKey,
@@ -98,8 +105,8 @@ function P2PFileSharing() {
             console.error("[WS] message error:", err)
         }
     }
-    function wsOnOpen(e: Event) {
-        console.log("[WS] Opened", e)
+    function wsOnOpen(_: Event) {
+        console.log("[WS] Opened")
         if (hash.length) {
             console.log("Leech page detected...")
             setTimeout(() => leechShareLink(), 1000)
@@ -115,25 +122,34 @@ function P2PFileSharing() {
     }
 
     // WebRTC event handlers
-    function channelOnStateChange(sendChannel: RTCDataChannel) {
-        if (sendChannel) {
-            const { readyState } = sendChannel;
-            console.log(`Send channel state is: ${readyState}`);
-            if (readyState === 'open') {
-                console.log(`BOOOM SEND THE FUCKIN FILE DAWG`);
-            }
-            setChannelReadyState(readyState)
-        }
+    const channelSendMessage = (message: string) => {
+        sendChannel?.send(message)
+        setMessages(prev => prev.concat({ sent: true, message: message }))
     }
-    function channelOnError(sendChannel: RTCDataChannel, error: RTCErrorEvent) {
-        if (sendChannel) {
-            console.error('Error in sendChannel:', error);
-            return;
-        }
-        console.log('Error in sendChannel which is already closed:', error);
+    const channelOnMessage = (_: RTCDataChannel, message: MessageEvent<any>) => {
+        console.log("[WebRTC] Data channel received message", message.data)
+        setMessages(prev => prev.concat({ sent: false, message: message.data?.toString() }))
+    }
+    const channelOnStateChange = (sendChannel: RTCDataChannel) => {
+        console.log("sendChannel:", sendChannel)
+        console.log("[WebRTC] channel state changed:", sendChannel?.readyState)
+        setChannelReadyState(sendChannel?.readyState || 'closed')
+    }
+    const channelOnError = (_: RTCDataChannel, error: RTCErrorEvent) => {
+        console.log("[WebRTC] channel error:", error)
+    }
+    const connOnDataChannel = (sendChannel: RTCDataChannel) => {
+        console.log("[WebRTC] new data channel received:", sendChannel)
+        sendChannel.onerror = (err) => channelOnError(sendChannel, err)
+        sendChannel.onclose = () => channelOnStateChange(sendChannel)
+        sendChannel.onopen = () => channelOnStateChange(sendChannel)
+        sendChannel.onmessage = (ev) => channelOnMessage(sendChannel, ev)
+        setSendChannel(sendChannel)
     }
 
-    function handleIceCandidate(iceCandidate: RTCIceCandidate) {
+    // Event handler for when an ICE candidate is ready to be transmitted to the peer
+    const handleIceCandidate = (iceCandidate: RTCIceCandidate | null) => {
+        if (!iceCandidate) return
         try {
             const iceCandidateStr = JSON.stringify(iceCandidate.toJSON())
             if (!peerWebSocketKey.length) {
@@ -141,7 +157,7 @@ function P2PFileSharing() {
                 setIceCandidates((prev) => prev.concat(iceCandidateStr))
                 return
             }
-            console.log("Sending icecandidate to peer")
+            console.log("[WS] Sending icecandidate to peer")
             sendJsonMessage({
                 from: webSocketKey,
                 to: peerWebSocketKey,
@@ -153,14 +169,16 @@ function P2PFileSharing() {
         }
     }
 
-    async function seedShareLink() {
+    // Prepare WebRTC and create an offer
+    const seedShareLink = async () => {
         try {
             setLoading(true)
             // Create localConn and generate offer
-            const local = await CreateConnection(handleIceCandidate, channelOnStateChange, channelOnError, undefined)
+            const local = await StartConnection(handleIceCandidate, channelOnMessage, channelOnStateChange, channelOnError)
             // Convert local offer into a URL
             if (!webSocketKey.length) throw new Error("webSocketKey not initialized")
             const link = await createLink(webSocketKey, local.localOffer!)
+            // Save data
             setLocalConn(local.localConn)
             setSendChannel(local.sendChannel)
             setPeerURL(link)
@@ -171,14 +189,16 @@ function P2PFileSharing() {
         }
     }
 
-    async function leechShareLink() {
+    // Prepare WebRTC and create an answer
+    const leechShareLink = async () => {
         try {
             setLoading(true)
             // Parse remote offer (from the URL)
             const { peerSocketKey, remoteOffer } = parseLink(hash)
             // Create localConn and generate offer
-            const local = await CreateConnection(handleIceCandidate, channelOnStateChange, channelOnError, remoteOffer)
-            // Convert local offer into a URL
+            const local = await AnswerConnection(handleIceCandidate, connOnDataChannel, remoteOffer)
+            // Send answer to peer through signaling
+            console.log("[WS] Sending answer")
             sendJsonMessage({
                 from: webSocketKey,
                 to: peerSocketKey,
@@ -188,7 +208,6 @@ function P2PFileSharing() {
             // Save data
             setPeerWebSocketKey(peerSocketKey)
             setLocalConn(local.localConn)
-            setSendChannel(local.sendChannel)
         } catch (err) {
             console.error("leech share link:", err)
         } finally {
@@ -196,7 +215,8 @@ function P2PFileSharing() {
         }
     }
 
-    function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
+    // Handle file picking and initiate seedShareLink
+    const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedFile(event.target?.files?.[0])
         seedShareLink()
     }
@@ -233,6 +253,27 @@ function P2PFileSharing() {
                     </Stack>
                     {loading && <LinearProgress variant='indeterminate' />}
                 </Card>
+
+                {channelReadyState === "open"
+                    ? <Stack direction="column">
+                        {messages.map((msg, idx) =>
+                            <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
+                        )}
+                        <Stack direction="row" gap={1}>
+                            <TextField value={message}
+                                onChange={e => setMessage(e.target.value)} />
+                            <Divider orientation='vertical' />
+                            <IconButton color="primary" sx={{ p: '10px' }}
+                                onClick={() => {
+                                    channelSendMessage(message);
+                                    setMessage("")
+                                }}>
+                                <Send />
+                            </IconButton>
+                        </Stack>
+                    </Stack>
+                    : <Typography>Peer not connected yet...</Typography>
+                }
             </Stack>
             <Stack sx={{ paddingX: 5, maxWidth: "50%" }} flexGrow={1}>
                 <Alert variant="standard" severity="info">

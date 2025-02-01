@@ -213,11 +213,11 @@ function Login() {
                         gap: 3,
                     }}>
                         <FormControl>
-                            <FormLabel htmlFor="email">Email Address</FormLabel>
+                            <FormLabel htmlFor="email-reset">Email Address</FormLabel>
                             <TextField fullWidth
-                                id="email"
+                                id="email-reset"
                                 type="email"
-                                name="email"
+                                name="email-reset"
                                 autoComplete="email"
                                 placeholder="your@email.com"
                                 variant="outlined"
