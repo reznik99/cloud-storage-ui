@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowBack, Send } from '@mui/icons-material'
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Divider, IconButton, LinearProgress, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { ArrowBack, InsertLink, Send } from '@mui/icons-material'
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Divider, IconButton, LinearProgress, ListItem, ListItemButton, ListItemIcon, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import { Buffer } from 'buffer'
 import useWebSocket from 'react-use-websocket'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import { GetWebsocketURL } from '../networking/websocket'
 import { getWebRTCStatus, getWebsocketStatus } from '../utilities/utils'
+import { useSnackbar } from 'notistack'
 
 const createLink = async (webSocketKey: string, localOffer: RTCSessionDescriptionInit) => {
     const link = `${window.location}#${webSocketKey}#${Buffer.from(JSON.stringify(localOffer), 'ascii').toString('base64')}`
@@ -31,15 +32,11 @@ type ChannelMessage = {
 function P2PFileSharing() {
     const navigate = useNavigate()
     const { hash } = useLocation()
+    const { enqueueSnackbar } = useSnackbar()
     // Websocket stuff
     const { sendJsonMessage, readyState, getWebSocket } = useWebSocket(
         GetWebsocketURL(),
-        {
-            onMessage: wsOnMessage,
-            onOpen: wsOnOpen,
-            onClose: wsOnClose,
-            onError: wsOnError
-        }
+        { onMessage: wsOnMessage, onOpen: wsOnOpen, onClose: wsOnClose, onError: wsOnError }
     );
     const [webSocketKey, setWebSocketKey] = useState("")
     const [peerWebSocketKey, setPeerWebSocketKey] = useState("")
@@ -57,7 +54,8 @@ function P2PFileSharing() {
 
     useEffect(() => {
         return () => {
-            getWebSocket()?.close()
+            getWebSocket()?.close?.()
+            sendChannel?.close?.()
         }
     }, [])
 
@@ -228,6 +226,7 @@ function P2PFileSharing() {
             height="100vh"
             className="login-container">
             <Stack sx={{ paddingX: 5 }} flexGrow={1}>
+                {loading && <LinearProgress variant='indeterminate' />}
                 <Card sx={{ padding: 5 }}>
                     <Stack direction='row' alignItems='center' spacing={2}>
                         <Tooltip title="Go back" disableInteractive>
@@ -241,39 +240,54 @@ function P2PFileSharing() {
                             <input onChange={handleFile} type="file" hidden />
                         </Button>
                     </Box>
-                    <Stack direction="row" alignItems="center" spacing={2} display="flex">
-                        <Typography>Websocket Status:</Typography>
-                        {getWebsocketStatus(readyState)}
-                        <Typography>WebRTC Status:</Typography>
-                        {getWebRTCStatus(channelReadyState)}
-                    </Stack>
-                    <Stack direction="row" alignItems="center" spacing={2} display="flex">
-                        <Typography color="primary">Local Socket: {webSocketKey}</Typography>
-                        <Typography color="secondary">Peer Socket: {peerWebSocketKey}</Typography>
-                    </Stack>
-                    {loading && <LinearProgress variant='indeterminate' />}
-                </Card>
 
-                {channelReadyState === "open"
-                    ? <Stack direction="column">
-                        {messages.map((msg, idx) =>
-                            <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
-                        )}
-                        <Stack direction="row" gap={1}>
-                            <TextField value={message}
-                                onChange={e => setMessage(e.target.value)} />
-                            <Divider orientation='vertical' />
-                            <IconButton color="primary" sx={{ p: '10px' }}
-                                onClick={() => {
-                                    channelSendMessage(message);
-                                    setMessage("")
-                                }}>
-                                <Send />
-                            </IconButton>
+                    <Stack direction="row" gap={3} marginY={2}>
+                        <Stack direction="row"
+                            alignItems="center"
+                            spacing={1}>
+                            <Typography>Server:</Typography>
+                            {getWebsocketStatus(readyState)}
+                        </Stack>
+
+                        <Divider orientation='vertical' flexItem />
+
+                        <Stack direction="row"
+                            alignItems="center"
+                            spacing={1}>
+                            <Typography>Peer:</Typography>
+                            {getWebRTCStatus(channelReadyState)}
                         </Stack>
                     </Stack>
-                    : <Typography>Peer not connected yet...</Typography>
-                }
+
+                    <Typography color="primary">Local: {webSocketKey}</Typography>
+                    <Typography color="secondary">Peer: {peerWebSocketKey || "Waiting connection"}</Typography>
+
+                    <Divider sx={{ my: 3 }} />
+
+                    {channelReadyState === "open"
+                        ? <Stack direction="column" width="100%" >
+                            <Stack direction="column" gap={1} minHeight={100}>
+                                {messages.map((msg, idx) =>
+                                    <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
+                                )}
+                            </Stack>
+                            <Stack direction="row" gap={1}>
+                                <TextField fullWidth
+                                    placeholder='Say hi to your friend while you wait for the download'
+                                    value={message}
+                                    onChange={e => setMessage(e.target.value)} />
+                                <IconButton color="primary" sx={{ p: '10px' }}
+                                    onClick={() => {
+                                        channelSendMessage(message);
+                                        setMessage("")
+                                    }}>
+                                    <Send />
+                                </IconButton>
+                            </Stack>
+                        </Stack>
+                        : <Typography>Waiting for peer connection...</Typography>
+                    }
+                </Card>
             </Stack>
             <Stack sx={{ paddingX: 5, maxWidth: "50%" }} flexGrow={1}>
                 <Alert variant="standard" severity="info">
@@ -303,14 +317,24 @@ function P2PFileSharing() {
                     </Accordion>
                 </Alert>
                 {peerURL &&
-                    <Alert>
-                        <Typography sx={{ my: 3 }}>
-                            {peerURL}
-                        </Typography>
+                    <Alert variant='standard' color="warning" severity='info' >
+                        <Typography>Click the link below to copy it to your clipboard! Leave this page open while the recepient downloads the file!</Typography>
+                        <ListItem>
+                            <Tooltip title="Click to copy to clipboard">
+                                <ListItemButton
+                                    sx={{ overflowWrap: "break-all", overflow: 'hidden' }}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(peerURL)
+                                        enqueueSnackbar("Copied URL to clipboard!")
+                                    }}>
+                                    <Typography color="info">{peerURL}</Typography>
+                                </ListItemButton>
+                            </Tooltip>
+                        </ListItem>
                     </Alert>
                 }
             </Stack>
-        </Stack>
+        </Stack >
     )
 }
 
