@@ -152,3 +152,18 @@ export function getWebsocketStatus(status: number) {
             return <Chip label="unknown" color="secondary" variant="outlined" />
     }
 }
+
+export function getWebRTCStatus(status: RTCDataChannelState | undefined) {
+    switch (status) {
+        case "connecting":
+            return <Chip label="connecting" color="info" variant="outlined" />
+        case "open":
+            return <Chip label="online" color="success" variant="outlined" />
+        case "closing":
+            return <Chip label="closing" color="warning" variant="outlined" />
+        case "closed":
+            return <Chip label="offline" color="error" variant="outlined" />
+        default:
+            return <Chip label="unknown" color="secondary" variant="outlined" />
+    }
+}
