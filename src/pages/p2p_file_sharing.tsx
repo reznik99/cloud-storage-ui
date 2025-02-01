@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowBack, InsertLink, Send } from '@mui/icons-material'
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Divider, IconButton, LinearProgress, ListItem, ListItemButton, ListItemIcon, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { ArrowBack, Send } from '@mui/icons-material'
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Divider, IconButton, LinearProgress, ListItem, ListItemButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import { Buffer } from 'buffer'
 import useWebSocket from 'react-use-websocket'
 
@@ -12,7 +12,6 @@ import { useSnackbar } from 'notistack'
 
 const createLink = async (webSocketKey: string, localOffer: RTCSessionDescriptionInit) => {
     const link = `${window.location}#${webSocketKey}#${Buffer.from(JSON.stringify(localOffer), 'ascii').toString('base64')}`
-    console.log("Share link generated: ", link)
     return link
 }
 
