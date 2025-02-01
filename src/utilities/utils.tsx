@@ -1,4 +1,5 @@
 import { Article, AudioFile, Folder, FolderZip, Movie, Photo } from "@mui/icons-material"
+import { Chip } from "@mui/material";
 import axios, { AxiosError } from "axios";
 
 export type FileInfo = {
@@ -135,4 +136,19 @@ export function fileToFileInfo(file: File | null | undefined): FileInfo {
 
 export function noopProgressCallback(progress: Progress) {
     console.debug(progress)
+}
+
+export function getWebsocketStatus(status: number) {
+    switch (status) {
+        case WebSocket.CONNECTING:
+            return <Chip label="connecting" color="info" variant="outlined" />
+        case WebSocket.OPEN:
+            return <Chip label="online" color="success" variant="outlined" />
+        case WebSocket.CLOSING:
+            return <Chip label="closing" color="warning" variant="outlined" />
+        case WebSocket.CLOSED:
+            return <Chip label="offline" color="error" variant="outlined" />
+        default:
+            return <Chip label="unknown" color="secondary" variant="outlined" />
+    }
 }
