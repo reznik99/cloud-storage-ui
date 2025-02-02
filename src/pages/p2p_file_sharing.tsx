@@ -7,7 +7,7 @@ import useWebSocket from 'react-use-websocket'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import { GetWebsocketURL } from '../networking/websocket'
-import { formatSize, getWebRTCStatus, getWebsocketStatus, triggerDownload } from '../utilities/utils'
+import { FileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, triggerDownload } from '../utilities/utils'
 import { useSnackbar } from 'notistack'
 
 // Creates a p2p file share link containing the local websocket key and local webrtc offer
@@ -28,6 +28,7 @@ const parseLink = (urlData: string) => {
 type ChannelMessage = {
     sent: boolean;
     message: string;
+    when: number;
 }
 
 function P2PFileSharing() {
@@ -48,6 +49,8 @@ function P2PFileSharing() {
     const [iceCandidates, setIceCandidates] = useState<Array<string>>([])
     // Page stuff
     const file = useRef<File | undefined>()
+    const [downloadFileInfo, setDownloadFileInfo] = useState<FileInfo | undefined>()
+    const downloadFile = useRef<ArrayBuffer>(Buffer.alloc(0))
     const [peerURL, setPeerURL] = useState("")
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
@@ -126,33 +129,56 @@ function P2PFileSharing() {
 
     // WebRTC event handlers
     const channelSendMessage = (message: string) => {
-        sendChannel?.send(message)
-        setMessages(prev => prev.concat({ sent: true, message: message }))
+        if (!sendChannel) throw new Error("Send channel not initialized, unable to send message")
+
+        sendChannel.send(JSON.stringify({ type: "message", data: message }))
+        setMessages(prev => prev.concat({ sent: true, message: message, when: Date.now() }))
     }
-    const channelOnMessage = (_: RTCDataChannel, message: MessageEvent<any>) => {
-        console.log("[WebRTC] Data channel received message:", typeof message.data)
+    const channelOnMessage = (sendChannel: RTCDataChannel, message: MessageEvent<any>) => {
         switch (typeof message.data) {
             case "string":
-                setMessages(prev => prev.concat({ sent: false, message: message.data?.toString() }))
+                const msg = JSON.parse(message.data)
+                switch (msg.type) {
+                    case "message":
+                        console.log("[WebRTC] Data channel received 'message'")
+                        setMessages(prev => prev.concat({ sent: false, message: msg.data?.toString(), when: Date.now() }))
+                        break
+                    case "file-info":
+                        console.log("[WebRTC] Data channel received 'file-info'")
+                        setDownloadFileInfo({
+                            name: msg.data.name,
+                            size: msg.data.size as number,
+                            added: (new Date()).toLocaleString(),
+                            type: "",
+                            wrapped_file_key: ""
+                        })
+                        break
+                    case "start-download":
+                        console.log("[WebRTC] Data channel received 'start-download'")
+                        initiateFileTransfer(sendChannel)
+                        break
+                    case "finish-download":
+                        console.log("[WebRTC] Data channel received 'finish-download'")
+                        triggerDownload(downloadFileInfo?.name || "FUCK.pdf", new Blob([downloadFile.current]))
+                        setLoading(false)
+                        // downloadFile.current = Buffer.alloc(0)
+                        break;
+                }
                 break;
             case "object":
-                triggerDownload("FUCK.pdf", new Blob([message.data]))
+                console.log("[WebRTC] Data channel received 'file-chunk")
+                downloadFile.current = Buffer.concat([Buffer.from(downloadFile.current), Buffer.from(message.data)])
                 break;
             default:
-                console.warn("[WebRTC] Data channel received unrecognized message type")
+                console.warn("[WebRTC] Data channel received unrecognized message type: ", typeof message.data)
         }
     }
     const channelOnStateChange = (sendChannel: RTCDataChannel) => {
         console.log("[WebRTC] channel state changed:", sendChannel?.readyState)
         setChannelReadyState(sendChannel?.readyState || 'closed')
         if (sendChannel && file.current && sendChannel.readyState === "open") {
-            console.log("[WebRTC] sending file...")
-            file.current.arrayBuffer()
-                .then(file => sendChannel.send(file))
-                .catch(err => {
-                    console.error("[WebRTC] sending file failed:", err)
-                    enqueueSnackbar(`Failed to send file through WebRTC data channel: ${err}`, { variant: "error" })
-                })
+            console.log("[WebRTC] sending file information...")
+            sendChannel.send(JSON.stringify({ type: "file-info", data: { name: file.current.name, size: file.current.size } }))
         }
     }
     const channelOnError = (_: RTCDataChannel, error: RTCErrorEvent) => {
@@ -173,7 +199,7 @@ function P2PFileSharing() {
         try {
             const iceCandidateStr = JSON.stringify(iceCandidate.toJSON())
             if (!peerWebSocketKey.length) {
-                console.log("peer socket-key not initialized, storing icecandidate")
+                // if peer socket-key not initialized then store icecandidate
                 setIceCandidates((prev) => prev.concat(iceCandidateStr))
                 return
             }
@@ -248,6 +274,42 @@ function P2PFileSharing() {
         seedShareLink()
     }
 
+    const requestFileTransfer = () => {
+        try {
+            setLoading(true)
+            if (!sendChannel) throw new Error("Send channel not initialized, unable to send message")
+            sendChannel?.send(JSON.stringify({ type: "start-download" }))
+        } catch (err) {
+            console.error("[WebRTC] failed to request start-download:", err)
+            enqueueSnackbar(`Failed to request file download: ${err}`, { variant: "error" })
+        }
+    }
+
+    const initiateFileTransfer = async (sendChannel: RTCDataChannel) => {
+        try {
+            setLoading(true)
+            if (!sendChannel) { throw new Error("send channel not initialized, unable to send file") }
+            if (!file.current) { throw new Error("file not initialized, unable to send file") }
+
+            const chunkSize = 16_000 // ~16kb chunk size for WebRTC data channel
+            const chunks = file.current.size / chunkSize
+            console.log(`[WebRTC] Sending file fileSize=${formatSize(file.current.size)} chunkSize=${chunkSize} chunks=${chunks}`)
+            for (let i = 0; i < chunks; i++) {
+                const currentByte = i * chunkSize
+                const chunkBlob = file.current.slice(currentByte, currentByte + chunkSize)
+                const chunk = await chunkBlob.arrayBuffer()
+                // TODO: need onbuffereddatalow callback to figure out if should send or wait
+                sendChannel.send(chunk)
+            }
+            // TODO: need a better way to figure out if all chunks were sent
+            setTimeout(() => sendChannel.send(JSON.stringify({ type: "finish-download" })), 1000)
+        } catch (err) {
+            console.error("[WebRTC] send file err:", err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <Stack sx={{ paddingTop: 10 }}
             direction="row"
@@ -263,13 +325,18 @@ function P2PFileSharing() {
                         </Tooltip>
                         <Typography variant="h5">P2P file sharing</Typography>
                     </Stack>
-                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                        <Button variant={file.current?.name ? "contained" : "outlined"} component="label">
-                            {file.current?.name ?? "Select File"}
-                            <input onChange={handleFile} type="file" hidden />
-                        </Button>
-                    </Box>
 
+                    {/* Select file for sending */}
+                    {!hash.length &&
+                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
+                            <Button variant={file.current?.name ? "contained" : "outlined"} component="label">
+                                {file.current?.name ?? "Select File"}
+                                <input onChange={handleFile} type="file" hidden />
+                            </Button>
+                        </Box>
+                    }
+
+                    {/* Sending file information */}
                     {file.current &&
                         <>
                             <Divider sx={{ my: 3 }} />
@@ -277,6 +344,23 @@ function P2PFileSharing() {
                             <Stack direction="row" gap={2} marginTop={2}>
                                 <Typography>File Name:</Typography> <Chip label={file.current?.name} color="info" variant="outlined" />
                                 <Typography>File Size:</Typography> <Chip label={formatSize(file.current?.size || 0)} color="info" variant="outlined" />
+                            </Stack>
+                        </>
+                    }
+
+                    {/* Receiving file information */}
+                    {downloadFileInfo &&
+                        <>
+                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
+                                <Button variant="contained" onClick={requestFileTransfer}>
+                                    Download
+                                </Button>
+                            </Box>
+                            <Divider sx={{ my: 3 }} />
+                            <Typography>File Information:</Typography>
+                            <Stack direction="row" gap={2} marginTop={2}>
+                                <Typography>File Name:</Typography> <Chip label={downloadFileInfo.name} color="info" variant="outlined" />
+                                <Typography>File Size:</Typography> <Chip label={formatSize(downloadFileInfo.size || 0)} color="info" variant="outlined" />
                             </Stack>
                         </>
                     }
