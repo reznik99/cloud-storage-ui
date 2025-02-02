@@ -1,5 +1,5 @@
 
-const peerConstraints = {
+const peerConstraints: RTCConfiguration = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun.services.mozilla.com' },
@@ -14,18 +14,18 @@ type channelErrorFn = (sendChannel: RTCDataChannel, error: RTCErrorEvent) => voi
 type onDataChannelFn = (sendChannel: RTCDataChannel) => void
 
 // Creates a local webrtc connection and either <creates a local offer> OR <answers the passed in remote offer>
-export async function StartConnection(socketSend: socketSendFn, channelOnMessage: channelOnMessageFn, channelOnStateChange: channelStateChangeFn, channelOnError: channelErrorFn) {
+export async function StartConnection(onIceCandidate: socketSendFn, onMessage: channelOnMessageFn, onStateChange: channelStateChangeFn, onError: channelErrorFn) {
     // Create local conn
     const localConn = new RTCPeerConnection(peerConstraints)
     // Create channel and event listeners
     const sendChannel = localConn.createDataChannel(dataChannelName)
     sendChannel.binaryType = 'arraybuffer'
-    sendChannel.onerror = (err) => channelOnError(sendChannel, err)
-    sendChannel.onclose = () => channelOnStateChange(sendChannel)
-    sendChannel.onopen = () => channelOnStateChange(sendChannel)
-    sendChannel.onmessage = (ev) => channelOnMessage(sendChannel, ev)
+    sendChannel.onerror = (err) => onError(sendChannel, err)
+    sendChannel.onclose = () => onStateChange(sendChannel)
+    sendChannel.onopen = () => onStateChange(sendChannel)
+    sendChannel.onmessage = (ev) => onMessage(sendChannel, ev)
     // Add local conn event listeners
-    localConn.onicecandidate = (ev) => socketSend(ev.candidate)
+    localConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
 
     // We are creating a share link
     const localOffer = await localConn.createOffer()
@@ -38,11 +38,11 @@ export async function StartConnection(socketSend: socketSendFn, channelOnMessage
 }
 
 // Creates a local webrtc connection and either <creates a local offer> OR <answers the passed in remote offer>
-export async function AnswerConnection(socketSend: socketSendFn, onDataChannel: onDataChannelFn, remoteOffer: RTCSessionDescriptionInit) {
+export async function AnswerConnection(onIceCandidate: socketSendFn, onDataChannel: onDataChannelFn, remoteOffer: RTCSessionDescriptionInit) {
     // Create local conn
     const localConn = new RTCPeerConnection(peerConstraints)
     // Add local conn event listeners
-    localConn.onicecandidate = (ev) => socketSend(ev.candidate)
+    localConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
     localConn.ondatachannel = (ev) => onDataChannel(ev.channel)
 
     // We are connecting to a share link

@@ -10,11 +10,13 @@ import { GetWebsocketURL } from '../networking/websocket'
 import { getWebRTCStatus, getWebsocketStatus } from '../utilities/utils'
 import { useSnackbar } from 'notistack'
 
+// Creates a p2p file share link containing the local websocket key and local webrtc offer
 const createLink = async (webSocketKey: string, localOffer: RTCSessionDescriptionInit) => {
     const link = `${window.location}#${webSocketKey}#${Buffer.from(JSON.stringify(localOffer), 'ascii').toString('base64')}`
     return link
 }
 
+// Parses a p2p file share link containing the peer websocket key and peer webrtc offer
 const parseLink = (urlData: string) => {
     const [peerSocketKey, remoteOffer] = urlData.slice(1).split("#")
     return {
@@ -96,11 +98,12 @@ function P2PFileSharing() {
                     break
             }
             if (!peerWebSocketKey.length && message.from?.length) {
-                console.log("Got peer websocket key:", message.from)
+                console.log("[WS] found peer websocket key:", message.from)
                 setPeerWebSocketKey(message.from)
             }
         } catch (err) {
             console.error("[WS] message error:", err)
+            enqueueSnackbar(`Failed to parse websocket message: ${err}`, { variant: "error" })
         }
     }
     function wsOnOpen(_: Event) {
@@ -114,9 +117,11 @@ function P2PFileSharing() {
     }
     function wsOnClose(e: CloseEvent) {
         console.warn("[WS] Closed", e)
+        enqueueSnackbar(`Websocket closed with code=${e.code} and reason=${e.reason}`, { variant: "warning" })
     }
     function wsOnError(e: Event) {
         console.error("[WS] Error", e)
+        enqueueSnackbar(`Websocket error occurred`, { variant: "error" })
     }
 
     // WebRTC event handlers
@@ -136,7 +141,7 @@ function P2PFileSharing() {
     const channelOnError = (_: RTCDataChannel, error: RTCErrorEvent) => {
         console.log("[WebRTC] channel error:", error)
     }
-    const connOnDataChannel = (sendChannel: RTCDataChannel) => {
+    const onDataChannel = (sendChannel: RTCDataChannel) => {
         console.log("[WebRTC] new data channel received:", sendChannel)
         sendChannel.onerror = (err) => channelOnError(sendChannel, err)
         sendChannel.onclose = () => channelOnStateChange(sendChannel)
@@ -146,7 +151,7 @@ function P2PFileSharing() {
     }
 
     // Event handler for when an ICE candidate is ready to be transmitted to the peer
-    const handleIceCandidate = (iceCandidate: RTCIceCandidate | null) => {
+    const onIceCandidate = (iceCandidate: RTCIceCandidate | null) => {
         if (!iceCandidate) return
         try {
             const iceCandidateStr = JSON.stringify(iceCandidate.toJSON())
@@ -164,6 +169,7 @@ function P2PFileSharing() {
             })
         } catch (err) {
             console.error("icecandidate share err:", err)
+            enqueueSnackbar(`Failed to share icecandidate with peer: ${err}`, { variant: "error" })
         }
     }
 
@@ -172,7 +178,7 @@ function P2PFileSharing() {
         try {
             setLoading(true)
             // Create localConn and generate offer
-            const local = await StartConnection(handleIceCandidate, channelOnMessage, channelOnStateChange, channelOnError)
+            const local = await StartConnection(onIceCandidate, channelOnMessage, channelOnStateChange, channelOnError)
             // Convert local offer into a URL
             if (!webSocketKey.length) throw new Error("webSocketKey not initialized")
             const link = await createLink(webSocketKey, local.localOffer!)
@@ -182,6 +188,7 @@ function P2PFileSharing() {
             setPeerURL(link)
         } catch (err) {
             console.error("seed share link:", err)
+            enqueueSnackbar(`Failed to create share link: ${err}`, { variant: "error" })
         } finally {
             setLoading(false)
         }
@@ -194,7 +201,7 @@ function P2PFileSharing() {
             // Parse remote offer (from the URL)
             const { peerSocketKey, remoteOffer } = parseLink(hash)
             // Create localConn and generate offer
-            const local = await AnswerConnection(handleIceCandidate, connOnDataChannel, remoteOffer)
+            const local = await AnswerConnection(onIceCandidate, onDataChannel, remoteOffer)
             // Send answer to peer through signaling
             console.log("[WS] Sending answer")
             sendJsonMessage({
@@ -208,6 +215,7 @@ function P2PFileSharing() {
             setLocalConn(local.localConn)
         } catch (err) {
             console.error("leech share link:", err)
+            enqueueSnackbar(`Failed to leech share link: ${err}`, { variant: "error" })
         } finally {
             setLoading(false)
         }
