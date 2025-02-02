@@ -18,6 +18,7 @@ export type Progress = {
     estimateSec: number;
     bytesProcessed: number;
     percentage: number;
+    bitRate?: number
 }
 
 export function millisecondsToX(ms: number, target: "day" | "hour" | "minute" | "second") {
@@ -61,7 +62,7 @@ export function sizePercentageToColor(used: number): "error" | "info" | "success
     else return 'error';
 }
 
-export function formatSize(byteSize: number) {
+export function formatBytes(byteSize: number) {
     if (byteSize < 1_000) {
         return "<1 kB"
     } else if (byteSize < 1_000_000) {
@@ -70,6 +71,17 @@ export function formatSize(byteSize: number) {
         return (byteSize / 1_000_000).toFixed(2).toLocaleString() + " MB"
     }
     return byteSize.toLocaleString() + " GB"
+}
+
+export function formatBits(bitSize: number) {
+    if (bitSize < 1_000) {
+        return "<1 kb"
+    } else if (bitSize < 1_000_000) {
+        return (bitSize / 1_000).toFixed(0).toLocaleString() + " kb"
+    } else if (bitSize < 1_000_000_000) {
+        return (bitSize / 1_000_000).toFixed(2).toLocaleString() + " Mb"
+    }
+    return bitSize.toLocaleString() + " Gb"
 }
 
 export function getFileIcon(fileName: string): JSX.Element {

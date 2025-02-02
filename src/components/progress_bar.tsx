@@ -1,6 +1,6 @@
 import { Box, IconButton, LinearProgress, SxProps, Theme, Typography } from "@mui/material"
 import { Cancel } from "@mui/icons-material"
-import { FileInfo, formatSize, Progress } from "../utilities/utils"
+import { FileInfo, formatBits, formatBytes, Progress } from "../utilities/utils"
 
 type IProps = {
     progress: Progress;
@@ -23,9 +23,12 @@ function ProgressBar({ progress, file, sx, onCancel }: IProps) {
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    {`${progress.percentage}% (${formatSize(progress.bytesProcessed)}/${formatSize(file?.size || 0)})`}
+                    {`${progress.percentage}% (${formatBytes(progress.bytesProcessed)}/${formatBytes(file?.size || 0)})`}
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
+                {progress.bitRate &&
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>Bitrate: {`${formatBits(progress.bitRate)}s`}</Typography>
+                }
             </Box>
         </Box>
     )

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import { ArrowBack, Download } from "@mui/icons-material"
 import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, IconButton, LinearProgress, Stack, Typography } from "@mui/material"
-import { FileInfo, formatSize, getErrorString, Progress, triggerDownload } from "../utilities/utils"
+import { FileInfo, formatBytes, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api, { API_URL } from "../networking/endpoints"
 import logo from '/logo.png'
 import ProgressBar from "../components/progress_bar"
@@ -86,7 +86,7 @@ function LinkShare() {
                     <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Box>
                             <Typography variant="body1">Uploaded on: {new Date(file?.added || 0).toLocaleDateString()}</Typography>
-                            <Typography variant="body1">Size: {formatSize(file?.size || 0)}</Typography>
+                            <Typography variant="body1">Size: {formatBytes(file?.size || 0)}</Typography>
                             <Typography variant="body1">Type: {file.type || "Unknown"}</Typography>
                             <Typography variant="body1">Decryption Key: {hash.slice(1) || "Unknown"}</Typography>
                         </Box>

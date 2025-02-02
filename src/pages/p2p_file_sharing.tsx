@@ -8,7 +8,7 @@ import { Buffer } from 'buffer'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import ProgressBar from '../components/progress_bar'
-import { FileInfo, fileToFileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
+import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
 
 const CHUNK_SIZE = 16_000 // ~16kb chunk size for WebRTC data channel
 
@@ -348,7 +348,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // Chunk file into blobs to be sent
             const chunkCount = Math.ceil(file.size / CHUNK_SIZE)
             const chunks: Array<Blob> = []
-            console.log(`[WebRTC] Sending file fileSize=${formatSize(file.size)} chunkSize=${CHUNK_SIZE} chunkCount=${chunkCount}`)
+            console.log(`[WebRTC] Sending file fileSize=${formatBytes(file.size)} chunkSize=${CHUNK_SIZE} chunkCount=${chunkCount}`)
             for (let i = 0; i < chunkCount; i++) {
                 const currentByte = i * CHUNK_SIZE
                 const targetByte = currentByte + CHUNK_SIZE
@@ -412,7 +412,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 return
             }
         })
-        // Calculate current bitrate
+        // Calculate statistics
         const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent);
         const elapsedSec = millisecondsToX(Date.now() - downloadStartTime, 'second')
         const fileSize = downloadFileInfo?.size || uploadFile!.size
@@ -420,7 +420,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             progress: {
                 bytesProcessed: bytesProcessed,
                 estimateSec: Math.round((fileSize / bytesProcessed) * elapsedSec),
-                percentage: Math.round((bytesProcessed / fileSize) * 100)
+                percentage: Math.round((bytesProcessed / fileSize) * 100),
+                bitRate: parseInt(((bytesProcessed / elapsedSec) * 8).toFixed(2))
             }
         })
     }
@@ -476,14 +477,14 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     {this.state.uploadFile &&
                         <Stack direction="row" gap={2} marginTop={2}>
                             <Typography>File Name:</Typography> <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
-                            <Typography>File Size:</Typography> <Chip label={formatSize(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
+                            <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
                         </Stack>
                     }
                     {/* Receiving file information */}
                     {this.state.downloadFileInfo &&
                         <Stack direction="row" gap={2} marginTop={2}>
                             <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
-                            <Typography>File Size:</Typography> <Chip label={formatSize(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
+                            <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
                         </Stack>
                     }
 

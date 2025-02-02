@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react"
 import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
 import { Box, Button, Chip, Collapse, Divider, FormLabel, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
 import { useSnackbar } from "notistack"
-import { FileInfo, formatSize, getErrorString, getFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
+import { FileInfo, formatBytes, getErrorString, getFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"
 import emptyDirectory from '/empty-box.png'
 import FileLinkDialog from "./dialog_file_link"
@@ -100,7 +100,7 @@ function FilesView(props: IProps) {
                                 <ListItem>
                                     <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
                                     <ListItemText sx={{ width: 250 }} primary={file.name} />
-                                    <ListItemText sx={{ width: 150 }} primary={formatSize(file.size)} />
+                                    <ListItemText sx={{ width: 150 }} primary={formatBytes(file.size)} />
 
                                     {/* File actions */}
                                     <Tooltip title="Share" disableInteractive>
