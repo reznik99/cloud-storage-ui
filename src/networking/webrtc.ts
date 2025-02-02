@@ -8,26 +8,17 @@ const peerConstraints: RTCConfiguration = {
 const dataChannelName = "gdrive-file-transfer"
 
 type socketSendFn = (icecandidate: RTCIceCandidate | null) => void
-type channelOnMessageFn = (sendChannel: RTCDataChannel, event: MessageEvent<any>) => void
-type channelStateChangeFn = (sendChannel: RTCDataChannel) => void
-type channelErrorFn = (sendChannel: RTCDataChannel, error: RTCErrorEvent) => void
 type onDataChannelFn = (sendChannel: RTCDataChannel) => void
 
-// Creates a local webrtc connection and either <creates a local offer> OR <answers the passed in remote offer>
-export async function StartConnection(onIceCandidate: socketSendFn, onMessage: channelOnMessageFn, onStateChange: channelStateChangeFn, onError: channelErrorFn) {
-    // Create local conn
+// Creates a local webrtc connection and data channel, then return an offer
+export async function StartConnection(onIceCandidate: socketSendFn) {
+    // Create a local connection
     const localConn = new RTCPeerConnection(peerConstraints)
-    // Create channel and event listeners
+    localConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
+    // Create a data channel
     const sendChannel = localConn.createDataChannel(dataChannelName)
     sendChannel.binaryType = 'arraybuffer'
-    sendChannel.onerror = (err) => onError(sendChannel, err)
-    sendChannel.onclose = () => onStateChange(sendChannel)
-    sendChannel.onopen = () => onStateChange(sendChannel)
-    sendChannel.onmessage = (ev) => onMessage(sendChannel, ev)
-    // Add local conn event listeners
-    localConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
-
-    // We are creating a share link
+    // Create an offer
     const localOffer = await localConn.createOffer()
     await localConn.setLocalDescription(localOffer)
     return {
@@ -37,7 +28,7 @@ export async function StartConnection(onIceCandidate: socketSendFn, onMessage: c
     }
 }
 
-// Creates a local webrtc connection and either <creates a local offer> OR <answers the passed in remote offer>
+// Creates a local webrtc connection and return an answer
 export async function AnswerConnection(onIceCandidate: socketSendFn, onDataChannel: onDataChannelFn, remoteOffer: RTCSessionDescriptionInit) {
     // Create local conn
     const localConn = new RTCPeerConnection(peerConstraints)

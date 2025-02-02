@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowBack, Send } from '@mui/icons-material'
-import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Divider, IconButton, LinearProgress, ListItem, ListItemButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Chip, Divider, IconButton, LinearProgress, ListItem, ListItemButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import { Buffer } from 'buffer'
 import useWebSocket from 'react-use-websocket'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import { GetWebsocketURL } from '../networking/websocket'
-import { getWebRTCStatus, getWebsocketStatus } from '../utilities/utils'
+import { formatSize, getWebRTCStatus, getWebsocketStatus, triggerDownload } from '../utilities/utils'
 import { useSnackbar } from 'notistack'
 
 // Creates a p2p file share link containing the local websocket key and local webrtc offer
@@ -47,7 +47,7 @@ function P2PFileSharing() {
     const [channelReadyState, setChannelReadyState] = useState<RTCDataChannelState>("closed")
     const [iceCandidates, setIceCandidates] = useState<Array<string>>([])
     // Page stuff
-    const [selectedFile, setSelectedFile] = useState<File | undefined>()
+    const file = useRef<File | undefined>()
     const [peerURL, setPeerURL] = useState("")
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")
@@ -130,19 +130,36 @@ function P2PFileSharing() {
         setMessages(prev => prev.concat({ sent: true, message: message }))
     }
     const channelOnMessage = (_: RTCDataChannel, message: MessageEvent<any>) => {
-        console.log("[WebRTC] Data channel received message", message.data)
-        setMessages(prev => prev.concat({ sent: false, message: message.data?.toString() }))
+        console.log("[WebRTC] Data channel received message:", typeof message.data)
+        switch (typeof message.data) {
+            case "string":
+                setMessages(prev => prev.concat({ sent: false, message: message.data?.toString() }))
+                break;
+            case "object":
+                triggerDownload("FUCK.pdf", new Blob([message.data]))
+                break;
+            default:
+                console.warn("[WebRTC] Data channel received unrecognized message type")
+        }
     }
     const channelOnStateChange = (sendChannel: RTCDataChannel) => {
-        console.log("sendChannel:", sendChannel)
         console.log("[WebRTC] channel state changed:", sendChannel?.readyState)
         setChannelReadyState(sendChannel?.readyState || 'closed')
+        if (sendChannel && file.current && sendChannel.readyState === "open") {
+            console.log("[WebRTC] sending file...")
+            file.current.arrayBuffer()
+                .then(file => sendChannel.send(file))
+                .catch(err => {
+                    console.error("[WebRTC] sending file failed:", err)
+                    enqueueSnackbar(`Failed to send file through WebRTC data channel: ${err}`, { variant: "error" })
+                })
+        }
     }
     const channelOnError = (_: RTCDataChannel, error: RTCErrorEvent) => {
         console.log("[WebRTC] channel error:", error)
     }
     const onDataChannel = (sendChannel: RTCDataChannel) => {
-        console.log("[WebRTC] new data channel received:", sendChannel)
+        console.log("[WebRTC] new data channel received")
         sendChannel.onerror = (err) => channelOnError(sendChannel, err)
         sendChannel.onclose = () => channelOnStateChange(sendChannel)
         sendChannel.onopen = () => channelOnStateChange(sendChannel)
@@ -178,7 +195,11 @@ function P2PFileSharing() {
         try {
             setLoading(true)
             // Create localConn and generate offer
-            const local = await StartConnection(onIceCandidate, channelOnMessage, channelOnStateChange, channelOnError)
+            const local = await StartConnection(onIceCandidate)
+            local.sendChannel.onmessage = (ev) => channelOnMessage(local.sendChannel, ev)
+            local.sendChannel.onopen = () => channelOnStateChange(local.sendChannel)
+            local.sendChannel.onclose = () => channelOnStateChange(local.sendChannel)
+            local.sendChannel.onerror = (err) => channelOnError(local.sendChannel, err)
             // Convert local offer into a URL
             if (!webSocketKey.length) throw new Error("webSocketKey not initialized")
             const link = await createLink(webSocketKey, local.localOffer!)
@@ -223,7 +244,7 @@ function P2PFileSharing() {
 
     // Handle file picking and initiate seedShareLink
     const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedFile(event.target?.files?.[0])
+        file.current = event.target?.files?.[0]
         seedShareLink()
     }
 
@@ -243,12 +264,26 @@ function P2PFileSharing() {
                         <Typography variant="h5">P2P file sharing</Typography>
                     </Stack>
                     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                        <Button variant={selectedFile?.name ? "contained" : "outlined"} component="label">
-                            {selectedFile?.name ?? "Select File"}
+                        <Button variant={file.current?.name ? "contained" : "outlined"} component="label">
+                            {file.current?.name ?? "Select File"}
                             <input onChange={handleFile} type="file" hidden />
                         </Button>
                     </Box>
 
+                    {file.current &&
+                        <>
+                            <Divider sx={{ my: 3 }} />
+                            <Typography>File Information:</Typography>
+                            <Stack direction="row" gap={2} marginTop={2}>
+                                <Typography>File Name:</Typography> <Chip label={file.current?.name} color="info" variant="outlined" />
+                                <Typography>File Size:</Typography> <Chip label={formatSize(file.current?.size || 0)} color="info" variant="outlined" />
+                            </Stack>
+                        </>
+                    }
+
+                    <Divider sx={{ my: 3 }} />
+
+                    <Typography>Network Information:</Typography>
                     <Stack direction="row" gap={3} marginY={2}>
                         <Stack direction="row"
                             alignItems="center"
@@ -266,15 +301,15 @@ function P2PFileSharing() {
                             {getWebRTCStatus(channelReadyState)}
                         </Stack>
                     </Stack>
-
                     <Typography color="primary">Local: {webSocketKey}</Typography>
                     <Typography color="secondary">Peer: {peerWebSocketKey || "Waiting connection"}</Typography>
 
                     <Divider sx={{ my: 3 }} />
 
+                    <Typography>Peer Chat:</Typography>
                     {channelReadyState === "open"
-                        ? <Stack direction="column" width="100%" >
-                            <Stack direction="column" gap={1} minHeight={100}>
+                        ? <Stack direction="column" width="100%" marginY={2}>
+                            <Stack direction="column" gap={1} height={150} overflow="scroll">
                                 {messages.map((msg, idx) =>
                                     <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
                                 )}
@@ -294,7 +329,7 @@ function P2PFileSharing() {
                                 </IconButton>
                             </Stack>
                         </Stack>
-                        : <Typography>Waiting for peer connection...</Typography>
+                        : <Typography marginTop={2}>Waiting for peer connection...</Typography>
                     }
                 </Card>
             </Stack>
