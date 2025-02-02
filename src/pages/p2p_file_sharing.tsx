@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import React from 'react'
+import { NavigateFunction } from 'react-router-dom'
 import { ArrowBack, Send } from '@mui/icons-material'
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Chip, Divider, IconButton, LinearProgress, ListItem, ListItemButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import { Buffer } from 'buffer'
-import useWebSocket from 'react-use-websocket'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import { GetWebsocketURL } from '../networking/websocket'
 import { FileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, triggerDownload } from '../utilities/utils'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 
 // Creates a p2p file share link containing the local websocket key and local webrtc offer
 const createLink = async (webSocketKey: string, localOffer: RTCSessionDescriptionInit) => {
@@ -25,188 +24,226 @@ const parseLink = (urlData: string) => {
     }
 }
 
+// Types
+type IState = {
+    // Websocket state
+    websocket: WebSocket | undefined;
+    webSocketKey: string;
+    peerWebSocketKey: string;
+    wsReadyState: number;
+    // WebRTC state
+    localConn: RTCPeerConnection | undefined;
+    sendChannel: RTCDataChannel | undefined;
+    channelReadyState: RTCDataChannelState;
+    iceCandidates: Array<string>;
+    // Page state
+    file: File | undefined;
+    downloadFileInfo: FileInfo | undefined;
+    downloadFile: ArrayBuffer;
+    peerURL: string
+    loading: boolean
+    message: string
+    messages: Array<ChannelMessage>;
+}
+type IProps = {
+    navigate: NavigateFunction
+    hash: string
+}
 type ChannelMessage = {
     sent: boolean;
     message: string;
     when: number;
 }
 
-function P2PFileSharing() {
-    const navigate = useNavigate()
-    const { hash } = useLocation()
-    const { enqueueSnackbar } = useSnackbar()
-    // Websocket stuff
-    const { sendJsonMessage, readyState, getWebSocket } = useWebSocket(
-        GetWebsocketURL(),
-        { onMessage: wsOnMessage, onOpen: wsOnOpen, onClose: wsOnClose, onError: wsOnError }
-    );
-    const [webSocketKey, setWebSocketKey] = useState("")
-    const [peerWebSocketKey, setPeerWebSocketKey] = useState("")
-    // WebRTC stuff
-    const [localConn, setLocalConn] = useState<RTCPeerConnection | undefined>()
-    const [sendChannel, setSendChannel] = useState<RTCDataChannel | undefined>()
-    const [channelReadyState, setChannelReadyState] = useState<RTCDataChannelState>("closed")
-    const [iceCandidates, setIceCandidates] = useState<Array<string>>([])
-    // Page stuff
-    const file = useRef<File | undefined>()
-    const [downloadFileInfo, setDownloadFileInfo] = useState<FileInfo | undefined>()
-    const downloadFile = useRef<ArrayBuffer>(Buffer.alloc(0))
-    const [peerURL, setPeerURL] = useState("")
-    const [loading, setLoading] = useState(false)
-    const [message, setMessage] = useState("")
-    const [messages, setMessages] = useState<Array<ChannelMessage>>([])
+class P2PFileSharing extends React.Component<IProps, IState> {
+    constructor(props: any) {
+        super(props)
+        this.state = {
+            // Websocket stuff
+            websocket: undefined,
+            webSocketKey: "",
+            peerWebSocketKey: "",
+            wsReadyState: WebSocket.CLOSED,
+            // WebRTC stuff
+            localConn: undefined,
+            sendChannel: undefined,
+            channelReadyState: "closed",
+            iceCandidates: [],
 
-    useEffect(() => {
-        return () => {
-            getWebSocket()?.close?.()
-            sendChannel?.close?.()
-            localConn?.close?.()
+            file: undefined,
+            downloadFileInfo: undefined,
+            downloadFile: Buffer.alloc(0),
+            peerURL: "",
+            loading: false,
+            message: "",
+            messages: [],
         }
-    }, [])
+    }
 
-    useEffect(() => {
-        if (!webSocketKey.length || !peerWebSocketKey.length) return
-        // We have a peer websocket, let's send our queued icecandidates
-        iceCandidates.forEach(iceCandidateStr => {
-            console.log("[WS] Sending icecandidate to peer (effect)")
-            sendJsonMessage({
-                from: webSocketKey,
-                to: peerWebSocketKey,
-                command: "icecandidate",
-                data: iceCandidateStr
-            })
-        })
-    }, [webSocketKey, peerWebSocketKey])
+    componentDidMount(): void {
+        const websocket = new WebSocket(GetWebsocketURL())
+        websocket.onmessage = this.wsOnMessage
+        websocket.onopen = this.wsOnOpen
+        websocket.onclose = this.wsOnClose
+        websocket.onerror = this.wsOnError
+        this.setState({ websocket: websocket, wsReadyState: WebSocket.CONNECTING })
+    }
 
-    // Websocket event handlers
-    function wsOnMessage(wsMessage: MessageEvent<any>) {
+    componentWillUnmount(): void {
+        this.state.websocket?.close?.()
+        this.state.sendChannel?.close?.()
+        this.state.localConn?.close?.()
+    }
+
+    /* Websocket event handlers */
+
+    wsSendMessage = (wsMessage: any) => {
+        this.state.websocket?.send(JSON.stringify(wsMessage))
+    }
+    wsOnMessage = (wsMessage: MessageEvent<any>) => {
         try {
             const message = JSON.parse(wsMessage.data)
             switch (message.command) {
                 case "websocket-key":
                     console.log("[WS] received websocket-key:", message.data)
-                    setWebSocketKey(message.data)
+                    this.setState({ webSocketKey: message.data })
                     break
                 case "answer":
                     console.log("[WS] received answer:", message.data)
                     const remoteAnswer = JSON.parse(message.data) as RTCSessionDescriptionInit
-                    localConn?.setRemoteDescription(remoteAnswer)
+                    this.state.localConn?.setRemoteDescription(remoteAnswer)
                     break
                 case "icecandidate":
                     console.log("[WS] received icecandidate:", message.data)
-                    localConn?.addIceCandidate(JSON.parse(message.data))
+                    this.state.localConn?.addIceCandidate(JSON.parse(message.data))
                     break
                 default:
                     console.warn("[WS] unknown command:", message)
                     break
             }
-            if (!peerWebSocketKey.length && message.from?.length) {
+            if (!this.state.peerWebSocketKey.length && message.from?.length) {
                 console.log("[WS] found peer websocket key:", message.from)
-                setPeerWebSocketKey(message.from)
+                this.setState({ peerWebSocketKey: message.from })
             }
         } catch (err) {
             console.error("[WS] message error:", err)
             enqueueSnackbar(`Failed to parse websocket message: ${err}`, { variant: "error" })
         }
     }
-    function wsOnOpen(_: Event) {
+    wsOnOpen = (_: Event) => {
+        this.setState({ wsReadyState: WebSocket.OPEN })
         console.log("[WS] Opened")
-        if (hash.length) {
+        if (this.props.hash.length) {
             console.log("Leech page detected...")
-            setTimeout(() => leechShareLink(), 1000)
+            setTimeout(() => this.leechShareLink(), 1000)
         } else {
             console.log("Seed page detected...")
         }
+        enqueueSnackbar(`Websocket connection established`, { variant: "success" })
     }
-    function wsOnClose(e: CloseEvent) {
-        console.warn("[WS] Closed", e)
+    wsOnClose = (e: CloseEvent) => {
+        this.setState({ wsReadyState: WebSocket.CLOSED })
+        console.warn("[WS] Closed")
         enqueueSnackbar(`Websocket closed with code=${e.code} and reason=${e.reason}`, { variant: "warning" })
     }
-    function wsOnError(e: Event) {
+    wsOnError = (e: Event) => {
+        this.setState({ wsReadyState: WebSocket.CLOSING })
         console.error("[WS] Error", e)
         enqueueSnackbar(`Websocket error occurred`, { variant: "error" })
     }
 
-    // WebRTC event handlers
-    const channelSendMessage = (message: string) => {
-        if (!sendChannel) throw new Error("Send channel not initialized, unable to send message")
+    /* WebRTC event handlers */
 
-        sendChannel.send(JSON.stringify({ type: "message", data: message }))
-        setMessages(prev => prev.concat({ sent: true, message: message, when: Date.now() }))
+    channelSendMessage = (message: string) => {
+        if (!this.state.sendChannel) throw new Error("Send channel not initialized, unable to send message")
+
+        this.state.sendChannel.send(JSON.stringify({ type: "message", data: message }))
+        this.setState({ messages: this.state.messages.concat({ sent: true, message: message, when: Date.now() }) })
     }
-    const channelOnMessage = (sendChannel: RTCDataChannel, message: MessageEvent<any>) => {
+    channelOnMessage = (message: MessageEvent<any>) => {
         switch (typeof message.data) {
             case "string":
                 const msg = JSON.parse(message.data)
                 switch (msg.type) {
                     case "message":
                         console.log("[WebRTC] Data channel received 'message'")
-                        setMessages(prev => prev.concat({ sent: false, message: msg.data?.toString(), when: Date.now() }))
+                        this.setState({ messages: this.state.messages.concat({ sent: false, message: msg.data?.toString(), when: Date.now() }) })
                         break
                     case "file-info":
                         console.log("[WebRTC] Data channel received 'file-info'")
-                        setDownloadFileInfo({
-                            name: msg.data.name,
-                            size: msg.data.size as number,
-                            added: (new Date()).toLocaleString(),
-                            type: "",
-                            wrapped_file_key: ""
+                        this.setState({
+                            downloadFileInfo: {
+                                name: msg.data.name,
+                                size: msg.data.size as number,
+                                added: (new Date()).toLocaleString(),
+                                type: "",
+                                wrapped_file_key: ""
+                            }
                         })
                         break
                     case "start-download":
                         console.log("[WebRTC] Data channel received 'start-download'")
-                        initiateFileTransfer(sendChannel)
+                        this.initiateFileTransfer()
                         break
                     case "finish-download":
                         console.log("[WebRTC] Data channel received 'finish-download'")
-                        triggerDownload(downloadFileInfo?.name || "FUCK.pdf", new Blob([downloadFile.current]))
-                        setLoading(false)
-                        // downloadFile.current = Buffer.alloc(0)
+                        triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob([this.state.downloadFile]))
+                        this.setState({ loading: false, downloadFile: Buffer.alloc(0) })
                         break;
                 }
                 break;
             case "object":
                 console.log("[WebRTC] Data channel received 'file-chunk")
-                downloadFile.current = Buffer.concat([Buffer.from(downloadFile.current), Buffer.from(message.data)])
+                this.setState((prevState) => {
+                    return { downloadFile: Buffer.concat([Buffer.from(prevState.downloadFile), Buffer.from(message.data)]) }
+                })
                 break;
             default:
                 console.warn("[WebRTC] Data channel received unrecognized message type: ", typeof message.data)
         }
     }
-    const channelOnStateChange = (sendChannel: RTCDataChannel) => {
-        console.log("[WebRTC] channel state changed:", sendChannel?.readyState)
-        setChannelReadyState(sendChannel?.readyState || 'closed')
-        if (sendChannel && file.current && sendChannel.readyState === "open") {
+    channelOnStateChange = () => {
+        const readyState = this.state.sendChannel?.readyState || 'closed'
+        this.setState({ channelReadyState: readyState })
+        if (readyState === "closed") {
+            console.warn("[WebRTC] Closed")
+            return
+        }
+        console.log("[WebRTC] channel state changed:", readyState)
+        if (this.state.sendChannel && this.state.file && readyState === "open") {
             console.log("[WebRTC] sending file information...")
-            sendChannel.send(JSON.stringify({ type: "file-info", data: { name: file.current.name, size: file.current.size } }))
+            this.state.sendChannel.send(JSON.stringify(
+                { type: "file-info", data: { name: this.state.file.name, size: this.state.file.size } }
+            ))
         }
     }
-    const channelOnError = (_: RTCDataChannel, error: RTCErrorEvent) => {
+    channelOnError = (error: RTCErrorEvent) => {
         console.log("[WebRTC] channel error:", error)
     }
-    const onDataChannel = (sendChannel: RTCDataChannel) => {
-        console.log("[WebRTC] new data channel received")
-        sendChannel.onerror = (err) => channelOnError(sendChannel, err)
-        sendChannel.onclose = () => channelOnStateChange(sendChannel)
-        sendChannel.onopen = () => channelOnStateChange(sendChannel)
-        sendChannel.onmessage = (ev) => channelOnMessage(sendChannel, ev)
-        setSendChannel(sendChannel)
+    onDataChannel = (ev: RTCDataChannelEvent) => {
+        console.log("[WebRTC] new data channel received:", ev.channel.readyState)
+        this.setState({ sendChannel: ev.channel, channelReadyState: ev.channel.readyState }, () => {
+            ev.channel.onmessage = this.channelOnMessage
+            ev.channel.onopen = this.channelOnStateChange
+            ev.channel.onclose = this.channelOnStateChange
+            ev.channel.onerror = this.channelOnError
+        })
     }
-
-    // Event handler for when an ICE candidate is ready to be transmitted to the peer
-    const onIceCandidate = (iceCandidate: RTCIceCandidate | null) => {
+    onIceCandidate = (iceCandidate: RTCIceCandidate | null) => {
         if (!iceCandidate) return
         try {
             const iceCandidateStr = JSON.stringify(iceCandidate.toJSON())
-            if (!peerWebSocketKey.length) {
+            if (!this.state.peerWebSocketKey.length) {
                 // if peer socket-key not initialized then store icecandidate
-                setIceCandidates((prev) => prev.concat(iceCandidateStr))
+                this.setState((prevState) => {
+                    return { iceCandidates: prevState.iceCandidates.concat(iceCandidateStr) }
+                })
                 return
             }
             console.log("[WS] Sending icecandidate to peer")
-            sendJsonMessage({
-                from: webSocketKey,
-                to: peerWebSocketKey,
+            this.wsSendMessage({
+                from: this.state.webSocketKey,
+                to: this.state.peerWebSocketKey,
                 command: "icecandidate",
                 data: iceCandidateStr
             })
@@ -217,86 +254,92 @@ function P2PFileSharing() {
     }
 
     // Prepare WebRTC and create an offer
-    const seedShareLink = async () => {
+    seedShareLink = async () => {
         try {
-            setLoading(true)
+            this.setState({ loading: true })
             // Create localConn and generate offer
-            const local = await StartConnection(onIceCandidate)
-            local.sendChannel.onmessage = (ev) => channelOnMessage(local.sendChannel, ev)
-            local.sendChannel.onopen = () => channelOnStateChange(local.sendChannel)
-            local.sendChannel.onclose = () => channelOnStateChange(local.sendChannel)
-            local.sendChannel.onerror = (err) => channelOnError(local.sendChannel, err)
+            const local = await StartConnection(this.onIceCandidate)
+            local.sendChannel.onmessage = this.channelOnMessage
+            local.sendChannel.onopen = this.channelOnStateChange
+            local.sendChannel.onclose = this.channelOnStateChange
+            local.sendChannel.onerror = this.channelOnError
             // Convert local offer into a URL
-            if (!webSocketKey.length) throw new Error("webSocketKey not initialized")
-            const link = await createLink(webSocketKey, local.localOffer!)
+            if (!this.state.webSocketKey.length) throw new Error("webSocketKey not initialized")
+            const link = await createLink(this.state.webSocketKey, local.localOffer!)
             // Save data
-            setLocalConn(local.localConn)
-            setSendChannel(local.sendChannel)
-            setPeerURL(link)
+            this.setState({
+                localConn: local.localConn,
+                sendChannel: local.sendChannel,
+                peerURL: link
+            })
         } catch (err) {
             console.error("seed share link:", err)
             enqueueSnackbar(`Failed to create share link: ${err}`, { variant: "error" })
         } finally {
-            setLoading(false)
+            this.setState({ loading: false })
         }
     }
 
     // Prepare WebRTC and create an answer
-    const leechShareLink = async () => {
+    leechShareLink = async () => {
         try {
-            setLoading(true)
+            this.setState({ loading: true })
             // Parse remote offer (from the URL)
-            const { peerSocketKey, remoteOffer } = parseLink(hash)
+            const { peerSocketKey, remoteOffer } = parseLink(this.props.hash)
             // Create localConn and generate offer
-            const local = await AnswerConnection(onIceCandidate, onDataChannel, remoteOffer)
+            const local = await AnswerConnection(this.onIceCandidate, remoteOffer)
+            local.localConn.ondatachannel = this.onDataChannel
             // Send answer to peer through signaling
             console.log("[WS] Sending answer")
-            sendJsonMessage({
-                from: webSocketKey,
+            this.wsSendMessage({
+                from: this.state.webSocketKey,
                 to: peerSocketKey,
                 command: "answer",
                 data: JSON.stringify(local.localAnswer)
             })
             // Save data
-            setPeerWebSocketKey(peerSocketKey)
-            setLocalConn(local.localConn)
+            this.setState({
+                peerWebSocketKey: peerSocketKey,
+                localConn: local.localConn
+            })
         } catch (err) {
             console.error("leech share link:", err)
             enqueueSnackbar(`Failed to leech share link: ${err}`, { variant: "error" })
         } finally {
-            setLoading(false)
+            this.setState({ loading: false })
         }
     }
 
     // Handle file picking and initiate seedShareLink
-    const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-        file.current = event.target?.files?.[0]
-        seedShareLink()
+    handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({ file: event.target?.files?.[0] })
+        this.seedShareLink()
     }
 
-    const requestFileTransfer = () => {
+    requestFileTransfer = () => {
         try {
-            setLoading(true)
-            if (!sendChannel) throw new Error("Send channel not initialized, unable to send message")
-            sendChannel?.send(JSON.stringify({ type: "start-download" }))
+            this.setState({ loading: true })
+            if (!this.state.sendChannel) throw new Error("Send channel not initialized, unable to send message")
+            this.state.sendChannel.send(JSON.stringify({ type: "start-download" }))
         } catch (err) {
             console.error("[WebRTC] failed to request start-download:", err)
             enqueueSnackbar(`Failed to request file download: ${err}`, { variant: "error" })
         }
     }
 
-    const initiateFileTransfer = async (sendChannel: RTCDataChannel) => {
+    initiateFileTransfer = async () => {
         try {
-            setLoading(true)
-            if (!sendChannel) { throw new Error("send channel not initialized, unable to send file") }
-            if (!file.current) { throw new Error("file not initialized, unable to send file") }
+            this.setState({ loading: true })
+            if (!this.state.sendChannel) { throw new Error("send channel not initialized, unable to send file") }
+            if (!this.state.file) { throw new Error("file not initialized, unable to send file") }
+            const { sendChannel, file } = this.state
 
             const chunkSize = 16_000 // ~16kb chunk size for WebRTC data channel
-            const chunks = file.current.size / chunkSize
-            console.log(`[WebRTC] Sending file fileSize=${formatSize(file.current.size)} chunkSize=${chunkSize} chunks=${chunks}`)
+            const chunks = file.size / chunkSize
+            console.log(`[WebRTC] Sending file fileSize=${formatSize(file.size)} chunkSize=${chunkSize} chunks=${chunks}`)
             for (let i = 0; i < chunks; i++) {
                 const currentByte = i * chunkSize
-                const chunkBlob = file.current.slice(currentByte, currentByte + chunkSize)
+                const chunkBlob = file.slice(currentByte, currentByte + chunkSize)
                 const chunk = await chunkBlob.arrayBuffer()
                 // TODO: need onbuffereddatalow callback to figure out if should send or wait
                 sendChannel.send(chunk)
@@ -306,61 +349,61 @@ function P2PFileSharing() {
         } catch (err) {
             console.error("[WebRTC] send file err:", err)
         } finally {
-            setLoading(false)
+            this.setState({ loading: false })
         }
     }
 
-    return (
+    render = () => (
         <Stack sx={{ paddingTop: 10 }}
             direction="row"
             width="100vw"
             height="100vh"
-            className="login-container">
+            className="login-container" >
             <Stack sx={{ paddingX: 5 }} flexGrow={1}>
-                {loading && <LinearProgress variant='indeterminate' />}
+                {this.state.loading && <LinearProgress variant='indeterminate' />}
                 <Card sx={{ padding: 5 }}>
                     <Stack direction='row' alignItems='center' spacing={2}>
                         <Tooltip title="Go back" disableInteractive>
-                            <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
+                            <IconButton onClick={() => this.props.navigate(-1)}><ArrowBack /></IconButton>
                         </Tooltip>
                         <Typography variant="h5">P2P file sharing</Typography>
                     </Stack>
 
                     {/* Select file for sending */}
-                    {!hash.length &&
+                    {!this.props.hash.length &&
                         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                            <Button variant={file.current?.name ? "contained" : "outlined"} component="label">
-                                {file.current?.name ?? "Select File"}
-                                <input onChange={handleFile} type="file" hidden />
+                            <Button variant={this.state.file?.name ? "contained" : "outlined"} component="label">
+                                {this.state.file?.name ?? "Select File"}
+                                <input onChange={this.handleFile} type="file" hidden />
                             </Button>
                         </Box>
                     }
 
                     {/* Sending file information */}
-                    {file.current &&
+                    {this.state.file &&
                         <>
                             <Divider sx={{ my: 3 }} />
                             <Typography>File Information:</Typography>
                             <Stack direction="row" gap={2} marginTop={2}>
-                                <Typography>File Name:</Typography> <Chip label={file.current?.name} color="info" variant="outlined" />
-                                <Typography>File Size:</Typography> <Chip label={formatSize(file.current?.size || 0)} color="info" variant="outlined" />
+                                <Typography>File Name:</Typography> <Chip label={this.state.file?.name} color="info" variant="outlined" />
+                                <Typography>File Size:</Typography> <Chip label={formatSize(this.state.file?.size || 0)} color="info" variant="outlined" />
                             </Stack>
                         </>
                     }
 
                     {/* Receiving file information */}
-                    {downloadFileInfo &&
+                    {this.state.downloadFileInfo &&
                         <>
                             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                                <Button variant="contained" onClick={requestFileTransfer}>
+                                <Button variant="contained" onClick={this.requestFileTransfer}>
                                     Download
                                 </Button>
                             </Box>
                             <Divider sx={{ my: 3 }} />
                             <Typography>File Information:</Typography>
                             <Stack direction="row" gap={2} marginTop={2}>
-                                <Typography>File Name:</Typography> <Chip label={downloadFileInfo.name} color="info" variant="outlined" />
-                                <Typography>File Size:</Typography> <Chip label={formatSize(downloadFileInfo.size || 0)} color="info" variant="outlined" />
+                                <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
+                                <Typography>File Size:</Typography> <Chip label={formatSize(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
                             </Stack>
                         </>
                     }
@@ -373,7 +416,7 @@ function P2PFileSharing() {
                             alignItems="center"
                             spacing={1}>
                             <Typography>Server:</Typography>
-                            {getWebsocketStatus(readyState)}
+                            {getWebsocketStatus(this.state.wsReadyState)}
                         </Stack>
 
                         <Divider orientation='vertical' flexItem />
@@ -382,32 +425,32 @@ function P2PFileSharing() {
                             alignItems="center"
                             spacing={1}>
                             <Typography>Peer:</Typography>
-                            {getWebRTCStatus(channelReadyState)}
+                            {getWebRTCStatus(this.state.channelReadyState)}
                         </Stack>
                     </Stack>
-                    <Typography color="primary">Local: {webSocketKey}</Typography>
-                    <Typography color="secondary">Peer: {peerWebSocketKey || "Waiting connection"}</Typography>
+                    <Typography color="primary">Local: {this.state.webSocketKey}</Typography>
+                    <Typography color="secondary">Peer: {this.state.peerWebSocketKey || "Waiting connection"}</Typography>
 
                     <Divider sx={{ my: 3 }} />
 
                     <Typography>Peer Chat:</Typography>
-                    {channelReadyState === "open"
+                    {this.state.channelReadyState === "open"
                         ? <Stack direction="column" width="100%" marginY={2}>
                             <Stack direction="column" gap={1} height={150} overflow="scroll">
-                                {messages.map((msg, idx) =>
+                                {this.state.messages.map((msg, idx) =>
                                     <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
                                 )}
                             </Stack>
                             <Stack component="form" direction="row" gap={1}
                                 onSubmit={(e) => {
                                     e.preventDefault()
-                                    channelSendMessage(message)
-                                    setMessage("")
+                                    this.channelSendMessage(this.state.message)
+                                    this.setState({ message: "" })
                                 }}>
                                 <TextField fullWidth
                                     placeholder='Say hi to your friend while you wait for the download'
-                                    value={message}
-                                    onChange={e => setMessage(e.target.value)} />
+                                    value={this.state.message}
+                                    onChange={e => this.setState({ message: e.target.value })} />
                                 <IconButton color="primary" type='submit' sx={{ p: '10px' }}>
                                     <Send />
                                 </IconButton>
@@ -444,7 +487,7 @@ function P2PFileSharing() {
                         </AccordionDetails>
                     </Accordion>
                 </Alert>
-                {peerURL &&
+                {this.state.peerURL &&
                     <Alert variant='standard' color="warning" severity='info' >
                         <Typography>Click the link below to copy it to your clipboard! Leave this page open while the recepient downloads the file!</Typography>
                         <ListItem>
@@ -452,10 +495,10 @@ function P2PFileSharing() {
                                 <ListItemButton
                                     sx={{ overflowWrap: "break-all", overflow: 'hidden' }}
                                     onClick={() => {
-                                        navigator.clipboard.writeText(peerURL)
+                                        navigator.clipboard.writeText(this.state.peerURL)
                                         enqueueSnackbar("Copied URL to clipboard!")
                                     }}>
-                                    <Typography color="info">{peerURL}</Typography>
+                                    <Typography color="info">{this.state.peerURL}</Typography>
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
@@ -466,4 +509,13 @@ function P2PFileSharing() {
     )
 }
 
-export default P2PFileSharing
+// Wrapper function for class component
+import { useLocation, useNavigate } from 'react-router-dom'
+export default function P2PFileSharingWrapper() {
+    const navigate = useNavigate()
+    const { hash } = useLocation()
+
+    return (
+        <P2PFileSharing navigate={navigate} hash={hash} />
+    )
+}

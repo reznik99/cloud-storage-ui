@@ -16,7 +16,7 @@ import LinkShare from './pages/share.tsx'
 import Settings from './pages/settings.tsx'
 import ResetPassword from './pages/reset_password.tsx'
 import Nav from './components/nav.tsx'
-import P2PFileSharing from './pages/p2p_file_sharing.tsx'
+import P2PFileSharingWrapper from './pages/p2p_file_sharing.tsx'
 
 const theme = createTheme({
   colorSchemes: {
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
     element: <LinkShare />,
   }, {
     path: "/p2p-file-share",
-    element: <P2PFileSharing />,
+    element: <P2PFileSharingWrapper />,
   }, {
     path: "/settings",
     element: <PrivateRoute><Nav /><Settings /></PrivateRoute>,
