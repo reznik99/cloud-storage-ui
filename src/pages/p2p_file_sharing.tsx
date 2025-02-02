@@ -5,8 +5,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, 
 import { Buffer } from 'buffer'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
-import { GetWebsocketURL } from '../networking/websocket'
-import { FileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, triggerDownload } from '../utilities/utils'
+import { FileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, triggerDownload } from '../utilities/utils'
 import { enqueueSnackbar } from 'notistack'
 
 // Creates a p2p file share link containing the local websocket key and local webrtc offer
@@ -81,7 +80,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     componentDidMount(): void {
-        const websocket = new WebSocket(GetWebsocketURL())
+        const websocket = new WebSocket(getWebsocketURL())
         websocket.onmessage = this.wsOnMessage
         websocket.onopen = this.wsOnOpen
         websocket.onclose = this.wsOnClose

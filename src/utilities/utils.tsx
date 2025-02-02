@@ -1,6 +1,7 @@
 import { Article, AudioFile, Folder, FolderZip, Movie, Photo } from "@mui/icons-material"
 import { Chip } from "@mui/material";
 import axios, { AxiosError } from "axios";
+import { API_URL } from "../networking/endpoints";
 
 export type FileInfo = {
     name: string;
@@ -166,4 +167,15 @@ export function getWebRTCStatus(status: RTCDataChannelState | undefined) {
         default:
             return <Chip label="unknown" color="secondary" variant="outlined" />
     }
+}
+
+export function getWebsocketURL() {
+    const url = URL.parse(API_URL)
+    if (!url) throw new Error("Failed to parse API_URL: " + API_URL)
+
+    let proto = "wss:"
+    if (url.protocol === "http:") {
+        proto = "ws:"
+    }
+    return `${proto}//${url.host}/ws`
 }
