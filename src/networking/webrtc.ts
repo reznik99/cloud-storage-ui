@@ -17,6 +17,7 @@ export async function StartConnection(onIceCandidate: socketSendFn) {
     // Create a data channel
     const sendChannel = localConn.createDataChannel(dataChannelName)
     sendChannel.binaryType = 'arraybuffer'
+    sendChannel.bufferedAmountLowThreshold = 0
     // Create an offer
     const localOffer = await localConn.createOffer()
     await localConn.setLocalDescription(localOffer)
