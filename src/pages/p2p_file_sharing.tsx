@@ -1,12 +1,14 @@
 import React from 'react'
 import { NavigateFunction } from 'react-router-dom'
 import { ArrowBack, Send } from '@mui/icons-material'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Accordion, AccordionDetails, AccordionSummary, Alert, AlertTitle, Box, Button, Card, Chip, Divider, IconButton, LinearProgress, ListItem, ListItemButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { enqueueSnackbar } from 'notistack'
 import { Buffer } from 'buffer'
 
 import { AnswerConnection, StartConnection } from '../networking/webrtc'
-import { FileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, triggerDownload } from '../utilities/utils'
-import { enqueueSnackbar } from 'notistack'
+import ProgressBar from '../components/progress_bar'
+import { FileInfo, fileToFileInfo, formatSize, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
 
 const CHUNK_SIZE = 16_000 // ~16kb chunk size for WebRTC data channel
 
@@ -39,8 +41,11 @@ type IState = {
     iceCandidates: Array<string>;
     // Page state
     uploadFile: File | undefined;
-    downloadFile: Array<ArrayBuffer>;
+    downloadFileChunks: Array<ArrayBuffer>;
     downloadFileInfo: FileInfo | undefined;
+    downloadStartTime: number;
+    metricsTimer: number;
+    progress: Progress | undefined;
     peerURL: string
     loading: boolean
     message: string
@@ -55,7 +60,10 @@ type ChannelMessage = {
     message: string;
     when: number;
 }
-
+type WebRTCStats = {
+    bytesReceived: number;
+    bytesSent: number;
+}
 class P2PFileSharing extends React.Component<IProps, IState> {
     constructor(props: any) {
         super(props)
@@ -72,8 +80,11 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             iceCandidates: [],
 
             uploadFile: undefined,
-            downloadFile: [],
+            downloadFileChunks: [],
             downloadFileInfo: undefined,
+            downloadStartTime: 0,
+            metricsTimer: -1,
+            progress: undefined,
             peerURL: "",
             loading: false,
             message: "",
@@ -165,13 +176,12 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         switch (typeof message.data) {
             case "string":
                 const msg = JSON.parse(message.data)
+                console.log(`[WebRTC] Data channel received '${msg.type}'`)
                 switch (msg.type) {
                     case "message":
-                        console.log("[WebRTC] Data channel received 'message'")
                         this.setState({ messages: this.state.messages.concat({ sent: false, message: msg.data?.toString(), when: Date.now() }) })
                         break
                     case "file-info":
-                        console.log("[WebRTC] Data channel received 'file-info'")
                         this.setState({
                             downloadFileInfo: {
                                 name: msg.data.name,
@@ -183,20 +193,18 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         })
                         break
                     case "start-download":
-                        console.log("[WebRTC] Data channel received 'start-download'")
                         this.initiateFileTransfer()
                         break
                     case "finish-download":
-                        console.log("[WebRTC] Data channel received 'finish-download'")
-                        triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.state.downloadFile))
-                        this.setState({ loading: false, downloadFile: [] })
+                        triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.state.downloadFileChunks))
+                        clearInterval(this.state.metricsTimer)
+                        this.setState({ loading: false, downloadFileChunks: [], metricsTimer: -1 })
                         break;
                 }
                 break;
             case "object":
-                console.log("[WebRTC] Data channel received 'file-chunk")
                 this.setState(prevState => {
-                    return { downloadFile: [...prevState.downloadFile, message.data] }
+                    return { downloadFileChunks: [...prevState.downloadFileChunks, message.data] }
                 })
                 break;
             default:
@@ -319,9 +327,11 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 
     requestFileTransfer = () => {
         try {
-            this.setState({ loading: true })
             if (!this.state.sendChannel) throw new Error("Send channel not initialized, unable to send message")
             this.state.sendChannel.send(JSON.stringify({ type: "start-download" }))
+            const metricsTimer = setInterval(this.handleMetrics, 100)
+
+            this.setState({ loading: true, downloadStartTime: Date.now(), metricsTimer: metricsTimer })
         } catch (err) {
             console.error("[WebRTC] failed to request start-download:", err)
             enqueueSnackbar(`Failed to request file download: ${err}`, { variant: "error" })
@@ -350,6 +360,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             }
             // This is async, and hard to track progress
             this.sendFileChunks(chunks)
+            const metricsTimer = setInterval(this.handleMetrics, 100)
+            this.setState({ downloadStartTime: Date.now(), metricsTimer: metricsTimer })
         } catch (err) {
             console.error("[WebRTC] send file err:", err)
             this.setState({ loading: false })
@@ -358,7 +370,6 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 
     sendFileChunks = async (chunks: Blob[]) => {
         const sendChannel = this.state.sendChannel!
-
         if (chunks.length) {
             // Slow down, recurse once buffered amount decreases
             if (sendChannel.bufferedAmount > sendChannel.bufferedAmountLowThreshold) {
@@ -368,7 +379,6 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 };
                 return;
             }
-            console.log("[WebRTC] sending chunk")
             // Remove chunk from list
             const chunkBlob = chunks[0]
             // Read chunk of file
@@ -378,14 +388,41 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             if (chunks.length === 1) {
                 // Last chunk means we notify peer we are done
                 // TODO: send hash of file for integrity checks
-                console.log(`Finished upload, chunksLeft: ${chunks.length} bufferedAmount: ${sendChannel.bufferedAmount}/${sendChannel.bufferedAmountLowThreshold}`)
-                this.setState({ loading: false })
+                clearInterval(this.state.metricsTimer)
+                this.setState({ loading: false, metricsTimer: -1 })
                 setTimeout(() => sendChannel.send(JSON.stringify({ type: "finish-download" })), 500)
             } else {
                 // Recurse until there are none left
                 this.sendFileChunks(chunks.slice(1))
             }
         }
+    }
+
+    handleMetrics = async () => {
+        const { localConn, uploadFile, downloadFileInfo, downloadFileChunks, downloadStartTime } = this.state
+        const stats = await localConn!.getStats()
+        let metrics: WebRTCStats = {
+            bytesReceived: downloadFileChunks.length * CHUNK_SIZE,  // Estimate for the reciever
+            bytesSent: 0                                            // We don't know yet
+        };
+        // Get real stats from WebRTC, this only works for the sender for some magical reason google doesn't know. 😡
+        stats.forEach(report => {
+            if (report.type === 'data-channel') {
+                metrics = stats.get(report.id)
+                return
+            }
+        })
+        // Calculate current bitrate
+        const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent);
+        const elapsedSec = millisecondsToX(Date.now() - downloadStartTime, 'second')
+        const fileSize = downloadFileInfo?.size || uploadFile!.size
+        this.setState({
+            progress: {
+                bytesProcessed: bytesProcessed,
+                estimateSec: Math.round((fileSize / bytesProcessed) * elapsedSec),
+                percentage: Math.round((bytesProcessed / fileSize) * 100)
+            }
+        })
     }
 
     render = () => (
@@ -405,7 +442,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         <Typography variant="h5">P2P file sharing</Typography>
                     </Stack>
 
-                    {/* Select file for sending */}
+                    {/* Select file button (sender) */}
                     {!this.props.hash.length &&
                         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
                             <Button variant={this.state.uploadFile?.name ? "contained" : "outlined"} component="label">
@@ -414,39 +451,45 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             </Button>
                         </Box>
                     }
-
-                    {/* Sending file information */}
-                    {this.state.uploadFile &&
-                        <>
-                            <Divider sx={{ my: 3 }} />
-                            <Typography>File Information:</Typography>
-                            <Stack direction="row" gap={2} marginTop={2}>
-                                <Typography>File Name:</Typography> <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
-                                <Typography>File Size:</Typography> <Chip label={formatSize(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
-                            </Stack>
-                        </>
+                    {/* Download file button (receiver) */}
+                    {this.state.downloadFileInfo &&
+                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
+                            <Button variant="contained" onClick={this.requestFileTransfer}>
+                                Download
+                            </Button>
+                        </Box>
                     }
 
-                    {/* Receiving file information */}
-                    {this.state.downloadFileInfo &&
+                    {/* File transfer indicator */}
+                    {(this.state.loading && this.state.progress && (this.state.downloadFileInfo || this.state.uploadFile)) &&
                         <>
-                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                                <Button variant="contained" onClick={this.requestFileTransfer}>
-                                    Download
-                                </Button>
-                            </Box>
-                            <Divider sx={{ my: 3 }} />
-                            <Typography>File Information:</Typography>
-                            <Stack direction="row" gap={2} marginTop={2}>
-                                <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
-                                <Typography>File Size:</Typography> <Chip label={formatSize(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
-                            </Stack>
+                            <ProgressBar sx={{ my: 2 }}
+                                onCancel={() => console.log("Attempted cancel download")}
+                                progress={this.state.progress}
+                                file={this.state.downloadFileInfo || fileToFileInfo(this.state.uploadFile)} />
                         </>
                     }
 
                     <Divider sx={{ my: 3 }} />
+                    <Typography>File Information:</Typography>
+                    {/* Sending file information */}
+                    {this.state.uploadFile &&
+                        <Stack direction="row" gap={2} marginTop={2}>
+                            <Typography>File Name:</Typography> <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
+                            <Typography>File Size:</Typography> <Chip label={formatSize(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
+                        </Stack>
+                    }
+                    {/* Receiving file information */}
+                    {this.state.downloadFileInfo &&
+                        <Stack direction="row" gap={2} marginTop={2}>
+                            <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
+                            <Typography>File Size:</Typography> <Chip label={formatSize(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
+                        </Stack>
+                    }
 
+                    <Divider sx={{ my: 3 }} />
                     <Typography>Network Information:</Typography>
+                    {/* Websocket and WebRTC Peer conenction status */}
                     <Stack direction="row" gap={3} marginY={2}>
                         <Stack direction="row"
                             alignItems="center"
@@ -468,8 +511,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     <Typography color="secondary">Peer: {this.state.peerWebSocketKey || "Waiting connection"}</Typography>
 
                     <Divider sx={{ my: 3 }} />
-
                     <Typography>Peer Chat:</Typography>
+                    {/* Chat section (WebRTC) */}
                     {this.state.channelReadyState === "open"
                         ? <Stack direction="column" width="100%" marginY={2}>
                             <Stack direction="column" gap={1} height={150} maxWidth="100%" overflow="scroll">
@@ -493,10 +536,6 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             </Stack>
                         </Stack>
                         : <Typography marginTop={2}>Waiting for peer connection...</Typography>
-                    }
-                    {(this.state.loading && this.state.downloadFileInfo) &&
-                        <LinearProgress variant='determinate'
-                            value={Math.round(((this.state.downloadFile.length * CHUNK_SIZE) / this.state.downloadFileInfo.size) * 100)} />
                     }
                 </Card>
             </Stack>
@@ -550,7 +589,6 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 }
 
 // Wrapper function for class component
-import { useLocation, useNavigate } from 'react-router-dom'
 export default function P2PFileSharingWrapper() {
     const navigate = useNavigate()
     const { hash } = useLocation()

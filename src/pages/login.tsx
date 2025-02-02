@@ -174,7 +174,7 @@ function Login() {
                     </AlertTitle>
                     <Typography>
                         End-To-End encrypted file storage based on the
-                        <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}>Mega.nz whitepaper</Link>.
+                        <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}> Mega.nz whitepaper</Link>.
                     </Typography>
                     <ul>
                         <li>Up to 1GB of storage for free</li>
@@ -189,7 +189,7 @@ function Login() {
                     </AlertTitle>
                     <Typography>
                         Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with 
-                        <b>server-less peer-to-peer</b> file sharing!<br />
+                        <b> server-less peer-to-peer</b> file sharing!<br />
                     </Typography>
                     <ul>
                         <li><b>Unlimited</b> file sharing</li>

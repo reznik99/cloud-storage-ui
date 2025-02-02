@@ -20,7 +20,7 @@ export type Progress = {
     percentage: number;
 }
 
-function millisecondsToX(ms: number, target: "day" | "hour" | "minute" | "second") {
+export function millisecondsToX(ms: number, target: "day" | "hour" | "minute" | "second") {
     switch (target) {
         case "day":
             return ms / 1000 / 60 / 60 / 24
