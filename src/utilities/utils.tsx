@@ -1,7 +1,6 @@
 import { Article, AudioFile, Folder, FolderZip, Movie, Photo } from "@mui/icons-material"
 import { Chip } from "@mui/material";
 import axios, { AxiosError } from "axios";
-import { API_URL } from "../networking/endpoints";
 
 export type FileInfo = {
     name: string;
@@ -63,25 +62,25 @@ export function sizePercentageToColor(used: number): "error" | "info" | "success
 }
 
 export function formatBytes(byteSize: number) {
-    if (byteSize < 1_000) {
+    if (byteSize < 1_024) {
         return "<1 kB"
-    } else if (byteSize < 1_000_000) {
-        return (byteSize / 1_000).toFixed(0).toLocaleString() + " kB"
-    } else if (byteSize < 1_000_000_000) {
-        return (byteSize / 1_000_000).toFixed(2).toLocaleString() + " MB"
+    } else if (byteSize < 1_024_000) {
+        return (byteSize / 1_024).toFixed(0).toLocaleString() + " kB"
+    } else if (byteSize < 1_024_000_000) {
+        return (byteSize / 1_024_000).toFixed(2).toLocaleString() + " MB"
     }
-    return (byteSize / 1_000_000_000).toLocaleString() + " GB"
+    return (byteSize / 1_024_000_000).toLocaleString() + " GB"
 }
 
 export function formatBits(bitSize: number) {
-    if (bitSize < 1_000) {
+    if (bitSize < 1_024) {
         return "<1 kb"
-    } else if (bitSize < 1_000_000) {
-        return (bitSize / 1_000).toFixed(0).toLocaleString() + " kb"
-    } else if (bitSize < 1_000_000_000) {
-        return (bitSize / 1_000_000).toFixed(2).toLocaleString() + " Mb"
+    } else if (bitSize < 1_024_000) {
+        return (bitSize / 1_024).toFixed(0).toLocaleString() + " kb"
+    } else if (bitSize < 1_024_000_000) {
+        return (bitSize / 1_024_000).toFixed(2).toLocaleString() + " Mb"
     }
-    return (bitSize / 1_000_000_000).toLocaleString() + " Gb"
+    return (bitSize / 1_024_000_000).toLocaleString() + " Gb"
 }
 
 export function getFileIcon(fileName: string): JSX.Element {
@@ -182,12 +181,9 @@ export function getWebRTCStatus(status: RTCDataChannelState | undefined) {
 }
 
 export function getWebsocketURL() {
-    const url = URL.parse(API_URL)
-    if (!url) throw new Error("Failed to parse API_URL: " + API_URL)
-
     let proto = "wss:"
-    if (url.protocol === "http:") {
+    if (window.location.protocol === "http:") {
         proto = "ws:"
     }
-    return `${proto}//${url.host}/ws`
+    return `${proto}//${window.location.host}/ws`
 }

@@ -198,11 +198,12 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     case "finish-download":
                         triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.state.downloadFileChunks))
                         clearInterval(this.state.metricsTimer)
-                        this.setState({ loading: false, downloadFileChunks: [], metricsTimer: -1 })
+                        this.setState({ loading: false, downloadFileChunks: [], metricsTimer: -1, progress: undefined })
                         break;
                 }
                 break;
             case "object":
+                // TODO: Instead of saving chanks in RAM, stream to disk to allow massive file transfer (use FileSystemWritableFileStream)
                 this.setState(prevState => {
                     return { downloadFileChunks: [...prevState.downloadFileChunks, message.data] }
                 })
@@ -325,12 +326,14 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         this.seedShareLink()
     }
 
+    // Requests file trasnfer start from peer & initiates metrics fetching
     requestFileTransfer = () => {
         try {
             if (!this.state.sendChannel) throw new Error("Send channel not initialized, unable to send message")
+            // Send start download event to peer
             this.state.sendChannel.send(JSON.stringify({ type: "start-download" }))
+            // Start metrics fetching job
             const metricsTimer = setInterval(this.handleMetrics, 100)
-
             this.setState({ loading: true, downloadStartTime: Date.now(), metricsTimer: metricsTimer })
         } catch (err) {
             console.error("[WebRTC] failed to request start-download:", err)
@@ -338,17 +341,17 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         }
     }
 
+    // Splits the file into chunks and initiates transfer to peer & metrics fetching
     initiateFileTransfer = async () => {
         try {
             this.setState({ loading: true })
-            if (!this.state.sendChannel) { throw new Error("send channel not initialized, unable to send file") }
             if (!this.state.uploadFile) { throw new Error("file not initialized, unable to send file") }
             const file = this.state.uploadFile
 
             // Chunk file into blobs to be sent
             const chunkCount = Math.ceil(file.size / CHUNK_SIZE)
             const chunks: Array<Blob> = []
-            console.log(`[WebRTC] Sending file fileSize=${formatBytes(file.size)} chunkSize=${CHUNK_SIZE} chunkCount=${chunkCount}`)
+            console.log(`[WebRTC] Sending file: fileSize=${formatBytes(file.size)} chunkSize=${CHUNK_SIZE} chunkCount=${chunkCount}`)
             for (let i = 0; i < chunkCount; i++) {
                 const currentByte = i * CHUNK_SIZE
                 const targetByte = currentByte + CHUNK_SIZE
@@ -358,8 +361,9 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     chunks.push(file.slice(currentByte, targetByte))
                 }
             }
-            // This is async, and hard to track progress
+            // Start file chunk sending job
             this.sendFileChunks(chunks)
+            // Start metrics fetching job
             const metricsTimer = setInterval(this.handleMetrics, 100)
             this.setState({ downloadStartTime: Date.now(), metricsTimer: metricsTimer })
         } catch (err) {
@@ -368,10 +372,13 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         }
     }
 
+    // Starts sending chunks to the peer. This can block until channel bufferedAmount passes threshold. 
+    // After which this function becomes async and continues sending when buffered amount decreases below threshold
     sendFileChunks = async (chunks: Blob[]) => {
         const sendChannel = this.state.sendChannel!
         if (chunks.length) {
             // Slow down, recurse once buffered amount decreases
+            // TODO: maybe this can be a nice async func we can await
             if (sendChannel.bufferedAmount > sendChannel.bufferedAmountLowThreshold) {
                 sendChannel.onbufferedamountlow = () => {
                     sendChannel.onbufferedamountlow = null;
@@ -389,7 +396,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 // Last chunk means we notify peer we are done
                 // TODO: send hash of file for integrity checks
                 clearInterval(this.state.metricsTimer)
-                this.setState({ loading: false, metricsTimer: -1 })
+                this.setState({ loading: false, progress: undefined, metricsTimer: -1 })
+                // TODO: Timeout should be removed
                 setTimeout(() => sendChannel.send(JSON.stringify({ type: "finish-download" })), 500)
             } else {
                 // Recurse until there are none left
@@ -398,14 +406,16 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         }
     }
 
+    // Fetches metrics from either the peer channel or the partially downloaded file 
     handleMetrics = async () => {
         const { localConn, uploadFile, downloadFileInfo, downloadFileChunks, downloadStartTime } = this.state
-        const stats = await localConn!.getStats()
+        // Reciever can estimate progress based on downloaded chunks
         let metrics: WebRTCStats = {
-            bytesReceived: downloadFileChunks.length * CHUNK_SIZE,  // Estimate for the reciever
-            bytesSent: 0                                            // We don't know yet
+            bytesReceived: downloadFileChunks.length * CHUNK_SIZE,
+            bytesSent: 0
         };
-        // Get real stats from WebRTC, this only works for the sender for some magical reason google doesn't know. 😡
+        // Get real stats from WebRTC, this only works for the sender for some unknown reason 😡
+        const stats = await localConn!.getStats()
         stats.forEach(report => {
             if (report.type === 'data-channel') {
                 metrics = stats.get(report.id)
@@ -413,13 +423,13 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             }
         })
         // Calculate statistics
-        const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent);
-        const elapsedSec = millisecondsToX(Date.now() - downloadStartTime, 'second')
+        const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent, 1);
+        const elapsedSec = Math.max(millisecondsToX(Date.now() - downloadStartTime, 'second'), 1)
         const fileSize = downloadFileInfo?.size || uploadFile!.size
         this.setState({
             progress: {
                 bytesProcessed: bytesProcessed,
-                estimateSec: Math.round((fileSize / bytesProcessed) * elapsedSec),
+                estimateSec: Math.round(((fileSize / bytesProcessed) * elapsedSec) - elapsedSec),
                 percentage: Math.round((bytesProcessed / fileSize) * 100),
                 bitRate: parseInt(((bytesProcessed / elapsedSec) * 8).toFixed(2))
             }

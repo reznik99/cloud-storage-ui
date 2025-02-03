@@ -27,7 +27,7 @@ function ProgressBar({ progress, file, sx, onCancel }: IProps) {
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
                 {progress.bitRate &&
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>Bitrate: {`${formatBits(progress.bitRate)}s`}</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>Bitrate: {`${formatBits(progress.bitRate)}/s`}</Typography>
                 }
             </Box>
         </Box>
