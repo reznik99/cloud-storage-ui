@@ -55,7 +55,7 @@ function Nav() {
             width="100vw"
             sx={{ backgroundColor: "#747bff", paddingY: 2, paddingX: 6 }}>
 
-            <img src={logo} width={40} height={40} />
+            <img src={logo} width={30} height={30} />
 
             <Tooltip title="My Account">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

@@ -84,7 +84,7 @@ function LinkShare() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
                     <Typography variant="h5">{file?.name}</Typography>
-                    <img src={logo} width={40} height={40} />
+                    <img src={logo} width={30} height={30} />
                 </Box>
                 <Divider sx={{ mt: 2 }} />
 
