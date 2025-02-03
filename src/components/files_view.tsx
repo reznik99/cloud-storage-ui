@@ -1,6 +1,14 @@
 import { useCallback, useRef, useState } from "react"
-import { Cancel, Delete, Download, ExpandLess, ExpandMore, Link } from "@mui/icons-material"
-import { Box, Button, Chip, Collapse, Divider, FormLabel, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography } from "@mui/material"
+import Cancel from "@mui/icons-material/Cancel"
+import Delete from "@mui/icons-material/Delete"
+import Download from "@mui/icons-material/Download"
+import ExpandLess from "@mui/icons-material/ExpandLess"
+import ExpandMore from "@mui/icons-material/ExpandMore"
+import Link from "@mui/icons-material/Link"
+import {
+    Box, Button, Chip, Collapse, Divider, FormLabel, List, ListItem,
+    ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography
+} from "@mui/material"
 import { useSnackbar } from "notistack"
 import { FileInfo, formatBytes, getErrorString, getFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
 import api from "../networking/endpoints"

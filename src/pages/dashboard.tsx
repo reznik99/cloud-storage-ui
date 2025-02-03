@@ -1,16 +1,16 @@
 import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
-import { Box } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import Box from '@mui/material/Box'
 
+import AuthenticateDialog from '../components/dialog_authenticate'
 import FilesView from '../components/files_view'
 import Sidebar from '../components/sidebar'
 import api from '../networking/endpoints'
 import { getErrorString } from '../utilities/utils'
 import { RootState } from '../store/store'
 import { saveFiles } from '../store/reducer'
-import AuthenticateDialog from '../components/dialog_authenticate'
 
 function Dashboard() {
     const navigate = useNavigate()

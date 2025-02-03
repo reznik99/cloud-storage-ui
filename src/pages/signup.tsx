@@ -1,15 +1,28 @@
 import { useCallback, useState } from "react"
+import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { useSnackbar } from "notistack"
-import { AccountCircle, ArrowBack } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography } from "@mui/material"
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import Divider from '@mui/material/Divider'
+import LinearProgress from '@mui/material/LinearProgress'
+import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import FormControl from '@mui/material/FormControl'
+import FormLabel from '@mui/material/FormLabel'
+import ArrowBack from "@mui/icons-material/ArrowBack"
+import AccountCircle from "@mui/icons-material/AccountCircle"
+
 import { Feedback, getErrorString } from "../utilities/utils"
 import { ValidatePassword } from "../utilities/security"
 import api from "../networking/endpoints"
-import logo from '/logo.png'
 import PasswordMeter from "../components/password_meter"
-import { useDispatch } from "react-redux"
 import { saveCreds } from "../store/reducer"
+import logo from '/logo.png'
 
 function Signup() {
     const navigate = useNavigate()
@@ -79,13 +92,13 @@ function Signup() {
             height="100vh"
             className="login-container">
             <Stack sx={{ paddingX: 5, width: "50%" }}>
-                <Card sx={{ padding: 5}}>
+                <Card sx={{ padding: 5 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography component="h1" variant="h4"
                             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
                             Sign up
                         </Typography>
-                        <img src={logo} style={{ maxHeight: 40 }} />
+                        <img src={logo} width={40} height={40} />
                     </Box>
 
                     <Box component="form"

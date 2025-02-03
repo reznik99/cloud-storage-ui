@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useSnackbar } from "notistack"
-import { ArrowBack, Download } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, CardContent, Divider, IconButton, LinearProgress, Stack, Typography } from "@mui/material"
+import ArrowBack from "@mui/icons-material/ArrowBack"
+import Download from "@mui/icons-material/Download"
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import LinearProgress from '@mui/material/LinearProgress'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
+
 import { FileInfo, formatBytes, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api, { API_URL } from "../networking/endpoints"
 import logo from '/logo.png'
@@ -72,7 +84,7 @@ function LinkShare() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
                     <Typography variant="h5">{file?.name}</Typography>
-                    <img src={logo} style={{ maxHeight: 40 }} />
+                    <img src={logo} width={40} height={40} />
                 </Box>
                 <Divider sx={{ mt: 2 }} />
 

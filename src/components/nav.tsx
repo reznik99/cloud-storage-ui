@@ -1,7 +1,17 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Folder, Logout, Settings } from "@mui/icons-material"
-import { Avatar, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip } from "@mui/material"
+import Folder from "@mui/icons-material/Folder"
+import Logout from "@mui/icons-material/Logout"
+import Settings from "@mui/icons-material/Settings"
+import Avatar from "@mui/material/Avatar"
+import Divider from "@mui/material/Divider"
+import IconButton from "@mui/material/IconButton"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Stack from "@mui/material/Stack"
+import Tooltip from "@mui/material/Tooltip"
+
 import logo from '/logo.png'
 import api from "../networking/endpoints";
 
@@ -45,7 +55,7 @@ function Nav() {
             width="100vw"
             sx={{ backgroundColor: "#747bff", paddingY: 2, paddingX: 6 }}>
 
-            <img src={logo} style={{ maxHeight: 40 }} />
+            <img src={logo} width={40} height={40} />
 
             <Tooltip title="My Account">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

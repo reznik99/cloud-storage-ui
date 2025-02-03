@@ -1,6 +1,13 @@
 import { useCallback, useRef, useState } from "react"
-import { Cancel, ExpandMore, Key, UploadFile } from "@mui/icons-material"
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormGroup, FormLabel, Switch, Typography } from "@mui/material"
+import Cancel from "@mui/icons-material/Cancel"
+import ExpandMore from "@mui/icons-material/ExpandMore"
+import Key from "@mui/icons-material/Key"
+import UploadFile from "@mui/icons-material/UploadFile"
+import {
+    Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button,
+    CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
+    FormGroup, FormLabel, Switch, Typography
+} from "@mui/material"
 import { useSnackbar } from "notistack"
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
 import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"

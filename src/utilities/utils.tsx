@@ -1,6 +1,11 @@
-import { Article, AudioFile, Folder, FolderZip, Movie, Photo } from "@mui/icons-material"
-import { Chip } from "@mui/material";
 import axios, { AxiosError } from "axios";
+import Article from "@mui/icons-material/Article"
+import AudioFile from "@mui/icons-material/AudioFile"
+import Folder from "@mui/icons-material/Folder"
+import FolderZip from "@mui/icons-material/FolderZip"
+import Movie from "@mui/icons-material/Movie"
+import Photo from "@mui/icons-material/Photo"
+import Chip from "@mui/material/Chip";
 
 export type FileInfo = {
     name: string;

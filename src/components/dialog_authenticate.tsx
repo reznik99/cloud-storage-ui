@@ -1,6 +1,10 @@
 import { useSnackbar } from "notistack"
-import { Cancel, Password } from "@mui/icons-material"
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, LinearProgress, TextField } from "@mui/material"
+import Cancel from "@mui/icons-material/Cancel"
+import Password from "@mui/icons-material/Password"
+import {
+    Box, Button, Dialog, DialogActions, DialogContent, DialogContentText,
+    DialogTitle, FormControl, FormLabel, LinearProgress, TextField
+} from "@mui/material"
 import { useCallback, useState } from "react";
 import { getErrorString } from "../utilities/utils";
 import { useDispatch, useSelector } from "react-redux";

@@ -1,11 +1,31 @@
 import { useCallback, useState } from "react"
 import { Link as RouterLink, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
-import { Cancel, LoginOutlined, Mail } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormLabel, LinearProgress, Stack, TextField, Typography, Link } from "@mui/material"
+import Box from '@mui/material/Box'
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Divider from '@mui/material/Divider'
+import FormControl from '@mui/material/FormControl'
+import FormLabel from '@mui/material/FormLabel'
+import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
+import Cancel from "@mui/icons-material/Cancel"
+import LoginOutlined from "@mui/icons-material/LoginOutlined"
+import Mail from "@mui/icons-material/Mail"
+
+import logo from '/logo.png'
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
-import logo from '/logo.png'
 import { saveCreds } from "../store/reducer"
 import { RootState } from "../store/store"
 
@@ -92,7 +112,7 @@ function Login() {
                             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
                             Log In
                         </Typography>
-                        <img src={logo} style={{ maxHeight: 40 }} />
+                        <img src={logo} width={40} height={40} />
                     </Box>
 
                     <Box component="form"
@@ -188,7 +208,7 @@ function Login() {
                         <Typography variant="h5">Need to share files directly?</Typography>
                     </AlertTitle>
                     <Typography>
-                        Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with 
+                        Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with
                         <b> server-less peer-to-peer</b> file sharing!<br />
                     </Typography>
                     <ul>

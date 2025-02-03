@@ -1,8 +1,15 @@
 import axios from "axios"
 import { useCallback, useEffect, useState } from "react"
 import { EnqueueSnackbar, useSnackbar } from "notistack"
-import { Add, Cancel, Delete, InsertLink } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, Tooltip, Typography } from "@mui/material"
+import Add from "@mui/icons-material/Add"
+import Cancel from "@mui/icons-material/Cancel"
+import Delete from "@mui/icons-material/Delete"
+import InsertLink from "@mui/icons-material/InsertLink"
+import {
+    Alert, AlertTitle, Box, Button, CircularProgress, Dialog, DialogActions,
+    DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton,
+    ListItemIcon, Tooltip, Typography
+} from "@mui/material"
 import { assembleShareLink, FileInfo, getErrorString, localDateTime, } from "../utilities/utils"
 import api from "../networking/endpoints"
 import { DecryptFileKey } from "../utilities/crypto"

@@ -1,6 +1,8 @@
-import { Box, LinearProgress, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import zxcvbn from "zxcvbn"
+import Box from "@mui/material/Box"
+import LinearProgress from "@mui/material/LinearProgress"
+import Typography from "@mui/material/Typography"
 
 function normalizeStrength(score: number) {
     return ((score + 1) / 5) * 100

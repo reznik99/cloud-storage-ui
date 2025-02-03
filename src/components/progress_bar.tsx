@@ -1,5 +1,10 @@
-import { Box, IconButton, LinearProgress, SxProps, Theme, Typography } from "@mui/material"
-import { Cancel } from "@mui/icons-material"
+import Box from '@mui/material/Box'
+import IconButton from '@mui/material/IconButton'
+import LinearProgress from '@mui/material/LinearProgress'
+import Typography from '@mui/material/Typography'
+import Cancel from "@mui/icons-material/Cancel"
+import { Theme, SxProps } from '@mui/material/styles'
+
 import { FileInfo, formatBits, formatBytes, Progress } from "../utilities/utils"
 
 type IProps = {

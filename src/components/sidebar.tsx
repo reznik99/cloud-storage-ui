@@ -1,10 +1,22 @@
 
 import { useState } from "react"
-import { Alert, Box, Button, Card, Divider, FormControlLabel, LinearProgress, Link, Switch, Typography, useColorScheme } from "@mui/material"
-import { Circle, Upload } from "@mui/icons-material"
+import Circle from "@mui/icons-material/Circle"
+import Upload from "@mui/icons-material/Upload"
+import Alert from "@mui/material/Alert"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Card from "@mui/material/Card"
+import Divider from "@mui/material/Divider"
+import FormControlLabel from "@mui/material/FormControlLabel"
+import LinearProgress from "@mui/material/LinearProgress"
+import Link from "@mui/material/Link"
+import Switch from "@mui/material/Switch"
+import Typography from "@mui/material/Typography"
+
 import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, sizePercentageToColor } from "../utilities/utils"
-import viteLogo from '/vite.svg'
 import FileUploadDialog from "./dialog_file_upload"
+import viteLogo from '/vite.svg'
+import { useColorScheme } from "@mui/material/styles"
 
 type IProps = {
     files: Array<FileInfo>;

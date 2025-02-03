@@ -1,13 +1,31 @@
-import { useLocation, useNavigate } from "react-router-dom"
-import { ArrowBack, Article, Password, Link } from "@mui/icons-material"
-import { Alert, AlertTitle, Box, Button, Card, CardContent, Checkbox, Divider, FormControl, FormControlLabel, FormLabel, IconButton, Stack, TextField, Typography } from "@mui/material"
-import logo from '/logo.png'
 import { useCallback, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useSnackbar } from "notistack"
+import Article from "@mui/icons-material/Article"
+import ArrowBack from "@mui/icons-material/ArrowBack"
+import Password from "@mui/icons-material/Password"
+import Link from "@mui/icons-material/Link"
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Checkbox from '@mui/material/Checkbox'
+import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import FormControl from '@mui/material/FormControl'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormLabel from '@mui/material/FormLabel'
+
 import { ValidatePassword } from "../utilities/security"
 import { getErrorString } from "../utilities/utils"
-import { useSnackbar } from "notistack"
 import PasswordMeter from "../components/password_meter"
 import api from "../networking/endpoints"
+import logo from '/logo.png'
 
 function ResetPassword() {
     const navigate = useNavigate()
@@ -54,7 +72,7 @@ function ResetPassword() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
                     <Typography variant="h5">Reset password (code: {hash})</Typography>
-                    <img src={logo} style={{ maxHeight: 40 }} />
+                    <img src={logo} width={40} height={40} />
                 </Box>
                 <Divider sx={{ mt: 2 }} />
 

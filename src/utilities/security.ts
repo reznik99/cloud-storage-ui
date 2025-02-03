@@ -1,4 +1,4 @@
-import zxcvbn from 'zxcvbn';
+import zxcvbn from "zxcvbn"
 
 const security = {
     minPasswordLength: 8,
