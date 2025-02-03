@@ -1,22 +1,33 @@
 import { useCallback, useRef, useState } from "react"
+import { useSnackbar } from "notistack"
+import { Buffer } from "buffer"
 import Cancel from "@mui/icons-material/Cancel"
 import Delete from "@mui/icons-material/Delete"
 import Download from "@mui/icons-material/Download"
 import ExpandLess from "@mui/icons-material/ExpandLess"
 import ExpandMore from "@mui/icons-material/ExpandMore"
 import Link from "@mui/icons-material/Link"
-import {
-    Box, Button, Chip, Collapse, Divider, FormLabel, List, ListItem,
-    ListItemIcon, ListItemText, Paper, Stack, Tooltip, Typography
-} from "@mui/material"
-import { useSnackbar } from "notistack"
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Chip from '@mui/material/Chip'
+import Collapse from '@mui/material/Collapse'
+import Divider from '@mui/material/Divider'
+import FormLabel from '@mui/material/FormLabel'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import Paper from '@mui/material/Paper'
+import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
+
 import { FileInfo, formatBytes, getErrorString, getFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
-import api from "../networking/endpoints"
+import { DecryptFile } from "../utilities/crypto"
 import emptyDirectory from '/empty-box.png'
 import FileLinkDialog from "./dialog_file_link"
 import ProgressBar from "./progress_bar"
-import { DecryptFile } from "../utilities/crypto"
-import { Buffer } from "buffer"
+import api from "../networking/endpoints"
 
 type IProps = {
     files: Array<FileInfo>;

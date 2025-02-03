@@ -1,14 +1,25 @@
 import { useCallback, useRef, useState } from "react"
+import { useSnackbar } from "notistack"
 import Cancel from "@mui/icons-material/Cancel"
 import ExpandMore from "@mui/icons-material/ExpandMore"
 import Key from "@mui/icons-material/Key"
 import UploadFile from "@mui/icons-material/UploadFile"
-import {
-    Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button,
-    CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
-    FormGroup, FormLabel, Switch, Typography
-} from "@mui/material"
-import { useSnackbar } from "notistack"
+import Accordion from '@mui/material/Accordion'
+import AccordionDetails from '@mui/material/AccordionDetails'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import FormGroup from '@mui/material/FormGroup'
+import FormLabel from '@mui/material/FormLabel'
+import Switch from '@mui/material/Switch'
+import Typography from '@mui/material/Typography'
+
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
 import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"
 import api from "../networking/endpoints"

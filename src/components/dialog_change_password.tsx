@@ -1,17 +1,26 @@
-import { useSnackbar } from "notistack"
-import Cancel from "@mui/icons-material/Cancel"
-import Password from "@mui/icons-material/Password"
-import {
-    Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
-    FormControl, FormLabel, LinearProgress, TextField, Typography
-} from "@mui/material"
-import PasswordMeter from "./password_meter";
 import { useCallback, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useSnackbar } from "notistack";
+import Cancel from "@mui/icons-material/Cancel";
+import Password from "@mui/icons-material/Password";
+import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import FormControl from '@mui/material/FormControl'
+import FormLabel from '@mui/material/FormLabel'
+import LinearProgress from '@mui/material/LinearProgress'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+
+import PasswordMeter from "./password_meter";
 import { ValidatePassword } from "../utilities/security";
 import { getErrorString } from "../utilities/utils";
-import api from "../networking/endpoints";
-import { useDispatch } from "react-redux";
 import { saveCreds } from "../store/reducer";
+import api from "../networking/endpoints";
 
 type IProps = {
     open: boolean;

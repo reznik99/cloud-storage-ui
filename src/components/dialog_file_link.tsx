@@ -5,15 +5,26 @@ import Add from "@mui/icons-material/Add"
 import Cancel from "@mui/icons-material/Cancel"
 import Delete from "@mui/icons-material/Delete"
 import InsertLink from "@mui/icons-material/InsertLink"
-import {
-    Alert, AlertTitle, Box, Button, CircularProgress, Dialog, DialogActions,
-    DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemButton,
-    ListItemIcon, Tooltip, Typography
-} from "@mui/material"
-import { assembleShareLink, FileInfo, getErrorString, localDateTime, } from "../utilities/utils"
-import api from "../networking/endpoints"
-import { DecryptFileKey } from "../utilities/crypto"
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogTitle from '@mui/material/DialogTitle'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 
+import { assembleShareLink, FileInfo, getErrorString, localDateTime, } from "../utilities/utils"
+import { DecryptFileKey } from "../utilities/crypto"
+import api from "../networking/endpoints"
 type IProps = {
     open: boolean;
     file: FileInfo;

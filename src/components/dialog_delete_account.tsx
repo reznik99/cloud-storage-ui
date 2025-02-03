@@ -1,17 +1,29 @@
+import { useCallback, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useSnackbar } from "notistack"
 import Article from "@mui/icons-material/Article"
 import Cancel from "@mui/icons-material/Cancel"
 import Link from "@mui/icons-material/Link"
 import Password from "@mui/icons-material/Password"
-import {
-    Alert, AlertTitle, Box, Button, Checkbox, Dialog, DialogActions,
-    DialogContent, DialogTitle, FormControl, FormControlLabel, FormLabel,
-    LinearProgress, Stack, TextField, Typography
-} from "@mui/material"
-import { useCallback, useState } from "react";
-import { getErrorString } from "../utilities/utils";
-import api from "../networking/endpoints";
-import { useNavigate } from "react-router-dom";
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import FormControl from '@mui/material/FormControl'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormLabel from '@mui/material/FormLabel'
+import LinearProgress from '@mui/material/LinearProgress'
+import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+
+import { getErrorString } from "../utilities/utils"
+import api from "../networking/endpoints"
 
 type IProps = {
     open: boolean;

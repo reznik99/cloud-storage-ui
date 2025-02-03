@@ -1,17 +1,25 @@
+import { useCallback, useState } from "react";
 import { useSnackbar } from "notistack"
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Cancel from "@mui/icons-material/Cancel"
 import Password from "@mui/icons-material/Password"
-import {
-    Box, Button, Dialog, DialogActions, DialogContent, DialogContentText,
-    DialogTitle, FormControl, FormLabel, LinearProgress, TextField
-} from "@mui/material"
-import { useCallback, useState } from "react";
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogTitle from '@mui/material/DialogTitle'
+import FormControl from '@mui/material/FormControl'
+import FormLabel from '@mui/material/FormLabel'
+import LinearProgress from '@mui/material/LinearProgress'
+import TextField from '@mui/material/TextField'
+
 import { getErrorString } from "../utilities/utils";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store";
 import api from "../networking/endpoints";
+import { RootState } from "../store/store";
 import { saveCreds } from "../store/reducer";
-import { useNavigate } from "react-router-dom";
 
 type IProps = {
     open: boolean;
