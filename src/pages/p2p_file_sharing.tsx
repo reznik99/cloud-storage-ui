@@ -237,7 +237,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 break;
             case "object":
                 // TODO: Instead of saving chanks in RAM, stream to disk to allow massive file transfer (use FileSystemWritableFileStream)
-                this.downloadFileChunks.concat(message.data)
+                this.downloadFileChunks.push(message.data)
                 break;
             default:
                 console.warn("[WebRTC] Data channel received unrecognized message type: ", typeof message.data)
@@ -439,14 +439,14 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 
     // Fetches metrics from either the peer channel or the partially downloaded file 
     handleMetrics = async () => {
-        const { rtcConn: localConn, uploadFile, downloadFileInfo, transferStartTime: downloadStartTime } = this.state
+        const { rtcConn, uploadFile, downloadFileInfo, transferStartTime } = this.state
         // Reciever can estimate progress based on downloaded chunks
         let metrics: WebRTCStats = {
             bytesReceived: this.downloadFileChunks.length * CHUNK_SIZE,
             bytesSent: 0
         };
         // Get real stats from WebRTC, this only works for the sender for some unknown reason 😡
-        const stats = await localConn!.getStats()
+        const stats = await rtcConn!.getStats()
         stats.forEach(report => {
             if (report.type === 'data-channel') {
                 metrics = stats.get(report.id)
@@ -455,7 +455,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         })
         // Calculate statistics
         const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent, 1);
-        const elapsedSec = Math.max(millisecondsToX(Date.now() - downloadStartTime, 'second'), 1)
+        const elapsedSec = Math.max(millisecondsToX(Date.now() - transferStartTime, 'second'), 1)
         const fileSize = downloadFileInfo?.size || uploadFile!.size
         this.setState({
             transferProgress: {
