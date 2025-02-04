@@ -28,7 +28,7 @@ import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import ProgressBar from '../components/progress_bar'
 import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
 
-const CHUNK_SIZE = 16_000 // ~16kb chunk size for WebRTC data channel
+const CHUNK_SIZE = 16_384 // ~16kb chunk size for WebRTC data channel
 
 // Creates a p2p file share link containing the local websocket key and local webrtc offer
 const createLink = async (wsKey: string, localOffer: RTCSessionDescriptionInit) => {
@@ -146,6 +146,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     break
                 case "icecandidate":
                     console.log("[WS] received icecandidate:", message.data)
+                    // TODO: check if channel is already open, in which case discard late candidates
                     this.state.rtcConn?.addIceCandidate(JSON.parse(message.data))
                     break
                 default:
@@ -155,6 +156,16 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             if (!this.state.wsPeerKey.length && message.from?.length) {
                 console.log("[WS] found peer websocket key:", message.from)
                 this.setState({ wsPeerKey: message.from })
+                // Send any cached IceCandidates to the peer
+                this.state.rtcIceCandidates.forEach(iceCandidateStr => {
+                    this.wsSendMessage({
+                        from: this.state.wsKey,
+                        to: this.state.wsPeerKey,
+                        command: "icecandidate",
+                        data: iceCandidateStr
+                    })
+                })
+                this.setState({ rtcIceCandidates: [] })
             }
         } catch (err) {
             console.error("[WS] message error:", err)
