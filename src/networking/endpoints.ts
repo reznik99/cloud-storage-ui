@@ -4,10 +4,10 @@ import { AccountKeyOpts, CRV_len, DeriveKeysFromPassword, GenerateKey, GenerateR
 import { Buffer } from "buffer"
 import store from "../store/store"
 
-export const WS_URL = "ws://localhost:8080/ws"
-export const API_URL = "http://localhost:8080/api"
-// export const WS_URL = "wss://storage.francescogorini.com/ws"
-// export const API_URL = "https://storage.francescogorini.com/api"
+// export const WS_URL = "ws://localhost:8080/ws"
+// export const API_URL = "http://localhost:8080/api"
+export const WS_URL = "wss://storage.francescogorini.com/ws"
+export const API_URL = "https://storage.francescogorini.com/api"
 
 const client = axios.create({
     withCredentials: true,
