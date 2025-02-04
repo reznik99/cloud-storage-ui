@@ -24,9 +24,10 @@ import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
-import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import ProgressBar from '../components/progress_bar'
-import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, getWebsocketURL, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
+import { AnswerConnection, StartConnection } from '../networking/webrtc'
+import { WS_URL } from '../networking/endpoints'
+import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
 
 const CHUNK_SIZE = 16_384 // ~16kb chunk size for WebRTC data channel
 
@@ -112,7 +113,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     componentDidMount(): void {
-        const websocket = new WebSocket(getWebsocketURL())
+        const websocket = new WebSocket(WS_URL)
         websocket.onmessage = this.wsOnMessage
         websocket.onopen = this.wsOnOpen
         websocket.onclose = this.wsOnClose

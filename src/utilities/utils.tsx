@@ -184,11 +184,3 @@ export function getWebRTCStatus(status: RTCDataChannelState | undefined) {
             return <Chip label="unknown" color="secondary" variant="outlined" />
     }
 }
-
-export function getWebsocketURL() {
-    let proto = "wss:"
-    if (window.location.protocol === "http:") {
-        proto = "ws:"
-    }
-    return `${proto}//${window.location.host}/ws`
-}
