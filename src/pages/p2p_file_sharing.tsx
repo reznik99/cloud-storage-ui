@@ -139,7 +139,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     wsSendMessage = (wsMessage: any) => {
         this.state.websocket?.send(JSON.stringify(wsMessage))
     }
-    wsOnMessage = (wsMessage: MessageEvent<any>) => {
+    wsOnMessage = async (wsMessage: MessageEvent<any>) => {
         try {
             const message = JSON.parse(wsMessage.data)
             switch (message.command) {
@@ -150,14 +150,13 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 case "answer":
                     console.log("[WS] received answer:", message.data)
                     const remoteAnswer = JSON.parse(message.data) as RTCSessionDescriptionInit
-                    if (this.state.rtcConn?.signalingState !== "stable") {
-                        this.state.rtcConn?.setRemoteDescription(remoteAnswer)
-                    }
+                    await this.state.rtcConn?.setRemoteDescription(remoteAnswer)
                     break
                 case "icecandidate":
                     console.log("[WS] received icecandidate:", message.data)
                     // TODO: check if channel is already open, in which case discard late candidates
-                    this.state.rtcConn?.addIceCandidate(JSON.parse(message.data))
+                    console.log("[WS] signalingState", this.state.rtcConn?.signalingState)
+                    await this.state.rtcConn?.addIceCandidate(new RTCIceCandidate(JSON.parse(message.data)))
                     break
                 default:
                     console.warn("[WS] unknown command:", message)
