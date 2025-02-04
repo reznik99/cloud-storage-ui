@@ -12,35 +12,35 @@ type socketSendFn = (icecandidate: RTCIceCandidate | null) => void
 // Creates a local webrtc connection and data channel, then return an offer
 export async function StartConnection(onIceCandidate: socketSendFn) {
     // Create a local connection
-    const localConn = new RTCPeerConnection(peerConstraints)
-    localConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
+    const rtcConn = new RTCPeerConnection(peerConstraints)
+    rtcConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
     // Create a data channel
-    const sendChannel = localConn.createDataChannel(dataChannelName)
-    sendChannel.binaryType = 'arraybuffer'
-    sendChannel.bufferedAmountLowThreshold = 0
+    const rtcChannel = rtcConn.createDataChannel(dataChannelName)
+    rtcChannel.binaryType = 'arraybuffer'
+    rtcChannel.bufferedAmountLowThreshold = 0
     // Create an offer
-    const localOffer = await localConn.createOffer()
-    await localConn.setLocalDescription(localOffer)
+    const localOffer = await rtcConn.createOffer()
+    await rtcConn.setLocalDescription(localOffer)
     return {
-        localConn,
-        sendChannel,
+        rtcConn,
+        rtcChannel,
         localOffer,
     }
 }
 
 // Creates a local webrtc connection and return an answer
-export async function AnswerConnection(onIceCandidate: socketSendFn, remoteOffer: RTCSessionDescriptionInit) {
+export async function AnswerConnection(onIceCandidate: socketSendFn, peerOffer: RTCSessionDescriptionInit) {
     // Create local conn
-    const localConn = new RTCPeerConnection(peerConstraints)
+    const rtcConn = new RTCPeerConnection(peerConstraints)
     // Add local conn event listeners
-    localConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
+    rtcConn.onicecandidate = (ev) => onIceCandidate(ev.candidate)
 
     // We are connecting to a share link
-    await localConn.setRemoteDescription(remoteOffer)
-    const localAnswer = await localConn.createAnswer()
-    await localConn.setLocalDescription(localAnswer)
+    await rtcConn.setRemoteDescription(peerOffer)
+    const localAnswer = await rtcConn.createAnswer()
+    await rtcConn.setLocalDescription(localAnswer)
     return {
-        localConn,
+        rtcConn,
         localAnswer
     }
 }
