@@ -143,7 +143,9 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 case "answer":
                     console.log("[WS] received answer:", message.data)
                     const remoteAnswer = JSON.parse(message.data) as RTCSessionDescriptionInit
-                    this.state.rtcConn?.setRemoteDescription(remoteAnswer)
+                    if (!this.state.rtcConn?.pendingRemoteDescription) {
+                        this.state.rtcConn?.setRemoteDescription(remoteAnswer)
+                    }
                     break
                 case "icecandidate":
                     console.log("[WS] received icecandidate:", message.data)
@@ -161,7 +163,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 this.state.rtcIceCandidates.forEach(iceCandidateStr => {
                     this.wsSendMessage({
                         from: this.state.wsKey,
-                        to: this.state.wsPeerKey,
+                        to: message.from, // wsPeerKey,
                         command: "icecandidate",
                         data: iceCandidateStr
                     })
@@ -271,6 +273,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         })
     }
     onIceCandidate = (iceCandidate: RTCIceCandidate | null) => {
+        console.log("[WebRTC] onIceCandidate", !!iceCandidate)
         if (!iceCandidate) return
         try {
             const iceCandidateStr = JSON.stringify(iceCandidate.toJSON())
