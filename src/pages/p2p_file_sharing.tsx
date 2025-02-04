@@ -25,15 +25,22 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import ProgressBar from '../components/progress_bar'
-import { AnswerConnection, StartConnection } from '../networking/webrtc'
 import { WS_URL } from '../networking/endpoints'
 import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
 
+// RTC constants
+export const rtcPeerConstraints: RTCConfiguration = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun.services.mozilla.com' }
+    ]
+};
+export const rtcDataChannelName = "gdrive-file-transfer"
 const CHUNK_SIZE = 16_384 // ~16kb chunk size for WebRTC data channel
 
 // Creates a p2p file share link containing the local websocket key and local webrtc offer
 const createLink = async (wsKey: string, localOffer: RTCSessionDescriptionInit) => {
-    const link = `${window.location}#${wsKey}#${Buffer.from(JSON.stringify(localOffer), 'ascii').toString('base64')}`
+    const link = `${window.location}#${wsKey}#${Buffer.from(JSON.stringify(localOffer)).toString('base64')}`
     return link
 }
 
@@ -143,7 +150,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 case "answer":
                     console.log("[WS] received answer:", message.data)
                     const remoteAnswer = JSON.parse(message.data) as RTCSessionDescriptionInit
-                    if (!this.state.rtcConn?.pendingRemoteDescription) {
+                    if (this.state.rtcConn?.signalingState !== "stable") {
                         this.state.rtcConn?.setRemoteDescription(remoteAnswer)
                     }
                     break
@@ -302,18 +309,32 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         try {
             this.setState({ loading: true })
             // Create localConn and generate offer
-            const local = await StartConnection(this.onIceCandidate)
-            local.rtcChannel.onmessage = this.channelOnMessage
-            local.rtcChannel.onopen = this.channelOnStateChange
-            local.rtcChannel.onclose = this.channelOnStateChange
-            local.rtcChannel.onerror = this.channelOnError
+            const rtcConn = new RTCPeerConnection(rtcPeerConstraints)
+            rtcConn.onicecandidate = (ev) => this.onIceCandidate(ev.candidate)
+            rtcConn.onicecandidateerror = (ev) => console.warn("[WebRTC] icecandidate err:", ev.errorText)
+            rtcConn.onconnectionstatechange = (ev) => console.log("[WebRTC] onconnectionstatechange:", ev)
+            rtcConn.oniceconnectionstatechange = (ev) => console.log("[WebRTC] oniceconnectionstatechange:", ev)
+            rtcConn.onsignalingstatechange = (ev) => console.log("[WebRTC] onsignalingstatechange:", ev)
+            rtcConn.onicegatheringstatechange = (ev) => console.log("[WebRTC] onicegatheringstatechange:", ev)
+            // Create a data channel
+            const rtcChannel = rtcConn.createDataChannel(rtcDataChannelName)
+            rtcChannel.onmessage = this.channelOnMessage
+            rtcChannel.onopen = this.channelOnStateChange
+            rtcChannel.onclose = this.channelOnStateChange
+            rtcChannel.onerror = this.channelOnError
+            rtcChannel.binaryType = 'arraybuffer'
+            rtcChannel.bufferedAmountLowThreshold = 0
+            // Create an offer
+            const localOffer = await rtcConn.createOffer()
+            await rtcConn.setLocalDescription(localOffer)
+
             // Convert local offer into a URL
             if (!this.state.wsKey.length) throw new Error("wsKey not initialized")
-            const link = await createLink(this.state.wsKey, local.localOffer)
+            const link = await createLink(this.state.wsKey, localOffer)
             // Save data
             this.setState({
-                rtcConn: local.rtcConn,
-                rtcChanel: local.rtcChannel,
+                rtcConn: rtcConn,
+                rtcChanel: rtcChannel,
                 shareLink: link
             })
         } catch (err) {
@@ -326,25 +347,36 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 
     // Prepare WebRTC and create an answer
     leechShareLink = async () => {
+        this.setState({ loading: true })
         try {
-            this.setState({ loading: true })
             // Parse remote offer (from the URL)
             const { wsPeerKey, rtcPeerOffer } = parseLink(this.props.hash)
-            // Create localConn and generate offer
-            const local = await AnswerConnection(this.onIceCandidate, rtcPeerOffer)
-            local.rtcConn.ondatachannel = this.onDataChannel
+            // Create local conn
+            const rtcConn = new RTCPeerConnection(rtcPeerConstraints)
+            // Add local conn event listeners
+            rtcConn.ondatachannel = this.onDataChannel
+            rtcConn.onicecandidate = (ev) => this.onIceCandidate(ev.candidate)
+            rtcConn.onicecandidateerror = (ev) => console.warn("[WebRTC] icecandidate err:", ev.errorText)
+            rtcConn.onconnectionstatechange = (ev) => console.log("[WebRTC] onconnectionstatechange:", ev)
+            rtcConn.oniceconnectionstatechange = (ev) => console.log("[WebRTC] oniceconnectionstatechange:", ev)
+            rtcConn.onsignalingstatechange = (ev) => console.log("[WebRTC] onsignalingstatechange:", ev)
+            rtcConn.onicegatheringstatechange = (ev) => console.log("[WebRTC] onicegatheringstatechange:", ev)
+            // We are connecting to a share link
+            await rtcConn.setRemoteDescription(rtcPeerOffer)
+            const localAnswer = await rtcConn.createAnswer()
+            await rtcConn.setLocalDescription(localAnswer)
             // Send answer to peer through signaling
             console.log("[WS] Sending answer")
             this.wsSendMessage({
                 from: this.state.wsKey,
                 to: wsPeerKey,
                 command: "answer",
-                data: JSON.stringify(local.localAnswer)
+                data: JSON.stringify(localAnswer)
             })
             // Save data
             this.setState({
                 wsPeerKey: wsPeerKey,
-                rtcConn: local.rtcConn
+                rtcConn: rtcConn
             })
         } catch (err) {
             console.error("leech share link:", err)
