@@ -593,7 +593,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     }
                 </Card>
             </Stack>
-            <Stack px={5} flexGrow={1}>
+            <Stack px={5} flexGrow={1} maxWidth="45%">
                 <Alert variant="standard" severity="info">
                     <AlertTitle>
                         <Typography variant="h5">Peer-To-Peer file sharing</Typography>

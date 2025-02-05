@@ -1,38 +1,41 @@
 # Self-hosted E2E Encrypted Cloud Storage Interface
 
-This repo contains a React app that interfaces with the [Cloud Storage API](https://github.com/reznik99/cloud-storage-api) to allow File upload, download and storage.
+This repo contains the front-end for the [Cloud Storage API](https://github.com/reznik99/cloud-storage-api) to allow File upload, download and storage, completely **End-to-End encrypted**.
 
 
 ## Features
 - [x] Signup, login, file upload, download and deletion
 - [x] View your files and metadata (such as size, when it was added and filetype)
-- [x] Download and Upload progress indicators (%) and estimated time left
-- [x] Dark/Light mode
+- [X] Full **End to End encryption**
+- [x] File sharing through **shareable links** (allow others to download your uploaded files without an account)
+- [x] File sharing through **Peer-to-Peer**  (share files without an account, no file-size limits!)
 - [x] Password change and account recovery
-- [x] Shareable links (to allow others to download without an account)
-- [X] End to End encryption for files
-- [X] End to End encryption for files shared through shared links
+- [x] Dark/Light mode
 - [ ] Folder view (Upload folders instead of single files like zip, and allow user to navigate folder structure, like google drive)
 
 ## Interface
 
-![Signup Screenshot][signup]
-
 ![Login Screenshot][login]
 
-![Dashboard Screenshot][dashboard]
+![Signup Screenshot][signup]
 
-![Darkmode Dashboard Screenshot][dark-mode]
+![Dashboard Screenshot][dashboard]
 
 ![Upload Screenshot][upload]
 
 ![Download Screenshot][download]
 
-![Deletion Screenshot][deletion]
-
 ![Sharing Screenshot][sharing]
 
 ![Sharing Download Screenshot][sharing-download]
+
+![Peer-to-Peer share Screenshot][p2p-sharing]
+
+![Settings Screenshot][settings]
+
+![Deletion Screenshot][deletion]
+
+![Light-mode Screenshot][light-mode]
 
 
 <!-- LINKS -->
@@ -43,5 +46,7 @@ This repo contains a React app that interfaces with the [Cloud Storage API](http
 [download]: 1-readme-src/download.png
 [deletion]: 1-readme-src/deletion.png
 [sharing]: 1-readme-src/sharing.png
+[p2p-sharing]: 1-readme-src/p2p-sharing.png
 [sharing-download]: 1-readme-src/sharing-download.png
-[dark-mode]: 1-readme-src/dark-mode.png
+[settings]: 1-readme-src/settings.png
+[light-mode]: 1-readme-src/light-mode.png
