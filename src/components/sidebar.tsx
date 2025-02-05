@@ -2,6 +2,7 @@
 import { useState } from "react"
 import Circle from "@mui/icons-material/Circle"
 import Upload from "@mui/icons-material/Upload"
+import GitHub from "@mui/icons-material/GitHub"
 import Alert from "@mui/material/Alert"
 import Box from "@mui/material/Box"
 import Button from "@mui/material/Button"
@@ -10,13 +11,14 @@ import Divider from "@mui/material/Divider"
 import FormControlLabel from "@mui/material/FormControlLabel"
 import LinearProgress from "@mui/material/LinearProgress"
 import Link from "@mui/material/Link"
+import Stack from "@mui/material/Stack"
 import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
+import { useColorScheme } from "@mui/material/styles"
 
 import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, sizePercentageToColor } from "../utilities/utils"
 import FileUploadDialog from "./dialog_file_upload"
-import viteLogo from '/vite.svg'
-import { useColorScheme } from "@mui/material/styles"
+import logo from '/logo.png'
 
 type IProps = {
     files: Array<FileInfo>;
@@ -30,7 +32,8 @@ function Sidebar(props: IProps) {
     const sizeUsed = calculateSizeUsed(props.files)
     const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
     return (
-        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Card elevation={4}
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -39,14 +42,13 @@ function Sidebar(props: IProps) {
                 paddingX: 8,
                 flexGrow: 1
             }}>
-                <a href="https://vitejs.dev" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo" />
-                </a>
-                <Box sx={{ width: '100%', textAlign: 'center' }}>
+                <img src={logo} height={100} style={{marginTop: 20}} />
+
+                <Stack width="100%" textAlign="center" gap={2}>
                     <Typography>Space used:</Typography>
                     <Typography>{sizeUsed} MB/1,000 MB</Typography>
                     <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />
-                </Box>
+                </Stack>
 
                 {mode &&
                     <FormControlLabel checked={mode === 'dark'}
@@ -73,8 +75,9 @@ function Sidebar(props: IProps) {
                     Created by <Link href="https://francescogorini.com" target="_blank">Francesco Gorini</Link>
                 </Typography>
                 <Divider><Circle sx={{ fontSize: 8 }} /></Divider>
-                <Typography variant="body2">
-                    Source code <Link href="https://github.com/reznik99/cloud-storage-ui" target="_blank">github.com</Link>
+                <Typography variant="body2" display="flex" justifyContent="center" gap={1}>
+                    <Link href="https://github.com/reznik99/cloud-storage-ui" target="_blank">Open Source</Link>
+                    <GitHub fontSize="small" color="info" />
                 </Typography>
             </Alert>
         </Card>

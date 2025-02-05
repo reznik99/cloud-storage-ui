@@ -14,9 +14,12 @@ import Tooltip from "@mui/material/Tooltip"
 
 import logo from '/logo.png'
 import api from "../networking/endpoints";
+import { useSelector } from "react-redux"
+import { RootState } from "../store/store"
 
 function Nav() {
     const navigate = useNavigate()
+    const emailAddress = useSelector((state: RootState) => state.user.emailAddress)
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
 
     const handleOpenUserMenu = useCallback((event: React.MouseEvent<HTMLElement>) => {
@@ -53,10 +56,11 @@ function Nav() {
             justifyContent="space-between"
             alignItems="center"
             width="100vw"
-            sx={{ backgroundColor: "#747bff", paddingY: 2, paddingX: 6 }}>
+            sx={{ backgroundColor: "transparent", paddingY: 2, paddingX: 6 }}>
 
             <img src={logo} width={30} height={30} />
 
+            {emailAddress}
             <Tooltip title="My Account">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar />

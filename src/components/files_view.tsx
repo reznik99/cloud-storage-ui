@@ -89,12 +89,13 @@ function FilesView(props: IProps) {
     }, [openIdx])
 
     return (
-        <Box sx={{
-            width: '80%',
-            maxHeight: '100%',
-            overflowY: 'scroll',
-            flexGrow: 1,
-        }}>
+        <Paper elevation={1}
+            sx={{
+                width: '80%',
+                height: '100%',
+                overflowY: 'scroll',
+                flexGrow: 1
+            }}>
 
             <List disablePadding sx={{ width: '100%', height: '100%' }}>
                 {/* List Header */}
@@ -184,7 +185,7 @@ function FilesView(props: IProps) {
             <FileLinkDialog open={linkDialogIdx >= 0}
                 file={props.files[linkDialogIdx]}
                 closeDialog={() => setLinkDialogIdx(-1)} />
-        </Box>
+        </Paper>
     )
 }
 

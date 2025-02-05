@@ -22,12 +22,15 @@ import Typography from '@mui/material/Typography'
 import Cancel from "@mui/icons-material/Cancel"
 import LoginOutlined from "@mui/icons-material/LoginOutlined"
 import Mail from "@mui/icons-material/Mail"
+import FileUpload from "@mui/icons-material/FileUpload"
 
-import logo from '/logo.png'
 import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
 import { saveCreds } from "../store/reducer"
 import { RootState } from "../store/store"
+import logoFull from '/logo-full.png'
+import logo from '/logo.png'
+
 
 function Login() {
     const navigate = useNavigate()
@@ -98,21 +101,20 @@ function Login() {
     }, [emailAddress])
 
     return (
-        <Stack sx={{ paddingTop: 10 }}
+        <Stack py={10}
             direction="row"
             width="100vw"
             height="100vh"
             className="login-container">
-            <Stack sx={{ paddingX: 5 }} flexGrow={1}>
+            <Stack px={5} flexGrow={3}>
                 <Card sx={{ padding: 5 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography
-                            component="h1"
+                        <Typography component="h1"
                             variant="h4"
-                            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+                            width="100%">
                             Log In
                         </Typography>
-                        <img src={logo} width={30} height={30} />
+                        <img src={logo} height={50} />
                     </Box>
 
                     <Box component="form"
@@ -187,10 +189,10 @@ function Login() {
                     {loading && <LinearProgress variant="indeterminate" />}
                 </Box>
             </Stack>
-            <Stack sx={{ paddingX: 5 }} flexGrow={1}>
-                <Alert variant="filled" severity="info" icon="">
+            <Stack px={5} flexGrow={2} gap={4}>
+                <Alert variant="standard" severity="info" sx={{ flexGrow: 1 }} icon={false}>
                     <AlertTitle>
-                        <Typography variant="h5">Gorini Drive Storage</Typography>
+                        <img src={logoFull} height={200} />
                     </AlertTitle>
                     <Typography>
                         End-To-End encrypted file storage based on the
@@ -203,20 +205,27 @@ function Login() {
                         <li>Open Source</li>
                     </ul>
                 </Alert>
-                <Alert variant="standard" severity="info" sx={{ marginTop: 10 }}>
+                <Alert variant="standard" severity="info" sx={{ flexGrow: 1 }}>
                     <AlertTitle>
                         <Typography variant="h5">Need to share files directly?</Typography>
                     </AlertTitle>
-                    <Typography>
-                        Click <Link to="/p2p-file-share" component={RouterLink}><b>here</b></Link> to share files with
-                        <b> server-less peer-to-peer</b> file sharing!<br />
-                    </Typography>
+                    <Typography>Share files with <b>server-less peer-to-peer</b> file sharing!</Typography>
                     <ul>
-                        <li><b>Unlimited</b> file sharing</li>
-                        <li>Peer-To-Peer & Server-less</li>
-                        <li>End-To-End encryption</li>
-                        <li>Open Source</li>
+                        <li><Typography variant="subtitle2"><b>Unlimited</b> file sharing</Typography></li>
+                        <li><Typography variant="subtitle2">Peer-To-Peer & Server-less</Typography></li>
+                        <li><Typography variant="subtitle2">End-To-End encryption</Typography></li>
+                        <li><Typography variant="subtitle2">Open Source</Typography></li>
                     </ul>
+
+                    <Box width="100%" marginY={3}>
+                        <Button to="/p2p-file-share"
+                            variant="contained"
+                            color="info"
+                            startIcon={<FileUpload />}
+                            component={RouterLink}>
+                            Share files
+                        </Button>
+                    </Box>
                 </Alert>
             </Stack>
 

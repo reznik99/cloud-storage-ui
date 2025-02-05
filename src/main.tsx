@@ -63,7 +63,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <SnackbarProvider maxSnack={5} autoHideDuration={4000} >
+        <SnackbarProvider maxSnack={5} autoHideDuration={3000} >
           <CssBaseline />
           <RouterProvider router={router} />
         </SnackbarProvider>

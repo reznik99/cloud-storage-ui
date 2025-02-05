@@ -98,7 +98,7 @@ function Signup() {
                             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
                             Sign up
                         </Typography>
-                        <img src={logo} width={30} height={30} />
+                        <img src={logo} height={50} />
                     </Box>
 
                     <Box component="form"

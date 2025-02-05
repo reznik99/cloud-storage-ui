@@ -27,6 +27,7 @@ import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
 import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
 import { ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName, rtcPeerConstraints, WebRTCStats } from '../networking/webrtc'
+import logo from '/logo.png'
 
 // Types
 type IState = {
@@ -479,12 +480,11 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     render = () => (
-        <Stack sx={{ paddingTop: 10 }}
+        <Stack py={10}
             direction="row"
             width="100vw"
-            height="100vh"
-            className="login-container" >
-            <Stack sx={{ paddingX: 5 }} flexGrow={1}>
+            height="100vh">
+            <Stack px={5} flexGrow={3}>
                 {this.state.loading && <LinearProgress variant='indeterminate' />}
 
                 <Card sx={{ padding: 5 }}>
@@ -492,7 +492,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         <Tooltip title="Go back" disableInteractive>
                             <IconButton onClick={() => this.props.navigate(-1)}><ArrowBack /></IconButton>
                         </Tooltip>
-                        <Typography variant="h5">P2P file sharing</Typography>
+                        <Typography variant="h5" width="100%">P2P file sharing</Typography>
+                        <img src={logo} height={50} />
                     </Stack>
 
                     {/* Select file button (sender) */}
@@ -592,7 +593,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     }
                 </Card>
             </Stack>
-            <Stack sx={{ paddingX: 5, maxWidth: "50%" }} flexGrow={1}>
+            <Stack px={5} flexGrow={1}>
                 <Alert variant="standard" severity="info">
                     <AlertTitle>
                         <Typography variant="h5">Peer-To-Peer file sharing</Typography>
