@@ -74,7 +74,7 @@ export function formatBytes(byteSize: number) {
     } else if (byteSize < 1_024_000_000) {
         return (byteSize / 1_024_000).toFixed(2).toLocaleString() + " MB"
     }
-    return (byteSize / 1_024_000_000).toLocaleString() + " GB"
+    return (byteSize / 1_024_000_000).toFixed(2).toLocaleString() + " GB"
 }
 
 export function formatBits(bitSize: number) {
@@ -85,7 +85,7 @@ export function formatBits(bitSize: number) {
     } else if (bitSize < 1_024_000_000) {
         return (bitSize / 1_024_000).toFixed(2).toLocaleString() + " Mb"
     }
-    return (bitSize / 1_024_000_000).toLocaleString() + " Gb"
+    return (bitSize / 1_024_000_000).toFixed(2).toLocaleString() + " Gb"
 }
 
 export function getFileIcon(fileName: string): JSX.Element {

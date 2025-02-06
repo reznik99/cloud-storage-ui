@@ -9,6 +9,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import Chip from "@mui/material/Chip"
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import LinearProgress from '@mui/material/LinearProgress'
@@ -96,12 +97,24 @@ function LinkShare() {
                 }
                 {file &&
                     <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Box>
-                            <Typography variant="body1">Uploaded on: {new Date(file?.added || 0).toLocaleDateString()}</Typography>
-                            <Typography variant="body1">Size: {formatBytes(file?.size || 0)}</Typography>
-                            <Typography variant="body1">Type: {file.type || "Unknown"}</Typography>
-                            <Typography variant="body1">Decryption Key: {hash.slice(1) || "Unknown"}</Typography>
-                        </Box>
+                        <Stack gap={1}>
+                            <Stack direction="row" gap={1} alignItems="center">
+                                <Typography variant="body1">Uploaded on:</Typography>
+                                <Chip label={new Date(file?.added || 0).toLocaleDateString()} color="info" variant="outlined" />
+                                <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
+
+                                <Typography variant="body1">Size:</Typography>
+                                <Chip label={formatBytes(file?.size || 0)} color="info" variant="outlined" />
+                                <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
+
+                                <Typography variant="body1">Type:</Typography>
+                                <Chip label={file.type || "Unknown"} color="info" variant="outlined" />
+                            </Stack>
+                            <Stack direction="row" gap={2} alignItems="center">
+                                <Typography variant="body1">Decryption Key:</Typography>
+                                <Typography variant="body1" color="info">{hash.slice(1) || "Unknown"}</Typography>
+                            </Stack>
+                        </Stack>
                         <Button variant="outlined"
                             onClick={downloadLink}
                             disabled={loading}

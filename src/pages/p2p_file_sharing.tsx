@@ -59,7 +59,9 @@ type IProps = {
 class P2PFileSharing extends React.Component<IProps, IState> {
     // Static data (prevent re-rendering)
     downloadFileChunks: Array<ArrayBuffer> = []
-    websocket: WebSocket | undefined;
+    websocket: WebSocket | undefined
+    chatElement!: HTMLDivElement | null
+
     constructor(props: any) {
         super(props)
         this.state = {
@@ -96,9 +98,20 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     componentWillUnmount(): void {
-        this.websocket?.close?.()
+        if (this.websocket) {
+            // Reset handlers and close websocket
+            this.websocket.onclose = () => { }
+            this.websocket.onerror = () => { }
+            this.websocket.close()
+        }
         this.state.rtcChanel?.close?.()
         this.state.rtcConn?.close?.()
+    }
+
+    componentDidUpdate(_prevProps: Readonly<IProps>, prevState: Readonly<IState>, _snapshot?: any): void {
+        if (prevState.rtcMessages.length != this.state.rtcMessages.length) {
+            this.chatElement?.scrollIntoView({ behavior: 'smooth' })
+        }
     }
 
     /* Websocket event handlers */
@@ -484,7 +497,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             direction="row"
             width="100vw"
             height="100vh">
-            <Stack px={5} flexGrow={3}>
+            <Stack px={5} flexGrow={3} maxWidth="55%">
                 {this.state.loading && <LinearProgress variant='indeterminate' />}
 
                 <Card sx={{ padding: 5 }}>
@@ -524,25 +537,32 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         </>
                     }
 
-                    <Divider sx={{ my: 3 }} />
-                    <Typography>File Information:</Typography>
                     {/* Sending file information */}
                     {this.state.uploadFile &&
-                        <Stack direction="row" gap={2} marginTop={2}>
-                            <Typography>File Name:</Typography> <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
-                            <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
-                        </Stack>
+                        <>
+                            <Divider sx={{ my: 3 }} />
+                            {/* <Typography>File Information:</Typography> */}
+                            <Stack direction="row" gap={2} marginTop={2} alignItems="center">
+                                <Typography>File Name:</Typography>
+                                <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
+                                <Typography>File Size:</Typography>
+                                <Chip label={formatBytes(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
+                            </Stack>
+                        </>
                     }
                     {/* Receiving file information */}
                     {this.state.downloadFileInfo &&
-                        <Stack direction="row" gap={2} marginTop={2}>
-                            <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
-                            <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
-                        </Stack>
+                        <>
+                            <Divider sx={{ my: 3 }} />
+                            {/* <Typography>File Information:</Typography> */}
+                            <Stack direction="row" gap={2} marginTop={2} alignItems="center">
+                                <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
+                                <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
+                            </Stack>
+                        </>
                     }
 
                     <Divider sx={{ my: 3 }} />
-                    <Typography>Network Information:</Typography>
                     {/* Websocket and WebRTC Peer conenction status */}
                     <Stack direction="row" gap={3} marginY={2}>
                         <Stack direction="row"
@@ -562,17 +582,29 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         </Stack>
                     </Stack>
                     <Typography color="primary">Local: {this.state.wsKey}</Typography>
-                    <Typography color="secondary">Peer: {this.state.wsPeerKey || "Waiting connection"}</Typography>
+                    <Typography color="secondary">Peer:  {this.state.wsPeerKey || "Waiting connection"}</Typography>
 
                     <Divider sx={{ my: 3 }} />
                     <Typography>Peer Chat:</Typography>
                     {/* Chat section (WebRTC) */}
-                    {this.state.rtcReadyState === "open"
-                        ? <Stack direction="column" width="100%" marginY={2}>
-                            <Stack direction="column" gap={1} height={150} maxWidth="100%" overflow="scroll">
-                                {this.state.rtcMessages.map((msg, idx) =>
-                                    <Typography key={idx} color={msg.sent ? "primary" : "secondary"}>{msg.message}</Typography>
-                                )}
+                    {this.state.rtcReadyState !== "open"
+                        ? <Typography marginTop={2}>Waiting for peer connection...</Typography>
+                        : <Stack direction="column" width="100%" marginY={2}>
+                            <Stack direction="column" gap={1} height={125} overflow="scroll" marginRight={5}>
+                                {this.state.rtcMessages.map((msg, idx) => {
+                                    if (msg.sent) {
+                                        return (<Stack>
+                                            <Typography key={idx} color="primary" alignSelf="flex-start">{msg.message}</Typography>
+                                            <Typography variant='caption' color="textDisabled" alignSelf="flex-start">{new Date(msg.when).toLocaleTimeString()}</Typography>
+                                        </Stack>)
+                                    } else {
+                                        return (<Stack>
+                                            <Typography key={idx} color="secondary" alignSelf="flex-end">{msg.message}</Typography>
+                                            <Typography variant='caption' color="textDisabled" alignSelf="flex-end">{new Date(msg.when).toLocaleTimeString()}</Typography>
+                                        </Stack>)
+                                    }
+                                })}
+                                <div ref={el => { this.chatElement = el; }} />
                             </Stack>
                             <Stack component="form" direction="row" gap={1}
                                 onSubmit={(e) => {
@@ -589,7 +621,6 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                                 </IconButton>
                             </Stack>
                         </Stack>
-                        : <Typography marginTop={2}>Waiting for peer connection...</Typography>
                     }
                 </Card>
             </Stack>
