@@ -16,20 +16,9 @@ export default defineConfig({
       policy: {
         "script-src": ["'self'"],
         "style-src-elem": ["'self'", "'unsafe-inline'"],
-        "font-src": ["'self'"],
+        "font-src": ["'self'", "data:"],
         "connect-src": ["ws://localhost:8080", "localhost:8080", "'self'"]
       }
     })
-  ],
-  // build: {
-  //   rollupOptions: {
-  //     output: {
-  //       manualChunks(id) {
-  //         if (id.includes('node_modules')) {
-  //           return id.toString().split('node_modules/')[1].split('/')[0].toString();
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+  ]
 })
