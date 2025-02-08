@@ -11,6 +11,7 @@ import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import Divider from '@mui/material/Divider'
+import Grid2 from '@mui/material/Grid2'
 import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -43,16 +44,16 @@ function Settings() {
     }
 
     return (
-        <Container component={Paper} sx={{ padding: 4 }}>
-            <Stack direction='column' spacing={1}>
-                <Stack direction='row' alignItems='center'>
-                    <Tooltip title="Go back" disableInteractive>
-                        <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
-                    </Tooltip>
-                    <Typography variant="h5">Settings</Typography>
-                </Stack>
+        <Container component={Paper} sx={{ paddingTop: "1em" }}>
+            <Stack direction='row' alignItems='center'>
+                <Tooltip title="Go back" disableInteractive>
+                    <IconButton onClick={() => navigate(-1)}><ArrowBack /></IconButton>
+                </Tooltip>
+                <Typography variant="h5">Settings</Typography>
+            </Stack>
 
-                <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
+            <Stack direction='column' spacing={1} padding="2em">
+                <Stack direction='column' spacing={2}>
                     <Divider><Typography variant='h6'>Account Details</Typography></Divider>
                     <FormControl>
                         <Typography>Email Address</Typography>
@@ -60,7 +61,6 @@ function Settings() {
                             variant="standard"
                             color="primary"
                             value={user.emailAddress}
-                            onChange={() => { }}
                             disabled />
                     </FormControl>
                     <FormControl>
@@ -69,22 +69,19 @@ function Settings() {
                             variant="standard"
                             color="primary"
                             value={'*'.repeat(15)}
-                            onChange={() => { }}
                             disabled />
                     </FormControl>
-                    <Stack direction='row' justifyContent='space-evenly'>
-                        <Stack direction='row' alignItems="center" gap={1}>
-                            <Typography>Account created: </Typography>
-                            <Chip label={localDateTime(new Date(user.createdAt), true)} />
-                        </Stack>
-                        <Stack direction='row' alignItems="center" gap={1}>
-                            <Typography>Last online: </Typography>
-                            <Chip label={localDateTime(new Date(user.lastSeen), true)} />
-                        </Stack>
+                    <Stack direction='row' alignItems="center" gap={1}>
+                        <Typography>Account created: </Typography>
+                        <Chip label={localDateTime(new Date(user.createdAt), true)} />
+                    </Stack>
+                    <Stack direction='row' alignItems="center" gap={1}>
+                        <Typography>Last online: </Typography>
+                        <Chip label={localDateTime(new Date(user.lastSeen), true)} />
                     </Stack>
                 </Stack>
 
-                <Stack direction='column' spacing={2} sx={{ padding: 1 }}>
+                <Stack direction='column' spacing={2}>
                     <Divider><Typography variant='h6'>File Details</Typography></Divider>
                     <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                         <Typography>Files stored:</Typography>
@@ -100,7 +97,7 @@ function Settings() {
                     </FormControl>
                 </Stack>
 
-                <Stack direction='column' spacing={3} sx={{ padding: 1 }}>
+                <Stack direction='column' spacing={3}>
                     <Divider><Typography variant='h6'>Preferences</Typography></Divider>
                     <Box>
                         <Typography>Color Theme</Typography>
@@ -113,27 +110,31 @@ function Settings() {
                     </Box>
                 </Stack>
 
-                <Stack direction='column' spacing={3} sx={{ padding: 1 }}>
-                    <Divider><Typography variant='h6'>Actions</Typography></Divider>
-                    <Stack direction='row' spacing={2}>
+                <Grid2 container spacing={3}>
+                    <Grid2 size={12}><Divider><Typography variant='h6'>Actions</Typography></Divider></Grid2>
+                    <Grid2 size={{ lg: "auto", sm: 12 }}>
                         <Button variant='outlined'
                             onClick={editField}
                             startIcon={<AccountCircle />}>
                             Update email address
                         </Button>
+                    </Grid2>
+                    <Grid2 size={{ lg: "auto", sm: 12 }}>
                         <Button variant='outlined'
                             onClick={() => setDialogOpen("password")}
                             startIcon={<Password />}>
                             Change password
                         </Button>
+                    </Grid2>
+                    <Grid2 size={{ lg: "auto", sm: 12 }}>
                         <Button variant='outlined'
                             color='error'
                             onClick={() => setDialogOpen("delete_account")}
                             startIcon={<Delete />}>
                             Delete account
                         </Button>
-                    </Stack>
-                </Stack>
+                    </Grid2>
+                </Grid2>
             </Stack>
 
             <ChangePasswordDialog open={dialogOpen === "password"}

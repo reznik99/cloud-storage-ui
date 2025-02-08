@@ -7,6 +7,7 @@ import AlertTitle from '@mui/material/AlertTitle'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
+import Container from "@mui/material/Container"
 import Divider from '@mui/material/Divider'
 import Grid2 from "@mui/material/Grid2"
 import LinearProgress from '@mui/material/LinearProgress'
@@ -86,111 +87,113 @@ function Signup() {
     }, [emailAddress, password, checkValues, dispatch, navigate, enqueueSnackbar])
 
     return (
-        <Grid2 container
-            columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
-            rowSpacing={2}
-            margin="5vw"
-            justifyContent="center">
-            <Grid2 size={{ lg: 6, sm: 12 }}>
-                <Card sx={{ padding: 5 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography component="h1" variant="h4">
-                            Sign up
-                        </Typography>
-                        <img src={logo} height={50} />
-                    </Box>
+        <Container maxWidth="xl">
+            <Grid2 container
+                columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
+                rowSpacing={2}
+                margin="4vw"
+                justifyContent="center">
+                <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
+                    <Card sx={{ padding: 5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography component="h1" variant="h4">
+                                Sign up
+                            </Typography>
+                            <img src={logo} height={50} />
+                        </Box>
 
-                    <Box component="form"
-                        noValidate={true}
-                        onSubmit={signup}
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 3,
-                            my: 3,
-                        }}>
-                        <FormControl>
-                            <FormLabel htmlFor="email">Email Address</FormLabel>
-                            <TextField required
-                                fullWidth
-                                id="email"
-                                type="email"
-                                name="email"
-                                autoComplete="email"
-                                placeholder="your@email.com"
-                                variant="outlined"
-                                color="primary"
-                                value={emailAddress}
-                                error={!!emailError}
-                                helperText={emailError}
-                                onChange={handleEmail} />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="password">Password</FormLabel>
-                            <TextField required
-                                fullWidth
-                                name="password"
-                                type="password"
-                                id="password"
-                                autoComplete="new-password"
-                                placeholder="••••••"
-                                variant="outlined"
-                                color="primary"
-                                value={password}
-                                error={!!passwordError}
-                                helperText={passwordError}
-                                onChange={(e) => setPassword(e.target.value)} />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="confirm-password">Confirm Password</FormLabel>
-                            <TextField required
-                                fullWidth
-                                name="confirm-password"
-                                type="password"
-                                id="confirm-password"
-                                autoComplete="new-password"
-                                placeholder="••••••"
-                                variant="outlined"
-                                color="primary"
-                                value={passwordConfirmation}
-                                error={!!passwordError}
-                                helperText={passwordError}
-                                onChange={(e) => setPasswordConfirmation(e.target.value)} />
-                        </FormControl>
-                        {password && <PasswordMeter password={password || passwordConfirmation} />}
+                        <Box component="form"
+                            noValidate={true}
+                            onSubmit={signup}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 3,
+                                my: 3,
+                            }}>
+                            <FormControl>
+                                <FormLabel htmlFor="email">Email Address</FormLabel>
+                                <TextField required
+                                    fullWidth
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    autoComplete="email"
+                                    placeholder="your@email.com"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={emailAddress}
+                                    error={!!emailError}
+                                    helperText={emailError}
+                                    onChange={handleEmail} />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="password">Password</FormLabel>
+                                <TextField required
+                                    fullWidth
+                                    name="password"
+                                    type="password"
+                                    id="password"
+                                    autoComplete="new-password"
+                                    placeholder="••••••"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={password}
+                                    error={!!passwordError}
+                                    helperText={passwordError}
+                                    onChange={(e) => setPassword(e.target.value)} />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="confirm-password">Confirm Password</FormLabel>
+                                <TextField required
+                                    fullWidth
+                                    name="confirm-password"
+                                    type="password"
+                                    id="confirm-password"
+                                    autoComplete="new-password"
+                                    placeholder="••••••"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={passwordConfirmation}
+                                    error={!!passwordError}
+                                    helperText={passwordError}
+                                    onChange={(e) => setPasswordConfirmation(e.target.value)} />
+                            </FormControl>
+                            {password && <PasswordMeter password={password || passwordConfirmation} />}
+
+                            <Stack direction="row" justifyContent="center">
+                                <Button variant="contained"
+                                    type="submit"
+                                    disabled={loading}
+                                    startIcon={<AccountCircle />}>
+                                    Create Account
+                                </Button>
+                            </Stack>
+
+                        </Box>
+
+                        <Divider sx={{ mb: 3 }}>Already have an account?</Divider>
 
                         <Stack direction="row" justifyContent="center">
-                            <Button variant="contained"
-                                type="submit"
-                                disabled={loading}
-                                startIcon={<AccountCircle />}>
-                                Create Account
+                            <Button variant="outlined"
+                                startIcon={<ArrowBack />}
+                                onClick={() => navigate('/login')}>
+                                Log in
                             </Button>
                         </Stack>
+                    </Card>
 
+                    <Box>
+                        {feedback &&
+                            <Alert severity={feedback.severity}>
+                                <AlertTitle>{feedback.message}</AlertTitle>
+                            </Alert>
+                        }
+                        {loading && <LinearProgress variant="indeterminate" />}
                     </Box>
-
-                    <Divider sx={{ mb: 3 }}>Already have an account?</Divider>
-
-                    <Stack direction="row" justifyContent="center">
-                        <Button variant="outlined"
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/login')}>
-                            Log in
-                        </Button>
-                    </Stack>
-                </Card>
-
-                <Box>
-                    {feedback &&
-                        <Alert severity={feedback.severity}>
-                            <AlertTitle>{feedback.message}</AlertTitle>
-                        </Alert>
-                    }
-                    {loading && <LinearProgress variant="indeterminate" />}
-                </Box>
+                </Grid2>
             </Grid2>
-        </Grid2 >
+        </Container>
     )
 }
 

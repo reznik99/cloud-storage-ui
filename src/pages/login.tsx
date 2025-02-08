@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Link as RouterLink, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import Box from '@mui/material/Box'
@@ -6,6 +6,7 @@ import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
+import Container from "@mui/material/Container"
 import CircularProgress from '@mui/material/CircularProgress'
 import LinearProgress from '@mui/material/LinearProgress'
 import Dialog from '@mui/material/Dialog'
@@ -45,6 +46,10 @@ function Login() {
     const [passwordError, setPasswordError] = useState('')
     const [dialogLoading, setDialogLoading] = useState(false)
     const [showResetDialog, setShowResetDialog] = useState(false)
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [])
 
     const resetFeedback = () => {
         setFeedback(null)
@@ -103,175 +108,177 @@ function Login() {
     }, [emailAddress])
 
     return (
-        <Grid2 container
-            columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
-            rowSpacing={2}
-            margin="5vw"
-            justifyContent="center">
-            <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
-                <Card sx={{ padding: 5 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography component="h1" variant="h4">Log In</Typography>
-                        <img src={logo} height={50} />
-                    </Box>
+        <Container maxWidth="xl">
+            <Grid2 container
+                columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
+                rowSpacing={2}
+                margin="4vw"
+                justifyContent="center">
+                <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
+                    <Card sx={{ padding: 5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography component="h1" variant="h4">Log In</Typography>
+                            <img src={logo} height={50} />
+                        </Box>
 
-                    <Box component="form" onSubmit={login}
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 3,
-                            my: 3,
-                        }}>
-                        <FormControl>
-                            <FormLabel htmlFor="email">Email Address</FormLabel>
-                            <TextField fullWidth
-                                id="email"
-                                type="email"
-                                name="email"
-                                autoComplete="email"
-                                placeholder="your@email.com"
-                                variant="outlined"
-                                color="primary"
-                                value={emailAddress}
-                                error={!!emailError}
-                                helperText={emailError}
-                                onChange={(e) => setEmailAddress(e.target.value)} />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="password">Password</FormLabel>
-                            <TextField fullWidth
-                                name="password"
-                                type="password"
-                                id="password"
-                                autoComplete="new-password"
-                                placeholder="••••••"
-                                variant="outlined"
-                                color="primary"
-                                value={password}
-                                error={!!passwordError}
-                                helperText={passwordError}
-                                onChange={(e) => setPassword(e.target.value)} />
-                            <Stack direction="row" marginTop={2}>
-                                <Link to="#" component={RouterLink} onClick={() => setShowResetDialog(true)}>Forgot Password?</Link>
+                        <Box component="form" onSubmit={login}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 3,
+                                my: 3,
+                            }}>
+                            <FormControl>
+                                <FormLabel htmlFor="email">Email Address</FormLabel>
+                                <TextField fullWidth
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    autoComplete="email"
+                                    placeholder="your@email.com"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={emailAddress}
+                                    error={!!emailError}
+                                    helperText={emailError}
+                                    onChange={(e) => setEmailAddress(e.target.value)} />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="password">Password</FormLabel>
+                                <TextField fullWidth
+                                    name="password"
+                                    type="password"
+                                    id="password"
+                                    autoComplete="new-password"
+                                    placeholder="••••••"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={password}
+                                    error={!!passwordError}
+                                    helperText={passwordError}
+                                    onChange={(e) => setPassword(e.target.value)} />
+                                <Stack direction="row" marginTop={2}>
+                                    <Link to="#" component={RouterLink} onClick={() => setShowResetDialog(true)}>Forgot Password?</Link>
+                                </Stack>
+                            </FormControl>
+
+                            <Stack direction="row" justifyContent="center">
+                                <Button variant="contained"
+                                    type="submit"
+                                    disabled={loading}
+                                    endIcon={<LoginOutlined />}>
+                                    Log in
+                                </Button>
                             </Stack>
-                        </FormControl>
+                        </Box>
+
+                        <Divider sx={{ mb: 3 }}>Don't have an account?</Divider>
 
                         <Stack direction="row" justifyContent="center">
-                            <Button variant="contained"
-                                type="submit"
-                                disabled={loading}
-                                endIcon={<LoginOutlined />}>
-                                Log in
+                            <Button variant="outlined"
+                                onClick={() => navigate('/signup')}>
+                                Create new account
                             </Button>
                         </Stack>
+
+                    </Card>
+                    <Box>
+                        {feedback &&
+                            <Alert severity={feedback.severity}>
+                                <AlertTitle>{feedback.message}</AlertTitle>
+                            </Alert>
+                        }
+                        {loading && <LinearProgress variant="indeterminate" />}
                     </Box>
+                </Grid2>
+                <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
+                    <Alert variant="standard" severity="info" icon={false}>
+                        <AlertTitle>
+                            <img src={logoFull} height={200} />
+                        </AlertTitle>
+                        <Typography>
+                            End-To-End encrypted file storage based on the
+                            <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}> Mega.nz whitepaper</Link>.
+                        </Typography>
+                        <ul>
+                            <li>Up to 1GB of storage for free</li>
+                            <li>End-To-End encryption</li>
+                            <li>Files sharing is easy! Download without an account</li>
+                            <li>Open Source</li>
+                        </ul>
+                    </Alert>
+                    <Alert variant="standard" severity="info">
+                        <AlertTitle>
+                            <Typography variant="h5">Need to share files directly?</Typography>
+                        </AlertTitle>
+                        <Typography>Share files with <b>server-less peer-to-peer</b> file sharing!</Typography>
+                        <ul>
+                            <li><Typography variant="subtitle2"><b>Unlimited</b> file sharing</Typography></li>
+                            <li><Typography variant="subtitle2">Peer-To-Peer & Server-less</Typography></li>
+                            <li><Typography variant="subtitle2">End-To-End encryption</Typography></li>
+                            <li><Typography variant="subtitle2">Open Source</Typography></li>
+                        </ul>
 
-                    <Divider sx={{ mb: 3 }}>Don't have an account?</Divider>
+                        <Box width="100%" marginY={3}>
+                            <Button to="/p2p-file-share"
+                                variant="contained"
+                                color="info"
+                                startIcon={<FileUpload />}
+                                component={RouterLink}>
+                                Share files
+                            </Button>
+                        </Box>
+                    </Alert>
+                </Grid2>
 
-                    <Stack direction="row" justifyContent="center">
-                        <Button variant="outlined"
-                            onClick={() => navigate('/signup')}>
-                            Create new account
+                <Dialog open={showResetDialog}
+                    fullWidth={true}
+                    keepMounted={true}
+                    onClose={() => setShowResetDialog(false)}>
+                    <DialogTitle id="pw-reset-dialog-title">Reset Password</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            width: '100%',
+                            gap: 3,
+                        }}>
+                            <FormControl>
+                                <FormLabel htmlFor="email-reset">Email Address</FormLabel>
+                                <TextField fullWidth
+                                    id="email-reset"
+                                    type="email"
+                                    name="email-reset"
+                                    autoComplete="email"
+                                    placeholder="your@email.com"
+                                    variant="outlined"
+                                    color="primary"
+                                    value={emailAddress}
+                                    error={!!emailError}
+                                    helperText={emailError}
+                                    onChange={(e) => setEmailAddress(e.target.value)} />
+                            </FormControl>
+
+                            <Button fullWidth
+                                variant="contained"
+                                disabled={dialogLoading}
+                                startIcon={dialogLoading ? <CircularProgress /> : <Mail />}
+                                onClick={requestPasswordReset}>
+                                Request Password Reset
+                            </Button>
+                        </Box>
+
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="text"
+                            startIcon={<Cancel />}
+                            onClick={() => setShowResetDialog(false)}>
+                            Close
                         </Button>
-                    </Stack>
-
-                </Card>
-                <Box>
-                    {feedback &&
-                        <Alert severity={feedback.severity}>
-                            <AlertTitle>{feedback.message}</AlertTitle>
-                        </Alert>
-                    }
-                    {loading && <LinearProgress variant="indeterminate" />}
-                </Box>
+                    </DialogActions>
+                </Dialog>
             </Grid2>
-            <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
-                <Alert variant="standard" severity="info" icon={false}>
-                    <AlertTitle>
-                        <img src={logoFull} height={200} />
-                    </AlertTitle>
-                    <Typography>
-                        End-To-End encrypted file storage based on the
-                        <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}> Mega.nz whitepaper</Link>.
-                    </Typography>
-                    <ul>
-                        <li>Up to 1GB of storage for free</li>
-                        <li>End-To-End encryption</li>
-                        <li>Files sharing is easy! Download without an account</li>
-                        <li>Open Source</li>
-                    </ul>
-                </Alert>
-                <Alert variant="standard" severity="info">
-                    <AlertTitle>
-                        <Typography variant="h5">Need to share files directly?</Typography>
-                    </AlertTitle>
-                    <Typography>Share files with <b>server-less peer-to-peer</b> file sharing!</Typography>
-                    <ul>
-                        <li><Typography variant="subtitle2"><b>Unlimited</b> file sharing</Typography></li>
-                        <li><Typography variant="subtitle2">Peer-To-Peer & Server-less</Typography></li>
-                        <li><Typography variant="subtitle2">End-To-End encryption</Typography></li>
-                        <li><Typography variant="subtitle2">Open Source</Typography></li>
-                    </ul>
-
-                    <Box width="100%" marginY={3}>
-                        <Button to="/p2p-file-share"
-                            variant="contained"
-                            color="info"
-                            startIcon={<FileUpload />}
-                            component={RouterLink}>
-                            Share files
-                        </Button>
-                    </Box>
-                </Alert>
-            </Grid2>
-
-            <Dialog open={showResetDialog}
-                fullWidth={true}
-                keepMounted={true}
-                onClose={() => setShowResetDialog(false)}>
-                <DialogTitle id="pw-reset-dialog-title">Reset Password</DialogTitle>
-                <DialogContent>
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        width: '100%',
-                        gap: 3,
-                    }}>
-                        <FormControl>
-                            <FormLabel htmlFor="email-reset">Email Address</FormLabel>
-                            <TextField fullWidth
-                                id="email-reset"
-                                type="email"
-                                name="email-reset"
-                                autoComplete="email"
-                                placeholder="your@email.com"
-                                variant="outlined"
-                                color="primary"
-                                value={emailAddress}
-                                error={!!emailError}
-                                helperText={emailError}
-                                onChange={(e) => setEmailAddress(e.target.value)} />
-                        </FormControl>
-
-                        <Button fullWidth
-                            variant="contained"
-                            disabled={dialogLoading}
-                            startIcon={dialogLoading ? <CircularProgress /> : <Mail />}
-                            onClick={requestPasswordReset}>
-                            Request Password Reset
-                        </Button>
-                    </Box>
-
-                </DialogContent>
-                <DialogActions>
-                    <Button variant="text"
-                        startIcon={<Cancel />}
-                        onClick={() => setShowResetDialog(false)}>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Grid2>
+        </Container>
     )
 }
 

@@ -13,6 +13,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import Chip from '@mui/material/Chip'
+import Container from "@mui/material/Container"
 import Divider from '@mui/material/Divider'
 import Grid2 from "@mui/material/Grid2"
 import IconButton from '@mui/material/IconButton'
@@ -89,6 +90,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     componentDidMount(): void {
+        window.scrollTo(0, 0)
         const websocket = new WebSocket(WS_URL)
         websocket.onmessage = this.wsOnMessage
         websocket.onopen = this.wsOnOpen
@@ -494,15 +496,14 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     render = () => (
-        <Grid2 container
-            columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
-            rowSpacing={2}
-            margin="5vw"
-            justifyContent="center">
-            <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
-                {this.state.loading && <LinearProgress variant='indeterminate' />}
-
-                <Card sx={{ padding: 5 }}>
+        <Container maxWidth="xl">
+            <Grid2 container
+                columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
+                rowSpacing={2}
+                margin="4vw"
+                justifyContent="center">
+                <Grid2 component={Card} size={{ lg: 7, md: 6, sm: 12, xs: 12 }} padding="1em">
+                    {this.state.loading && <LinearProgress variant='indeterminate' />}
                     <Stack direction='row' alignItems='center' spacing={2}>
                         <Tooltip title="Go back" disableInteractive>
                             <IconButton onClick={() => this.props.navigate(-1)}><ArrowBack /></IconButton>
@@ -510,168 +511,169 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         <Typography variant="h5" width="100%">P2P file sharing</Typography>
                         <img src={logo} height={50} />
                     </Stack>
+                    <Card sx={{ padding: "1em" }}>
+                        {/* Select file button (sender) */}
+                        {!this.props.hash.length &&
+                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                                <Button variant={this.state.uploadFile?.name ? "contained" : "outlined"} component="label">
+                                    {this.state.uploadFile?.name ?? "Select File"}
+                                    <input onChange={this.handleFile} type="file" hidden />
+                                </Button>
+                            </Box>
+                        }
+                        {/* Download file button (receiver) */}
+                        {this.state.downloadFileInfo &&
+                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                                <Button variant="contained" onClick={this.requestFileTransfer}>
+                                    Download
+                                </Button>
+                            </Box>
+                        }
 
-                    {/* Select file button (sender) */}
-                    {!this.props.hash.length &&
-                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                            <Button variant={this.state.uploadFile?.name ? "contained" : "outlined"} component="label">
-                                {this.state.uploadFile?.name ?? "Select File"}
-                                <input onChange={this.handleFile} type="file" hidden />
-                            </Button>
-                        </Box>
-                    }
-                    {/* Download file button (receiver) */}
-                    {this.state.downloadFileInfo &&
-                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                            <Button variant="contained" onClick={this.requestFileTransfer}>
-                                Download
-                            </Button>
-                        </Box>
-                    }
+                        {/* File transfer indicator */}
+                        {(this.state.loading && this.state.transferProgress && (this.state.downloadFileInfo || this.state.uploadFile)) &&
+                            <>
+                                <ProgressBar sx={{ my: 2 }}
+                                    onCancel={() => console.log("Attempted cancel download")}
+                                    progress={this.state.transferProgress}
+                                    file={this.state.downloadFileInfo || fileToFileInfo(this.state.uploadFile)} />
+                            </>
+                        }
 
-                    {/* File transfer indicator */}
-                    {(this.state.loading && this.state.transferProgress && (this.state.downloadFileInfo || this.state.uploadFile)) &&
-                        <>
-                            <ProgressBar sx={{ my: 2 }}
-                                onCancel={() => console.log("Attempted cancel download")}
-                                progress={this.state.transferProgress}
-                                file={this.state.downloadFileInfo || fileToFileInfo(this.state.uploadFile)} />
-                        </>
-                    }
+                        {/* Sending file information */}
+                        {this.state.uploadFile &&
+                            <>
+                                <Divider sx={{ my: 3 }} />
+                                {/* <Typography>File Information:</Typography> */}
+                                <Stack direction="row" gap={2} marginTop={2} alignItems="center">
+                                    <Typography>File Name:</Typography>
+                                    <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
+                                    <Typography>File Size:</Typography>
+                                    <Chip label={formatBytes(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
+                                </Stack>
+                            </>
+                        }
+                        {/* Receiving file information */}
+                        {this.state.downloadFileInfo &&
+                            <>
+                                <Divider sx={{ my: 3 }} />
+                                {/* <Typography>File Information:</Typography> */}
+                                <Stack direction="row" gap={2} marginTop={2} alignItems="center">
+                                    <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
+                                    <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
+                                </Stack>
+                            </>
+                        }
 
-                    {/* Sending file information */}
-                    {this.state.uploadFile &&
-                        <>
-                            <Divider sx={{ my: 3 }} />
-                            {/* <Typography>File Information:</Typography> */}
-                            <Stack direction="row" gap={2} marginTop={2} alignItems="center">
-                                <Typography>File Name:</Typography>
-                                <Chip label={this.state.uploadFile?.name} color="info" variant="outlined" />
-                                <Typography>File Size:</Typography>
-                                <Chip label={formatBytes(this.state.uploadFile?.size || 0)} color="info" variant="outlined" />
+                        <Divider sx={{ my: 3 }} />
+                        {/* Websocket and WebRTC Peer conenction status */}
+                        <Stack direction="row" gap={3} marginY={2}>
+                            <Stack direction="row"
+                                alignItems="center"
+                                spacing={1}>
+                                <Typography>Server:</Typography>
+                                {getWebsocketStatus(this.state.wsReadyState)}
                             </Stack>
-                        </>
-                    }
-                    {/* Receiving file information */}
-                    {this.state.downloadFileInfo &&
-                        <>
-                            <Divider sx={{ my: 3 }} />
-                            {/* <Typography>File Information:</Typography> */}
-                            <Stack direction="row" gap={2} marginTop={2} alignItems="center">
-                                <Typography>File Name:</Typography> <Chip label={this.state.downloadFileInfo.name} color="info" variant="outlined" />
-                                <Typography>File Size:</Typography> <Chip label={formatBytes(this.state.downloadFileInfo.size || 0)} color="info" variant="outlined" />
-                            </Stack>
-                        </>
-                    }
 
-                    <Divider sx={{ my: 3 }} />
-                    {/* Websocket and WebRTC Peer conenction status */}
-                    <Stack direction="row" gap={3} marginY={2}>
-                        <Stack direction="row"
-                            alignItems="center"
-                            spacing={1}>
-                            <Typography>Server:</Typography>
-                            {getWebsocketStatus(this.state.wsReadyState)}
-                        </Stack>
+                            <Divider orientation='vertical' flexItem />
 
-                        <Divider orientation='vertical' flexItem />
-
-                        <Stack direction="row"
-                            alignItems="center"
-                            spacing={1}>
-                            <Typography>Peer:</Typography>
-                            {getWebRTCStatus(this.state.rtcReadyState)}
-                        </Stack>
-                    </Stack>
-                    <Typography color="primary">Local: {this.state.wsKey}</Typography>
-                    <Typography color="secondary">Peer:  {this.state.wsPeerKey || "Waiting connection"}</Typography>
-
-                    <Divider sx={{ my: 3 }} />
-                    <Typography>Peer Chat:</Typography>
-                    {/* Chat section (WebRTC) */}
-                    {this.state.rtcReadyState !== "open"
-                        ? <Typography marginTop={2}>Waiting for peer connection...</Typography>
-                        : <Stack direction="column" width="100%" marginY={2}>
-                            <Stack direction="column" gap={1} height={125} overflow="scroll" marginRight={5}>
-                                {this.state.rtcMessages.map((msg, idx) => {
-                                    if (msg.sent) {
-                                        return (<Stack>
-                                            <Typography key={idx} color="primary" alignSelf="flex-start">{msg.message}</Typography>
-                                            <Typography variant='caption' color="textDisabled" alignSelf="flex-start">{new Date(msg.when).toLocaleTimeString()}</Typography>
-                                        </Stack>)
-                                    } else {
-                                        return (<Stack>
-                                            <Typography key={idx} color="secondary" alignSelf="flex-end">{msg.message}</Typography>
-                                            <Typography variant='caption' color="textDisabled" alignSelf="flex-end">{new Date(msg.when).toLocaleTimeString()}</Typography>
-                                        </Stack>)
-                                    }
-                                })}
-                                <div ref={el => { this.chatElement = el; }} />
-                            </Stack>
-                            <Stack component="form" direction="row" gap={1}
-                                onSubmit={(e) => {
-                                    e.preventDefault()
-                                    this.channelSendMessage(this.state.rtcNewMessage)
-                                    this.setState({ rtcNewMessage: "" })
-                                }}>
-                                <TextField fullWidth
-                                    placeholder='Say hi to your friend while you wait for the download'
-                                    value={this.state.rtcNewMessage}
-                                    onChange={e => this.setState({ rtcNewMessage: e.target.value })} />
-                                <IconButton color="primary" type='submit' sx={{ p: '10px' }}>
-                                    <Send />
-                                </IconButton>
+                            <Stack direction="row"
+                                alignItems="center"
+                                spacing={1}>
+                                <Typography>Peer:</Typography>
+                                {getWebRTCStatus(this.state.rtcReadyState)}
                             </Stack>
                         </Stack>
-                    }
-                </Card>
-            </Grid2>
-            <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
-                <Alert variant="standard" severity="info">
-                    <AlertTitle>
-                        <Typography variant="h5">Peer-To-Peer file sharing</Typography>
-                    </AlertTitle>
-                    <Typography sx={{ my: 3 }}>This page allow you to share files directly (without a server) to your friends!</Typography>
+                        <Typography color="primary">Local: {this.state.wsKey}</Typography>
+                        <Typography color="secondary">Peer:  {this.state.wsPeerKey || "Waiting connection"}</Typography>
 
-                    <Accordion defaultExpanded>
-                        <AccordionSummary><Typography component="span">Sending a file?</Typography></AccordionSummary>
-                        <AccordionDetails>
-                            <Typography>
-                                Select a file, once selected you will be able to copy a <b>share link</b> or copy a QR code.<br />
-                                Share this link or QR code with a friend, once they open the link they will be able to download the file <br />
-                                directly from you! <b>Make sure not to close this tab</b> while the file is being transfered.
-                            </Typography>
-                        </AccordionDetails>
-                    </Accordion>
-                    <Accordion>
-                        <AccordionSummary><Typography component="span">Receiving a file?</Typography></AccordionSummary>
-                        <AccordionDetails>
-                            <Typography>
-                                Simply clicking on the share link or scanning the QR code you received should initiate the download.<br />
-                                Otherwise, paste the link on the left side and click <b>connect</b>.
-                            </Typography>
-                        </AccordionDetails>
-                    </Accordion>
-                </Alert>
-                {this.state.shareLink &&
-                    <Alert variant='standard' color="warning" severity='info' >
-                        <Typography>Click the link below to copy it to your clipboard! Leave this page open while the recepient downloads the file!</Typography>
-                        <ListItem>
-                            <Tooltip title="Click to copy to clipboard">
-                                <ListItemButton
-                                    sx={{ overflowWrap: "break-all", overflow: 'hidden' }}
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(this.state.shareLink)
-                                        enqueueSnackbar("Copied URL to clipboard!")
+                        <Divider sx={{ my: 3 }} />
+                        <Typography>Peer Chat:</Typography>
+                        {/* Chat section (WebRTC) */}
+                        {this.state.rtcReadyState !== "open"
+                            ? <Typography marginTop={2}>Waiting for peer connection...</Typography>
+                            : <Stack direction="column" width="100%" marginY={2}>
+                                <Stack direction="column" gap={1} height={125} overflow="scroll" marginRight={5}>
+                                    {this.state.rtcMessages.map((msg, idx) => {
+                                        if (msg.sent) {
+                                            return (<Stack>
+                                                <Typography key={idx} color="primary" alignSelf="flex-start">{msg.message}</Typography>
+                                                <Typography variant='caption' color="textDisabled" alignSelf="flex-start">{new Date(msg.when).toLocaleTimeString()}</Typography>
+                                            </Stack>)
+                                        } else {
+                                            return (<Stack>
+                                                <Typography key={idx} color="secondary" alignSelf="flex-end">{msg.message}</Typography>
+                                                <Typography variant='caption' color="textDisabled" alignSelf="flex-end">{new Date(msg.when).toLocaleTimeString()}</Typography>
+                                            </Stack>)
+                                        }
+                                    })}
+                                    <div ref={el => { this.chatElement = el; }} />
+                                </Stack>
+                                <Stack component="form" direction="row" gap={1}
+                                    onSubmit={(e) => {
+                                        e.preventDefault()
+                                        this.channelSendMessage(this.state.rtcNewMessage)
+                                        this.setState({ rtcNewMessage: "" })
                                     }}>
-                                    <Typography color="info">{this.state.shareLink}</Typography>
-                                </ListItemButton>
-                            </Tooltip>
-                        </ListItem>
+                                    <TextField fullWidth
+                                        placeholder='Say hi to your friend while you wait for the download'
+                                        value={this.state.rtcNewMessage}
+                                        onChange={e => this.setState({ rtcNewMessage: e.target.value })} />
+                                    <IconButton color="primary" type='submit' sx={{ p: '10px' }}>
+                                        <Send />
+                                    </IconButton>
+                                </Stack>
+                            </Stack>
+                        }
+                    </Card>
+                </Grid2>
+                <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
+                    <Alert variant="standard" severity="info">
+                        <AlertTitle>
+                            <Typography variant="h5">Peer-To-Peer file sharing</Typography>
+                        </AlertTitle>
+                        <Typography sx={{ my: 3 }}>This page allow you to share files directly (without a server) to your friends!</Typography>
+
+                        <Accordion defaultExpanded>
+                            <AccordionSummary><Typography component="span">Sending a file?</Typography></AccordionSummary>
+                            <AccordionDetails>
+                                <Typography>
+                                    Select a file, once selected you will be able to copy a <b>share link</b> or copy a QR code.<br />
+                                    Share this link or QR code with a friend, once they open the link they will be able to download the file <br />
+                                    directly from you! <b>Make sure not to close this tab</b> while the file is being transfered.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                        <Accordion>
+                            <AccordionSummary><Typography component="span">Receiving a file?</Typography></AccordionSummary>
+                            <AccordionDetails>
+                                <Typography>
+                                    Simply clicking on the share link or scanning the QR code you received should initiate the download.<br />
+                                    Otherwise, paste the link on the left side and click <b>connect</b>.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
                     </Alert>
-                }
+                    {this.state.shareLink &&
+                        <Alert variant='standard' color="warning" severity='info' >
+                            <Typography>Click the link below to copy it to your clipboard! Leave this page open while the recepient downloads the file!</Typography>
+                            <ListItem>
+                                <Tooltip title="Click to copy to clipboard">
+                                    <ListItemButton
+                                        sx={{ overflowWrap: "break-all", overflow: 'hidden' }}
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(this.state.shareLink)
+                                            enqueueSnackbar("Copied URL to clipboard!")
+                                        }}>
+                                        <Typography color="info">{this.state.shareLink}</Typography>
+                                    </ListItemButton>
+                                </Tooltip>
+                            </ListItem>
+                        </Alert>
+                    }
+                </Grid2>
             </Grid2>
-        </Grid2 >
+        </Container>
     )
 }
 
