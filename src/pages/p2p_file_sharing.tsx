@@ -101,14 +101,20 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     componentWillUnmount(): void {
+        // Close connections without showing user, as they meant to perform this action (back-button)
         if (this.websocket) {
-            // Reset handlers and close websocket
             this.websocket.onclose = () => { }
             this.websocket.onerror = () => { }
             this.websocket.close()
         }
-        this.state.rtcChanel?.close?.()
-        this.state.rtcConn?.close?.()
+        if (this.state.rtcChanel) {
+            this.state.rtcChanel.onclose = () => { }
+            this.state.rtcChanel.onerror = () => { }
+            this.state.rtcChanel.close()
+        }
+        if (this.state.rtcConn) {
+            this.state.rtcConn.close()
+        }
     }
 
     componentDidUpdate(_prevProps: Readonly<IProps>, prevState: Readonly<IState>, _snapshot?: any): void {
@@ -502,7 +508,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 rowSpacing={2}
                 margin="4vw"
                 justifyContent="center">
-                <Grid2 component={Card} size={{ lg: 7, md: 6, sm: 12, xs: 12 }} padding="1em">
+                <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }} component={Card} padding="1em">
                     {this.state.loading && <LinearProgress variant='indeterminate' />}
                     <Stack direction='row' alignItems='center' spacing={2}>
                         <Tooltip title="Go back" disableInteractive>
