@@ -127,7 +127,9 @@ function FileLinkDialog(props: IProps) {
                 </DialogContentText>
 
                 {!link &&
-                    <Button startIcon={<Add />} onClick={createLink}>
+                    <Button sx={{ marginY: 3 }}
+                        startIcon={<Add />}
+                        onClick={createLink}>
                         Create link
                     </Button>
                 }

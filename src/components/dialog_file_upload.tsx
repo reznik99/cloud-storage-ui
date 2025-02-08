@@ -1,16 +1,14 @@
 import { useCallback, useRef, useState } from "react"
 import { useSnackbar } from "notistack"
+import Add from "@mui/icons-material/Add"
 import Cancel from "@mui/icons-material/Cancel"
 import ExpandMore from "@mui/icons-material/ExpandMore"
-import Key from "@mui/icons-material/Key"
 import UploadFile from "@mui/icons-material/UploadFile"
 import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
@@ -21,9 +19,10 @@ import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 
 import { fileToFileInfo, getErrorString, Progress } from "../utilities/utils"
-import { BufferEquals, DecryptFile, EncryptFile, Hash } from "../utilities/crypto"
+import { EncryptFile } from "../utilities/crypto"
 import api from "../networking/endpoints"
 import ProgressBar from "./progress_bar"
+import { DialogContentText } from "@mui/material"
 
 type IProps = {
     open: boolean;
@@ -72,29 +71,6 @@ function FileUploadDialog(props: IProps) {
         }
     }, [selectedFile, props, closeDialog, enqueueSnackbar])
 
-    const testEncryption = useCallback(async () => {
-        if (!selectedFile) return
-        try {
-            setLoading(true)
-            const encFile = await EncryptFile(selectedFile)
-
-            const decFile = await DecryptFile(encFile.encryptedFileKey, fileToFileInfo(selectedFile), encFile.encryptedFile)
-
-            // Hash both original file data and decrypted file data to check they match
-            const originalHash = await Hash(await selectedFile.arrayBuffer(), "SHA-256")
-            const decryptedHash = await Hash(await decFile.arrayBuffer(), "SHA-256")
-            const equal = BufferEquals(new Uint8Array(originalHash), new Uint8Array(decryptedHash))
-            if (!equal) throw new Error("Decrypted file doesn't match original")
-
-            enqueueSnackbar("Encryption tests succeeded", { variant: "success" })
-        } catch (err: unknown) {
-            console.error(err)
-            enqueueSnackbar("Encryption tests failed: " + err, { variant: "error" })
-        } finally {
-            setLoading(false)
-        }
-    }, [selectedFile, enqueueSnackbar])
-
     return (
         <Dialog open={props.open}
             fullWidth={true}
@@ -103,6 +79,29 @@ function FileUploadDialog(props: IProps) {
             aria-describedby="file-dialog-description">
             <DialogTitle id="file-dialog-title">File Upload</DialogTitle>
             <DialogContent>
+                <DialogContentText id="link-dialog-description">
+                    Select a file to upload (max size: 1.0 GB)
+                </DialogContentText>
+
+                <Button sx={{ paddingX: 5, marginY: 3 }}
+                    component="label"
+                    variant={selectedFile?.name ? "contained" : "text"}
+                    startIcon={<Add />}>
+                    {selectedFile?.name ?? "Select File"}
+                    <input onChange={handleFile} type="file" hidden />
+                </Button>
+
+                {selectedFile && <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMore />}>Advanced Options</AccordionSummary>
+                    <AccordionDetails>
+                        <FormGroup>
+                            <FormLabel>File Encryption</FormLabel>
+                            <Switch checked={encryptionEnabled}
+                                onChange={e => setEncryptionEnabled(e.target.checked)} />
+                        </FormGroup>
+                    </AccordionDetails>
+                </Accordion>}
+
                 <Alert severity={encryptionEnabled ? "info" : "warning"}>
                     {encryptionEnabled
                         ? <Typography>File will be End-To-End encrypted!</Typography>
@@ -112,34 +111,6 @@ function FileUploadDialog(props: IProps) {
                         </Typography>
                     }
                 </Alert>
-
-                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', my: 2 }}>
-                    <Button sx={{ paddingX: 5 }}
-                        component="label"
-                        variant={selectedFile?.name ? "contained" : "outlined"} >
-                        {selectedFile?.name ?? "Select File"}
-                        <input onChange={handleFile} type="file" hidden />
-                    </Button>
-                </Box>
-
-                {selectedFile && <Accordion>
-                    <AccordionSummary expandIcon={<ExpandMore />}>Advanced Options</AccordionSummary>
-                    <AccordionDetails>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
-                            <FormGroup>
-                                <FormLabel>File Encryption</FormLabel>
-                                <Switch checked={encryptionEnabled}
-                                    onChange={e => setEncryptionEnabled(e.target.checked)} />
-                            </FormGroup>
-                            <Button variant="text"
-                                startIcon={loading ? <CircularProgress size={15} /> : <Key />}
-                                onClick={testEncryption}
-                                disabled={loading || !selectedFile}>
-                                Test Encryption
-                            </Button>
-                        </Box>
-                    </AccordionDetails>
-                </Accordion>}
 
                 {progress && <ProgressBar sx={{ mt: 2 }}
                     onCancel={() => controller.current.abort()}

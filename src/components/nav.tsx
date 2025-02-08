@@ -5,6 +5,7 @@ import Folder from "@mui/icons-material/Folder"
 import Logout from "@mui/icons-material/Logout"
 import Settings from "@mui/icons-material/Settings"
 import Person from "@mui/icons-material/Person"
+import FileCopy from "@mui/icons-material/FileCopy"
 import Avatar from "@mui/material/Avatar"
 import Divider from "@mui/material/Divider"
 import IconButton from "@mui/material/IconButton"
@@ -42,6 +43,11 @@ function Nav() {
         navigate("/settings")
     }, [navigate, handleCloseUserMenu])
 
+    const openP2PSharing = useCallback(() => {
+        handleCloseUserMenu()
+        navigate("/p2p-file-share")
+    }, [navigate, handleCloseUserMenu])
+
     const logout = useCallback(async () => {
         try {
             await api.logout()
@@ -53,23 +59,22 @@ function Nav() {
     }, [navigate, handleCloseUserMenu])
 
     return (
-        <Stack spacing={5}
-            direction="row"
+        <Stack direction="row"
             justifyContent="space-between"
             alignItems="center"
             width="100vw"
-            sx={{ backgroundColor: "transparent", paddingY: 2, paddingX: 6 }}>
-
+            paddingY={2}
+            paddingX={6}
+            sx={{ backgroundColor: "transparent" }}>
+            {/* Logo */}
             <img src={logo} width={30} height={30} />
-
-
+            {/* Menu */}
             <Tooltip title="My Account">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, gap: 1 }} disableRipple>
                     <Typography variant="body2" color="info">{emailAddress}</Typography>
                     <Avatar><Person color="info" /></Avatar>
                 </IconButton>
             </Tooltip>
-
             <Menu sx={{ mt: '45px' }}
                 id="menu-appbar"
                 keepMounted
@@ -88,8 +93,13 @@ function Nav() {
                     Settings
                 </MenuItem>
                 <Divider />
+                <MenuItem onClick={openP2PSharing} sx={{ paddingX: 5 }}>
+                    <ListItemIcon><FileCopy fontSize="small" color="info" /></ListItemIcon>
+                    P2P File Sharing
+                </MenuItem>
+                <Divider />
                 <MenuItem onClick={logout} sx={{ paddingX: 5 }}>
-                    <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
+                    <ListItemIcon><Logout fontSize="small" color="warning" /></ListItemIcon>
                     Logout
                 </MenuItem>
             </Menu>
