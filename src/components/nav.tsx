@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useSelector } from "react-redux"
 import Folder from "@mui/icons-material/Folder"
 import Logout from "@mui/icons-material/Logout"
 import Settings from "@mui/icons-material/Settings"
+import Person from "@mui/icons-material/Person"
 import Avatar from "@mui/material/Avatar"
 import Divider from "@mui/material/Divider"
 import IconButton from "@mui/material/IconButton"
@@ -11,11 +13,11 @@ import Menu from "@mui/material/Menu"
 import MenuItem from "@mui/material/MenuItem"
 import Stack from "@mui/material/Stack"
 import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
 
-import logo from '/logo.png'
-import api from "../networking/endpoints";
-import { useSelector } from "react-redux"
+import api from "../networking/endpoints"
 import { RootState } from "../store/store"
+import logo from '/logo.png'
 
 function Nav() {
     const navigate = useNavigate()
@@ -60,10 +62,11 @@ function Nav() {
 
             <img src={logo} width={30} height={30} />
 
-            {emailAddress}
+
             <Tooltip title="My Account">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar />
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, gap: 1 }} disableRipple>
+                    <Typography variant="body2" color="info">{emailAddress}</Typography>
+                    <Avatar><Person color="info" /></Avatar>
                 </IconButton>
             </Tooltip>
 
