@@ -8,6 +8,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import Divider from '@mui/material/Divider'
+import Grid2 from "@mui/material/Grid2"
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -85,17 +86,15 @@ function Signup() {
     }, [emailAddress, password, checkValues, dispatch, navigate, enqueueSnackbar])
 
     return (
-        <Stack sx={{ paddingTop: 10 }}
-            direction="row"
-            justifyContent="center"
-            width="100vw"
-            height="100vh"
-            className="login-container">
-            <Stack sx={{ paddingX: 5, width: "50%" }}>
+        <Grid2 container
+            columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
+            rowSpacing={2}
+            margin="5vw"
+            justifyContent="center">
+            <Grid2 size={{ lg: 6, sm: 12 }}>
                 <Card sx={{ padding: 5 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography component="h1" variant="h4"
-                            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+                        <Typography component="h1" variant="h4">
                             Sign up
                         </Typography>
                         <img src={logo} height={50} />
@@ -107,7 +106,6 @@ function Signup() {
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            width: '100%',
                             gap: 3,
                             my: 3,
                         }}>
@@ -181,7 +179,6 @@ function Signup() {
                             Log in
                         </Button>
                     </Stack>
-
                 </Card>
 
                 <Box>
@@ -192,8 +189,8 @@ function Signup() {
                     }
                     {loading && <LinearProgress variant="indeterminate" />}
                 </Box>
-            </Stack>
-        </Stack>
+            </Grid2>
+        </Grid2 >
     )
 }
 

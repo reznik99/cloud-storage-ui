@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
+import { Provider } from 'react-redux'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material'
 import { SnackbarProvider } from 'notistack'
-import { Provider } from 'react-redux'
 import '@fontsource/roboto/300.css'
 import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
@@ -12,6 +12,7 @@ import '@fontsource/roboto/700.css'
 import './index.css'
 import store from './store/store.ts'
 import PrivateRoute from './private_route.tsx'
+import Nav from './components/nav.tsx'
 // Pages
 import Dashboard from './pages/dashboard.tsx'
 import Login from './pages/login.tsx'
@@ -19,7 +20,6 @@ import Signup from './pages/signup.tsx'
 import LinkShare from './pages/share.tsx'
 import Settings from './pages/settings.tsx'
 import ResetPassword from './pages/reset_password.tsx'
-import Nav from './components/nav.tsx'
 import P2PFileSharingWrapper from './pages/p2p_file_sharing.tsx'
 
 const theme = createTheme({

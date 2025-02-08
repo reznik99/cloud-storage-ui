@@ -15,6 +15,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
 import FormControl from '@mui/material/FormControl'
 import FormLabel from '@mui/material/FormLabel'
+import Grid2 from "@mui/material/Grid2"
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Link from '@mui/material/Link'
@@ -102,28 +103,22 @@ function Login() {
     }, [emailAddress])
 
     return (
-        <Stack py={10}
-            direction="row"
-            width="100vw"
-            height="100vh"
-            className="login-container">
-            <Stack px={5} flexGrow={3}>
+        <Grid2 container
+            columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
+            rowSpacing={2}
+            margin="5vw"
+            justifyContent="center">
+            <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
                 <Card sx={{ padding: 5 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography component="h1"
-                            variant="h4"
-                            width="100%">
-                            Log In
-                        </Typography>
+                        <Typography component="h1" variant="h4">Log In</Typography>
                         <img src={logo} height={50} />
                     </Box>
 
-                    <Box component="form"
-                        onSubmit={login}
+                    <Box component="form" onSubmit={login}
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            width: '100%',
                             gap: 3,
                             my: 3,
                         }}>
@@ -189,9 +184,9 @@ function Login() {
                     }
                     {loading && <LinearProgress variant="indeterminate" />}
                 </Box>
-            </Stack>
-            <Stack px={5} flexGrow={2} gap={4}>
-                <Alert variant="standard" severity="info" sx={{ flexGrow: 1 }} icon={false}>
+            </Grid2>
+            <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
+                <Alert variant="standard" severity="info" icon={false}>
                     <AlertTitle>
                         <img src={logoFull} height={200} />
                     </AlertTitle>
@@ -206,7 +201,7 @@ function Login() {
                         <li>Open Source</li>
                     </ul>
                 </Alert>
-                <Alert variant="standard" severity="info" sx={{ flexGrow: 1 }}>
+                <Alert variant="standard" severity="info">
                     <AlertTitle>
                         <Typography variant="h5">Need to share files directly?</Typography>
                     </AlertTitle>
@@ -228,7 +223,7 @@ function Login() {
                         </Button>
                     </Box>
                 </Alert>
-            </Stack>
+            </Grid2>
 
             <Dialog open={showResetDialog}
                 fullWidth={true}
@@ -276,7 +271,7 @@ function Login() {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Stack>
+        </Grid2>
     )
 }
 

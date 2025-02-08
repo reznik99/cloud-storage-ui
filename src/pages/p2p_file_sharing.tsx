@@ -14,6 +14,7 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import Chip from '@mui/material/Chip'
 import Divider from '@mui/material/Divider'
+import Grid2 from "@mui/material/Grid2"
 import IconButton from '@mui/material/IconButton'
 import LinearProgress from '@mui/material/LinearProgress'
 import ListItem from '@mui/material/ListItem'
@@ -493,11 +494,12 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
 
     render = () => (
-        <Stack py={10}
-            direction="row"
-            width="100vw"
-            height="100vh">
-            <Stack px={5} flexGrow={3} maxWidth="55%">
+        <Grid2 container
+            columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
+            rowSpacing={2}
+            margin="5vw"
+            justifyContent="center">
+            <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
                 {this.state.loading && <LinearProgress variant='indeterminate' />}
 
                 <Card sx={{ padding: 5 }}>
@@ -623,8 +625,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         </Stack>
                     }
                 </Card>
-            </Stack>
-            <Stack px={5} flexGrow={1} maxWidth="45%">
+            </Grid2>
+            <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
                 <Alert variant="standard" severity="info">
                     <AlertTitle>
                         <Typography variant="h5">Peer-To-Peer file sharing</Typography>
@@ -668,8 +670,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         </ListItem>
                     </Alert>
                 }
-            </Stack>
-        </Stack >
+            </Grid2>
+        </Grid2 >
     )
 }
 
