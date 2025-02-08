@@ -22,6 +22,8 @@ function PrivateRoute({ children }: IProps) {
                 emailAddress: resp.data.email_address,
                 createdAt: resp.data.created_at,
                 lastSeen: resp.data.last_seen,
+                wrappedAccountKey: resp.data.wrapped_account_key,
+                allowedStorage: resp.data.allowed_storage,
             }))
         } catch (err: unknown) {
             const message = getErrorString(err)

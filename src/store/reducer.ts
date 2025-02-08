@@ -11,6 +11,7 @@ interface UserState {
     hAuthKey: string;
     wrappedAccountKey: string;
     clientRandomValue: string;
+    allowedStorage: number;
 }
 
 // Define the initial state using that type
@@ -23,7 +24,8 @@ const initialState: UserState = {
     mEncKey: '',
     hAuthKey: '',
     wrappedAccountKey: '',
-    clientRandomValue: ''
+    clientRandomValue: '',
+    allowedStorage: 1_024_000_000
 }
 
 export const dataSlice = createSlice({
@@ -39,6 +41,7 @@ export const dataSlice = createSlice({
             state.hAuthKey = action.payload.hAuthKey || state.hAuthKey;
             state.wrappedAccountKey = action.payload.wrappedAccountKey || state.wrappedAccountKey;
             state.clientRandomValue = action.payload.clientRandomValue || state.clientRandomValue;
+            state.allowedStorage = action.payload.allowedStorage || state.allowedStorage;
         },
         saveFiles: (state, action) => {
             state.files = action.payload.files;

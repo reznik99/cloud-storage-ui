@@ -23,7 +23,7 @@ import Switch from '@mui/material/Switch'
 import { useColorScheme } from "@mui/material/styles"
 
 import { RootState } from '../store/store'
-import { calculateSizePercentageUsed, calculateSizeUsed, localDateTime } from '../utilities/utils'
+import { calculateSizePercentageUsed, calculateSizeUsed, formatBytes, localDateTime } from '../utilities/utils'
 import CircularProgressWithLabel from '../components/circular_progress_w_label'
 import ChangePasswordDialog from '../components/dialog_change_password'
 import DeleteAccountDialog from '../components/dialog_delete_account'
@@ -36,7 +36,7 @@ function Settings() {
     const [dialogOpen, setDialogOpen] = useState("")
 
     const sizeUsed = calculateSizeUsed(user.files)
-    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
+    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, user.allowedStorage)
 
     const editField = () => {
         enqueueSnackbar("Not implemented", { variant: "warning" })
@@ -73,11 +73,11 @@ function Settings() {
                             disabled />
                     </FormControl>
                     <Stack direction='row' justifyContent='space-evenly'>
-                        <Stack direction='row' justifyContent='space-evenly'>
+                        <Stack direction='row' alignItems="center" gap={1}>
                             <Typography>Account created: </Typography>
                             <Chip label={localDateTime(new Date(user.createdAt), true)} />
                         </Stack>
-                        <Stack direction='row' justifyContent='space-evenly'>
+                        <Stack direction='row' alignItems="center" gap={1}>
                             <Typography>Last online: </Typography>
                             <Chip label={localDateTime(new Date(user.lastSeen), true)} />
                         </Stack>
@@ -92,7 +92,7 @@ function Settings() {
                     </FormControl>
                     <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                         <Typography>Storage used:</Typography>
-                        <Chip label={`${sizeUsed} MB/1,000 MB`} />
+                        <Chip label={`${formatBytes(sizeUsed)}/${formatBytes(user.allowedStorage)}`} />
                     </FormControl>
                     <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                         <Typography>Storage used:</Typography>

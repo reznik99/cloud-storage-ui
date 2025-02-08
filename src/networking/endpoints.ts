@@ -129,7 +129,8 @@ async function login(emailAddress: string, password: string) {
         mEncKey: Buffer.from(keys.mEncKey).toString('base64'),
         hAuthKey: Buffer.from(keys.hAuthKey).toString('base64'),
         wrappedAccountKey: resp.data.wrapped_account_key as string,
-        clientRandomValue: rawCrv
+        clientRandomValue: rawCrv,
+        allowedStorage: resp.data.allowed_storage as number
     }
 }
 

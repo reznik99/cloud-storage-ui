@@ -73,7 +73,8 @@ function Login() {
                 mEncKey: resp.mEncKey,
                 hAuthKey: resp.hAuthKey,
                 wrappedAccountKey: resp.wrappedAccountKey,
-                clientRandomValue: resp.clientRandomValue
+                clientRandomValue: resp.clientRandomValue,
+                allowedStorage: resp.allowedStorage
             }))
             navigate("/dashboard")
         } catch (err: unknown) {

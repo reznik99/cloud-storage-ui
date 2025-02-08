@@ -15,10 +15,12 @@ import { saveFiles } from '../store/reducer'
 function Dashboard() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const files = useSelector((store: RootState) => store.user.files)
     const mEncKey = useSelector((store: RootState) => store.user.mEncKey)
     const hAuthKey = useSelector((store: RootState) => store.user.hAuthKey)
     const wrappedAccountKey = useSelector((store: RootState) => store.user.wrappedAccountKey)
-    const files = useSelector((store: RootState) => store.user.files)
+    const allowedStorage = useSelector((store: RootState) => store.user.allowedStorage)
+
     const [loading, setLoading] = useState(false)
     const [authModalOpen, setAuthModalOpen] = useState(false)
 
@@ -59,7 +61,7 @@ function Dashboard() {
                 loading={loading} />
 
             {/* Side menu */}
-            <Sidebar files={files || []} loadFileList={loadFileList} />
+            <Sidebar files={files || []} loadFileList={loadFileList} allowedStorage={allowedStorage}/>
 
             {/* Auth dialolg */}
             <AuthenticateDialog open={authModalOpen} closeDialog={() => setAuthModalOpen(false)} />

@@ -16,12 +16,13 @@ import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
 import { useColorScheme } from "@mui/material/styles"
 
-import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, sizePercentageToColor } from "../utilities/utils"
+import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, formatBytes, sizePercentageToColor } from "../utilities/utils"
 import FileUploadDialog from "./dialog_file_upload"
 import logo from '/logo.png'
 
 type IProps = {
     files: Array<FileInfo>;
+    allowedStorage: number;
     loadFileList: () => void;
 }
 
@@ -30,7 +31,7 @@ function Sidebar(props: IProps) {
     const [fileModalOpen, setFileModalOpen] = useState(false)
 
     const sizeUsed = calculateSizeUsed(props.files)
-    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, 1000)
+    const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, props.allowedStorage)
     return (
         <Card elevation={4}
             sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -46,7 +47,7 @@ function Sidebar(props: IProps) {
 
                 <Stack width="100%" textAlign="center" gap={2}>
                     <Typography>Space used:</Typography>
-                    <Typography>{sizeUsed} MB/1,000 MB</Typography>
+                    <Typography>{formatBytes(sizeUsed)}/{formatBytes(props.allowedStorage)}</Typography>
                     <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />
                 </Stack>
 

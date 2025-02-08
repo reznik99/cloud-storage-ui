@@ -52,7 +52,7 @@ export function calculateSizeUsed(files: Array<FileInfo>) {
     let total = 0
     files.forEach(file => total += file.size)
 
-    return Math.round(total / 1000 / 1000) // MB
+    return total
 }
 
 export function calculateSizePercentageUsed(used: number, total: number) {
