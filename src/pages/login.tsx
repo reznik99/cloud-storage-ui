@@ -194,7 +194,7 @@ function Login() {
                 <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
                     <Alert variant="standard" severity="info" icon={false}>
                         <AlertTitle>
-                            <img src={logoFull} height={200} />
+                            <img src={logoFull} width="100%" />
                         </AlertTitle>
                         <Typography>
                             End-To-End encrypted file storage based on the
