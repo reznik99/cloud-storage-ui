@@ -33,19 +33,19 @@ function Sidebar(props: IProps) {
     const sizeUsed = calculateSizeUsed(props.files)
     const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, props.allowedStorage)
     return (
-        <Card elevation={4}
-            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Card elevation={4} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 5,
                 paddingX: 8,
+                paddingTop: 5,
                 flexGrow: 1
             }}>
-                <img src={logo} height={100} style={{marginTop: 20}} />
+                <img src={logo} height={100} />
 
-                <Stack width="100%" textAlign="center" gap={2}>
+                <Stack textAlign="center" gap={2}>
                     <Typography>Space used:</Typography>
                     <Typography>{formatBytes(sizeUsed)}/{formatBytes(props.allowedStorage)}</Typography>
                     <LinearProgress variant="determinate" color={sizePercentageToColor(sizeUsedPercentage)} value={sizeUsedPercentage} />

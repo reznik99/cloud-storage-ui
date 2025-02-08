@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import Box from '@mui/material/Box'
+import Grid2 from "@mui/material/Grid2"
 
 import AuthenticateDialog from '../components/dialog_authenticate'
 import FilesView from '../components/files_view'
@@ -50,22 +50,29 @@ function Dashboard() {
     }, [authModalOpen, mEncKey, hAuthKey, wrappedAccountKey])
 
     return (
-        <Box sx={{
-            display: 'flex',
-            flexGrow: 1,
-            overflowY: 'scroll',
-        }}>
+        <Grid2 container width="100%"
+            rowSpacing={2}
+            sx={{
+                display: 'flex',
+                flexGrow: 1,
+                overflowY: 'scroll',
+            }}>
 
             {/* File explorer */}
-            <FilesView files={files || []} loadFileList={loadFileList}
-                loading={loading} />
+            <Grid2 size={{ md: 10, sm: 12 }}>
+                <FilesView files={files || []} loadFileList={loadFileList}
+                    loading={loading} />
+            </Grid2>
 
             {/* Side menu */}
-            <Sidebar files={files || []} loadFileList={loadFileList} allowedStorage={allowedStorage}/>
+            <Grid2 size="grow">
+                <Sidebar files={files || []} loadFileList={loadFileList} allowedStorage={allowedStorage} />
+            </Grid2>
+
 
             {/* Auth dialolg */}
             <AuthenticateDialog open={authModalOpen} closeDialog={() => setAuthModalOpen(false)} />
-        </Box>
+        </Grid2>
     )
 }
 

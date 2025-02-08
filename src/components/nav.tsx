@@ -64,7 +64,7 @@ function Nav() {
             alignItems="center"
             width="100vw"
             paddingY={2}
-            paddingX={6}
+            paddingX="2em"
             sx={{ backgroundColor: "transparent" }}>
             {/* Logo */}
             <img src={logo} width={30} height={30} />

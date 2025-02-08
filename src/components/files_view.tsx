@@ -13,6 +13,7 @@ import Chip from '@mui/material/Chip'
 import Collapse from '@mui/material/Collapse'
 import Divider from '@mui/material/Divider'
 import FormLabel from '@mui/material/FormLabel'
+import Grid2 from "@mui/material/Grid2"
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
@@ -91,22 +92,19 @@ function FilesView(props: IProps) {
     return (
         <Paper elevation={1}
             sx={{
-                width: '80%',
                 height: '100%',
                 overflowY: 'scroll',
                 flexGrow: 1
             }}>
 
-            <List disablePadding sx={{ width: '100%', height: '100%' }}>
+            <List disablePadding sx={{ height: '100%' }}>
                 {/* List Header */}
                 <Paper elevation={6} square>
-                    <ListItem sx={{ width: '100%', textAlign: 'center' }}>
-                        <Stack width='100%'
-                            direction='row'
-                            justifyContent='space-between'>
-                            <ListItemText primary="File Name" />
+                    <ListItem>
+                        <Stack width='100%' direction='row' paddingX="2em">
+                            <ListItemText sx={{ width: 200 }} primary="File Name" />
                             <ListItemText primary="File Size" />
-                            <ListItemText primary="Actions" />
+                            <ListItemText sx={{ textAlign: "right" }} primary="Actions" />
                         </Stack>
                     </ListItem>
                 </Paper>
@@ -118,42 +116,49 @@ function FilesView(props: IProps) {
                             <Box key={idx}>
                                 {/* File metadata */}
                                 <ListItem>
-                                    <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
-                                    <ListItemText sx={{ width: 250 }} primary={file.name} />
-                                    <ListItemText sx={{ width: 150 }} primary={formatBytes(file.size)} />
+                                    <Grid2 container width="100%">
+                                        <Grid2 size={{ lg: 8, sm: 12, xs: 12 }} display="flex" flexDirection="row">
+                                            <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
+                                            <ListItemText sx={{ width: 200 }} primary={file.name} />
+                                            <ListItemText primary={formatBytes(file.size)} />
+                                        </Grid2>
 
-                                    {/* File actions */}
-                                    <Tooltip title="Share" disableInteractive>
-                                        <Button onClick={() => setLinkDialogIdx(idx)}>
-                                            <Link />
-                                        </Button>
-                                    </Tooltip>
+                                        <Grid2 size={{ lg: 4, sm: 12, xs: 12 }} textAlign="right">
+                                            {/* File actions */}
+                                            <Tooltip title="Share" disableInteractive>
+                                                <Button onClick={() => setLinkDialogIdx(idx)}>
+                                                    <Link />
+                                                </Button>
+                                            </Tooltip>
 
-                                    {(loadingIdx === idx && progress)
-                                        ? <Tooltip title="Cancel" disableInteractive>
-                                            <Button onClick={() => controller.current.abort()}>
-                                                <Cancel />
-                                            </Button>
-                                        </Tooltip>
-                                        : <Tooltip title="Download" disableInteractive>
-                                            <Button onClick={() => downloadFile(idx)} color="success">
-                                                <Download />
-                                            </Button>
-                                        </Tooltip>
-                                    }
+                                            {(loadingIdx === idx && progress)
+                                                ? <Tooltip title="Cancel" disableInteractive>
+                                                    <Button onClick={() => controller.current.abort()}>
+                                                        <Cancel />
+                                                    </Button>
+                                                </Tooltip>
+                                                : <Tooltip title="Download" disableInteractive>
+                                                    <Button onClick={() => downloadFile(idx)} color="success">
+                                                        <Download />
+                                                    </Button>
+                                                </Tooltip>
+                                            }
 
-                                    <Tooltip title="Delete" disableInteractive>
-                                        <Button onClick={() => deleteFile(idx)} color="error">
-                                            <Delete />
-                                        </Button>
-                                    </Tooltip>
+                                            <Tooltip title="Delete" disableInteractive>
+                                                <Button onClick={() => deleteFile(idx)} color="error">
+                                                    <Delete />
+                                                </Button>
+                                            </Tooltip>
 
-                                    <Tooltip title="Details" disableInteractive>
-                                        <Button onClick={() => toggleDetails(idx)} color="secondary">
-                                            {openIdx === idx ? <ExpandLess /> : <ExpandMore />}
-                                        </Button>
-                                    </Tooltip>
+                                            <Tooltip title="Details" disableInteractive>
+                                                <Button onClick={() => toggleDetails(idx)} color="secondary">
+                                                    {openIdx === idx ? <ExpandLess /> : <ExpandMore />}
+                                                </Button>
+                                            </Tooltip>
+                                        </Grid2>
+                                    </Grid2>
                                 </ListItem>
+
                                 {(loadingIdx === idx && progress) &&
                                     <ProgressBar onCancel={() => controller.current.abort()}
                                         progress={progress}
