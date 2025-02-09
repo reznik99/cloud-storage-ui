@@ -5,7 +5,8 @@ import Folder from "@mui/icons-material/Folder"
 import FolderZip from "@mui/icons-material/FolderZip"
 import Movie from "@mui/icons-material/Movie"
 import Photo from "@mui/icons-material/Photo"
-import Chip from "@mui/material/Chip";
+import PictureAsPdf from "@mui/icons-material/PictureAsPdf"
+import Chip from "@mui/material/Chip"
 
 export type FileInfo = {
     name: string;
@@ -113,6 +114,9 @@ export function getFileIcon(fileName: string): JSX.Element {
         // Music
         case ".mp3":
             return (<AudioFile color="primary" />)
+        // Documents
+        case ".pdf":
+            return (<PictureAsPdf color="primary" />)
         // Default
         default:
             return (<Article color="primary" />)

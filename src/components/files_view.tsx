@@ -6,6 +6,8 @@ import Delete from "@mui/icons-material/Delete"
 import Download from "@mui/icons-material/Download"
 import ExpandLess from "@mui/icons-material/ExpandLess"
 import ExpandMore from "@mui/icons-material/ExpandMore"
+import Https from "@mui/icons-material/Https"
+import NoEncryptionGmailerrorred from "@mui/icons-material/NoEncryptionGmailerrorred"
 import Link from "@mui/icons-material/Link"
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -123,7 +125,16 @@ function FilesView(props: IProps) {
                                 <ListItem>
                                     <Grid2 container width="100%">
                                         <Grid2 size={{ lg: 8, sm: 12, xs: 12 }} display="flex" flexDirection="row">
-                                            <ListItemIcon>{getFileIcon(file.name)}</ListItemIcon>
+                                            <ListItemIcon>
+                                                {getFileIcon(file.name)}
+                                                {file.wrapped_file_key
+                                                    ? <Tooltip title="Encrypted" disableInteractive>
+                                                        <Https fontSize="small" color="success" />
+                                                    </Tooltip>
+                                                    : <Tooltip title="Not Encrypted" disableInteractive>
+                                                        <NoEncryptionGmailerrorred fontSize="small" color="warning" />
+                                                    </Tooltip>}
+                                            </ListItemIcon>
                                             <ListItemText sx={{ width: 200 }} primary={file.name} />
                                             <ListItemText primary={formatBytes(file.size)} />
                                         </Grid2>
@@ -172,10 +183,16 @@ function FilesView(props: IProps) {
                                 }
 
                                 {/* File details */}
-                                <Collapse in={openIdx == idx} timeout="auto" sx={{ textAlign: 'center' }}>
-                                    <Paper sx={{ padding: 2 }}>
+                                <Collapse in={openIdx === idx} timeout="auto">
+                                    <Paper sx={{ display: 'flex', gap: 3, padding: 2 }}>
                                         <FormLabel>
                                             Uploaded on: <Chip label={localDateTime(new Date(file.added), true)} />
+                                        </FormLabel>
+                                        <FormLabel>
+                                            Encryption: {props.files[idx].wrapped_file_key
+                                                ? <Chip label="Encrypted" color="success" />
+                                                : <Chip label="Not Encrypted" color="warning" />
+                                            }
                                         </FormLabel>
                                     </Paper>
                                 </Collapse>
