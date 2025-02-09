@@ -64,7 +64,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     websocket: WebSocket | undefined
     chatElement!: HTMLDivElement | null
 
-    constructor(props: any) {
+    constructor(props: IProps) {
         super(props)
         this.state = {
             // Websocket variables
@@ -117,7 +117,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         }
     }
 
-    componentDidUpdate(_prevProps: Readonly<IProps>, prevState: Readonly<IState>, _snapshot?: any): void {
+    componentDidUpdate(_prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
         if (prevState.rtcMessages.length != this.state.rtcMessages.length) {
             this.chatElement?.scrollIntoView({ behavior: 'smooth' })
         }
@@ -125,30 +125,32 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 
     /* Websocket event handlers */
 
-    wsSendMessage = (wsMessage: any) => {
+    wsSendMessage = (wsMessage: object) => {
         this.websocket?.send(JSON.stringify(wsMessage))
     }
-    wsOnMessage = async (wsMessage: MessageEvent<any>) => {
+    wsOnMessage = async (wsMessage: MessageEvent) => {
         try {
             const message = JSON.parse(wsMessage.data)
             console.log(`[WS] received '${message.command}' message`)
             switch (message.command) {
-                case "websocket-key":
+                case "websocket-key": {
                     this.setState({ wsKey: message.data })
                     break
-                case "answer":
+                }
+                case "answer": {
                     const remoteAnswer = JSON.parse(message.data) as RTCSessionDescriptionInit
                     try {
                         await this.state.rtcConn?.setRemoteDescription(remoteAnswer)
                     } catch (err) { console.warn("[WS] set remote description failed:", err) }
                     break
-                case "icecandidate":
-                    // TODO: check if channel is already open, in which case discard late candidates
+                }
+                case "icecandidate": {
                     console.debug("[WS] signalingState", this.state.rtcConn?.signalingState)
                     try {
                         await this.state.rtcConn?.addIceCandidate(new RTCIceCandidate(JSON.parse(message.data)))
                     } catch (err) { console.warn("[WS] add ice candidate failed:", err) }
                     break
+                }
             }
             if (!this.state.wsPeerKey.length && message.from?.length) {
                 console.log("[WS] found peer websocket key:", message.from)
@@ -172,7 +174,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             enqueueSnackbar(`Failed to parse websocket message: ${err}`, { variant: "error" })
         }
     }
-    wsOnOpen = (_: Event) => {
+    wsOnOpen = () => {
         console.log("[WS] Opened")
         this.setState({ wsReadyState: WebSocket.OPEN })
         if (this.props.hash.length) {
@@ -201,16 +203,17 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         this.state.rtcChanel!.send(JSON.stringify({ type: "message", data: message }))
         this.setState({ rtcMessages: this.state.rtcMessages.concat({ sent: true, message: message, when: Date.now() }) })
     }
-    channelOnMessage = (message: MessageEvent<any>) => {
+    channelOnMessage = (message: MessageEvent) => {
         switch (typeof message.data) {
-            case "string":
+            case "string": {
                 const msg = JSON.parse(message.data)
                 console.log(`[WebRTC] Data channel received '${msg.type}'`)
                 switch (msg.type) {
-                    case "message":
+                    case "message": {
                         this.setState({ rtcMessages: this.state.rtcMessages.concat({ sent: false, message: msg.data?.toString(), when: Date.now() }) })
                         break
-                    case "file-info":
+                    }
+                    case "file-info": {
                         this.setState({
                             downloadFileInfo: {
                                 name: msg.data.name,
@@ -221,29 +224,34 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             }
                         })
                         break
-                    case "request-file-info":
+                    }
+                    case "request-file-info": {
                         this.state.rtcChanel?.send(JSON.stringify(
                             { type: "file-info", data: { name: this.state.uploadFile?.name, size: this.state.uploadFile?.size } }
                         ))
                         break
-                    case "start-download":
+                    }
+                    case "start-download": {
                         this.initiateFileTransfer()
                         break
-                    case "finish-download":
+                    }
+                    case "finish-download": {
                         triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.downloadFileChunks))
                         // Clear state and interval
                         clearInterval(this.state.metricsIntervalID)
                         this.downloadFileChunks = []
                         this.setState({ loading: false, metricsIntervalID: -1, transferProgress: undefined })
                         break;
+                    }
                 }
                 break;
-            case "object":
+            }
+            case "object": {
                 // TODO: Instead of saving chanks in RAM, stream to disk to allow massive file transfer (use FileSystemWritableFileStream)
                 this.downloadFileChunks.push(message.data)
                 break;
-            default:
-                console.warn("[WebRTC] Data channel received unrecognized message type: ", typeof message.data)
+            }
+            default: { console.warn("[WebRTC] Data channel received unrecognized message type: ", typeof message.data) }
         }
     }
     channelOnOpen = () => {

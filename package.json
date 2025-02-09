@@ -1,7 +1,7 @@
 {
   "name": "storage.francescogorini.com",
   "private": true,
-  "version": "1.6.2",
+  "version": "1.6.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,14 +27,14 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
+    "@eslint/js": "^9.20.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@types/zxcvbn": "^4.4.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.19.0",
+    "eslint": "^9.20.0",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.18",
+    "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.14.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.23.0",
