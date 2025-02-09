@@ -58,11 +58,13 @@ async function getFiles() {
     return client.get("/files")
 }
 
-async function uploadFile(file: File, encryptedFileKey: ArrayBuffer, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
+async function uploadFile(file: File, encryptedFileKey: ArrayBuffer | undefined, progressCallback: (progress: Progress) => void, signal: AbortSignal) {
     if (!progressCallback) progressCallback = noopProgressCallback
 
     const formData = new FormData()
-    formData.append("wrapped_file_key", Buffer.from(encryptedFileKey).toString('base64'))
+    if (encryptedFileKey) {
+        formData.append("wrapped_file_key", Buffer.from(encryptedFileKey).toString('base64'))
+    }
     formData.append("file", file)
 
     return client.post("/file", formData, {
