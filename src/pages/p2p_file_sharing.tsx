@@ -153,7 +153,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             if (!this.state.wsPeerKey.length && message.from?.length) {
                 console.log("[WS] found peer websocket key:", message.from)
                 const cachedIceCandidates = [...this.state.rtcIceCandidates]
-                this.setState({ wsPeerKey: message.from, rtcIceCandidates: [] })
+                this.setState({ loading: true, wsPeerKey: message.from, rtcIceCandidates: [] })
                 // Send any cached IceCandidates to the peer
                 if (cachedIceCandidates.length) {
                     console.log(`[WS] sending ${cachedIceCandidates.length} cached icecandidates`)
@@ -248,7 +248,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
     channelOnOpen = () => {
         const readyState = this.state.rtcChanel?.readyState || 'closed'
-        this.setState({ rtcReadyState: readyState })
+        this.setState({ rtcReadyState: readyState, loading: false })
         console.log("[WebRTC] channel state changed:", readyState)
         if (this.state.rtcChanel && readyState === "open") {
             enqueueSnackbar("Peer connected", { variant: "success" })
@@ -265,7 +265,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
     onDataChannel = (ev: RTCDataChannelEvent) => {
         console.log("[WebRTC] new data channel received:", ev.channel.readyState)
-        this.setState({ rtcChanel: ev.channel, rtcReadyState: ev.channel.readyState }, () => {
+        this.setState({ rtcChanel: ev.channel, rtcReadyState: ev.channel.readyState, loading: false }, () => {
             ev.channel.onmessage = this.channelOnMessage
             ev.channel.onopen = this.channelOnOpen
             ev.channel.onclose = this.channelOnClose
