@@ -8,9 +8,9 @@ import AuthenticateDialog from '../components/dialog_authenticate'
 import FilesView from '../components/files_view'
 import Sidebar from '../components/sidebar'
 import api from '../networking/endpoints'
-import { getErrorString } from '../utilities/utils'
 import { RootState } from '../store/store'
 import { saveFiles } from '../store/reducer'
+import { getErrorString } from '../utilities/utils'
 
 function Dashboard() {
     const navigate = useNavigate()
@@ -39,8 +39,11 @@ function Dashboard() {
     }, [navigate, dispatch])
 
     useEffect(() => {
-        loadFileList()
-    }, [loadFileList])
+        // If we don't have any files in store, load from backend
+        if (!files.length) {
+            loadFileList()
+        }
+    }, [files, loadFileList])
 
     useEffect(() => {
         if (!authModalOpen && (mEncKey === "" || hAuthKey === "" || wrappedAccountKey === "")) {

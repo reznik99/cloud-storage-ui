@@ -1,10 +1,11 @@
 import { ReactNode, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
 
 import api from "./networking/endpoints"
 import { getErrorString } from "./utilities/utils"
-import { useDispatch } from "react-redux"
 import { saveCreds } from "./store/reducer"
+import { RootState } from "./store/store"
 
 type IProps = {
     children: ReactNode | ReactNode[]
@@ -13,6 +14,9 @@ type IProps = {
 function PrivateRoute({ children }: IProps) {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+
+    const emailAddress = useSelector((state: RootState) => state.user.emailAddress)
+    const wrappedAccountKey = useSelector((state: RootState) => state.user.wrappedAccountKey)
 
     // Load user info from API. If it fails user needs authentication so route to login page
     const checkAuth = useCallback(async () => {
@@ -33,8 +37,11 @@ function PrivateRoute({ children }: IProps) {
     }, [navigate, dispatch])
 
     useEffect(() => {
-        checkAuth()
-    }, [checkAuth])
+        // If store is lacking important data, fetch it from the backend
+        if (!emailAddress || !wrappedAccountKey) {
+            checkAuth()
+        }
+    }, [emailAddress, wrappedAccountKey, checkAuth])
 
     return (
         <>
