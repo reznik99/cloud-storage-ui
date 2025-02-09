@@ -17,7 +17,8 @@ export default defineConfig({
         "script-src": ["'self'"],
         "style-src-elem": ["'self'", "'unsafe-inline'"],
         "font-src": ["'self'", "data:"],
-        "connect-src": ["ws://localhost:8080", "localhost:8080", "'self'"]
+        "connect-src": ["ws://localhost:8080", "localhost:8080", "'self'"],
+        "media-src": ["ws://localhost:8080", "localhost:8080", "'self'"]
       }
     })
   ]

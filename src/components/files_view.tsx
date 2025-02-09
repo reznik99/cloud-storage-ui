@@ -51,10 +51,15 @@ function FilesView(props: IProps) {
         try {
             setLoadingIdx(idx)
             const resp = await api.downloadFile(file, setProgress, controller.current.signal)
-            console.log("Data received:", resp.data)
-            const decFile = await DecryptFile(Buffer.from(file.wrapped_file_key, 'base64'), file, resp.data)
+            if (file.wrapped_file_key) {
+                // Decrypt file with file key and download
+                const decryptedFile = await DecryptFile(Buffer.from(file.wrapped_file_key, 'base64'), file, resp.data)
+                triggerDownload(file.name, decryptedFile)
+            } else {
+                // Download plaintext file
+                triggerDownload(file.name, new File([resp.data], file.name))
+            }
 
-            triggerDownload(decFile.name, decFile)
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: unknown) {
             const error = getErrorString(err)

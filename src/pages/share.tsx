@@ -53,11 +53,15 @@ function LinkShare() {
             setLoading(true)
             // Download encrypted file with link access_key
             const resp = await api.downloadLink(params.access_key as string, setProgress, controller.current.signal)
-            // Decrypt file with URL file key
             const fileKey = hash.slice(1)
-            const decryptedFile = await DecryptFileLink(fileKey, file, resp.data)
-            // Trigger download
-            triggerDownload(file.name, decryptedFile)
+            if (fileKey) {
+                // Decrypt file with URL file key
+                const decryptedFile = await DecryptFileLink(fileKey, file, resp.data)
+                triggerDownload(file.name, decryptedFile)
+            } else {
+                // Download plaintext file
+                triggerDownload(file.name, new File([resp.data], file.name))
+            }
             enqueueSnackbar("File downloaded successfully", { variant: "success" })
         } catch (err: unknown) {
             const error = getErrorString(err)
@@ -73,6 +77,7 @@ function LinkShare() {
         loadLinkInfo()
     }, [loadLinkInfo])
 
+    const fileKey = hash.slice(1)
     return (
         <Stack sx={{ alignItems: 'center', mt: 5 }}>
             {/* Loader */}
@@ -112,7 +117,7 @@ function LinkShare() {
                             </Stack>
                             <Stack direction="row" gap={2} alignItems="center">
                                 <Typography variant="body1">Decryption Key:</Typography>
-                                <Typography variant="body1" color="info">{hash.slice(1) || "Unknown"}</Typography>
+                                <Typography variant="body1" color={fileKey ? "info" : "warning"}>{fileKey || "None (not encrypted)"}</Typography>
                             </Stack>
                         </Stack>
                         <Button variant="outlined"
@@ -126,8 +131,9 @@ function LinkShare() {
                             progress={progress}
                             file={file} />
                         }
-                        {/* TODO: This stopped working with end-to-end encryption */}
-                        {file.type === "video/mp4" &&
+
+                        {/* TODO: End-to-End encrypted videos can't be streamed for now */}
+                        {file.type === "video/mp4" && fileKey === "" &&
                             <video controls
                                 src={`${API_URL}/link_download?access_key=${params.access_key}`}>
                             </video>

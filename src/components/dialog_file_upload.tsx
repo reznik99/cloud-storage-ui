@@ -46,6 +46,7 @@ function FileUploadDialog(props: IProps) {
     const closeDialog = useCallback(() => {
         props.closeDialog()
         setSelectedFile(null)
+        setEncryptionEnabled(true)
         controller.current.abort()
     }, [props])
 
@@ -54,9 +55,12 @@ function FileUploadDialog(props: IProps) {
         try {
             setLoading(true)
             controller.current = new AbortController()
-
-            const encFile = await EncryptFile(selectedFile)
-            await api.uploadFile(encFile.encryptedFile, encFile.encryptedFileKey, setProgress, controller.current.signal)
+            if (encryptionEnabled) {
+                const encFile = await EncryptFile(selectedFile)
+                await api.uploadFile(encFile.encryptedFile, encFile.encryptedFileKey, setProgress, controller.current.signal)
+            } else {
+                await api.uploadFile(selectedFile, undefined, setProgress, controller.current.signal)
+            }
 
             closeDialog()
             props.loadFileList()
@@ -69,7 +73,7 @@ function FileUploadDialog(props: IProps) {
             setProgress(null)
             setLoading(false)
         }
-    }, [selectedFile, props, closeDialog, enqueueSnackbar])
+    }, [selectedFile, encryptionEnabled, props, closeDialog, enqueueSnackbar])
 
     return (
         <Dialog open={props.open}

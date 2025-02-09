@@ -40,7 +40,9 @@ function FileLinkDialog(props: IProps) {
         try {
             setLoading(true)
             const resp = await api.getLink(props.file)
-            const fileKey = await DecryptFileKey(props.file.wrapped_file_key)
+            const fileKey = props.file.wrapped_file_key
+                ? await DecryptFileKey(props.file.wrapped_file_key)
+                : ""
             const link: Link = {
                 access_count: resp.data.access_count,
                 access_key: resp.data.access_key,
@@ -65,7 +67,9 @@ function FileLinkDialog(props: IProps) {
         try {
             setLoading(true)
             const resp = await api.createLink(props.file)
-            const fileKey = await DecryptFileKey(props.file.wrapped_file_key)
+            const fileKey = props.file.wrapped_file_key
+                ? await DecryptFileKey(props.file.wrapped_file_key)
+                : ""
             const link: Link = {
                 access_count: resp.data.access_count,
                 access_key: resp.data.access_key,
