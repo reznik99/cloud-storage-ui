@@ -30,10 +30,10 @@ function ProgressBar({ progress, file, sx, onCancel }: IProps) {
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                     {`${progress.percentage}% (${formatBytes(progress.bytesProcessed)}/${formatBytes(file?.size || 0)})`}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>estimate {`${progress.estimateSec}s`}</Typography>
-                {progress.bitRate &&
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>Bitrate: {`${formatBits(progress.bitRate)}/s`}</Typography>
-                }
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {`${progress.estimateSec}s remaining `}
+                    {progress.bitRate && `(${formatBits(progress.bitRate)}/s)`}
+                </Typography>
             </Box>
         </Box>
     )

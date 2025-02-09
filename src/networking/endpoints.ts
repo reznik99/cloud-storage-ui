@@ -47,7 +47,8 @@ async function downloadLink(accessKey: string, progressCallback: (progress: Prog
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
                     bytesProcessed: progressEvent.loaded,
-                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
+                    bitRate: (progressEvent.rate || 1) * 8
                 })
             }
         }
@@ -77,7 +78,8 @@ async function uploadFile(file: File, encryptedFileKey: ArrayBuffer | undefined,
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
                     bytesProcessed: progressEvent.loaded,
-                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
+                    bitRate: (progressEvent.rate || 1) * 8
                 })
             }
         }
@@ -95,7 +97,8 @@ async function downloadFile(file: FileInfo, progressCallback: (progress: Progres
                 progressCallback({
                     estimateSec: Math.round(progressEvent.estimated || 0),
                     bytesProcessed: progressEvent.loaded,
-                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                    percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
+                    bitRate: (progressEvent.rate || 1) * 8
                 })
             }
         }
