@@ -474,12 +474,12 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     // Fetches metrics from either the peer channel or the partially downloaded file 
     handleMetrics = async () => {
         const { rtcConn, uploadFile, downloadFileInfo, transferStartTime } = this.state
-        // Reciever can estimate progress based on downloaded chunks
+
         let metrics: WebRTCStats = {
             bytesReceived: this.downloadFileChunks.length * rtcChunkSize,
             bytesSent: 0
-        };
-        // Get real stats from WebRTC, this only works for the sender for some unknown reason 😡
+        }
+        // Get stats from WebRTC
         const stats = await rtcConn!.getStats()
         stats.forEach(report => {
             if (report.type === 'data-channel') {
@@ -488,9 +488,9 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             }
         })
         // Calculate statistics
-        const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent, 1);
-        const elapsedSec = Math.max(millisecondsToX(Date.now() - transferStartTime, 'second'), 1)
         const fileSize = downloadFileInfo?.size || uploadFile!.size
+        const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent, 1) % fileSize;
+        const elapsedSec = Math.max(millisecondsToX(Date.now() - transferStartTime, 'second'), 1)
         this.setState({
             transferProgress: {
                 bytesProcessed: bytesProcessed,
