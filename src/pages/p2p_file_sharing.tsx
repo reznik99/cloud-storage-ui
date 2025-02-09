@@ -599,7 +599,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         {this.state.rtcReadyState !== "open"
                             ? <Typography marginTop={2}>Waiting for peer connection...</Typography>
                             : <Stack direction="column" width="100%" marginY={2}>
-                                <Stack direction="column" gap={1} height={125} overflow="scroll" marginRight={5}>
+                                <Stack direction="column" gap={1} height={125} marginRight={5} sx={{ overflowY: "scroll" }}>
                                     {this.state.rtcMessages.map((msg, idx) => {
                                         if (msg.sent) {
                                             return (<Stack>
