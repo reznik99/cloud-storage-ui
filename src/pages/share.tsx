@@ -10,7 +10,9 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from "@mui/material/Chip"
+import Container from "@mui/material/Container"
 import Divider from '@mui/material/Divider'
+import Grid2 from "@mui/material/Grid2"
 import IconButton from '@mui/material/IconButton'
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
@@ -79,69 +81,74 @@ function LinkShare() {
 
     const fileKey = hash.slice(1)
     return (
-        <Stack sx={{ alignItems: 'center', mt: 5 }}>
-            {/* Loader */}
-            {loading &&
-                <Box sx={{ width: '50%' }}>
-                    <LinearProgress variant="indeterminate" />
-                </Box>
-            }
-            <Card sx={{ padding: 5, width: '50%' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
-                    <Typography variant="h5">{file?.name}</Typography>
-                    <img src={logo} width={30} height={30} />
-                </Box>
-                <Divider sx={{ mt: 2 }} />
+        <Container maxWidth="xl">
+            <Grid2 container justifyContent="center">
+                <Grid2 size={{ lg: 7, md: 10, sm: 12, xs: 12 }} component={Card} padding="1em" marginTop="2em">
+                    {loading && <LinearProgress variant="indeterminate" />}
 
-                {(!file && !loading) &&
-                    <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
-                        <AlertTitle>File not found</AlertTitle>
-                        <Typography variant="body2">This link is either invalid or no longer available</Typography>
-                    </Alert>
-                }
-                {file &&
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Stack gap={1}>
-                            <Stack direction="row" gap={1} alignItems="center">
-                                <Typography variant="body1">Uploaded on:</Typography>
-                                <Chip label={new Date(file?.added || 0).toLocaleDateString()} color="info" variant="outlined" />
-                                <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
+                        <Typography variant="h5">{file?.name}</Typography>
+                        <img src={logo} width={30} height={30} />
+                    </Box>
+                    <Divider sx={{ mt: 2 }} />
 
-                                <Typography variant="body1">Size:</Typography>
-                                <Chip label={formatBytes(file?.size || 0)} color="info" variant="outlined" />
-                                <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
+                    {(!file && !loading) &&
+                        <Alert severity="error" variant="standard" sx={{ mt: 2 }}>
+                            <AlertTitle>File not found</AlertTitle>
+                            <Typography variant="body2">This link is either invalid or no longer available</Typography>
+                        </Alert>
+                    }
+                    {file &&
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Stack gap={1}>
+                                <Grid2 container spacing={2} justifyContent="center" sx={{ flexDirection: { xs: "column", lg: "row" } }}>
+                                    <Grid2 size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} flexDirection="row">
+                                        <Typography variant="body1">Uploaded on:</Typography>
+                                        <Chip label={new Date(file?.added || 0).toLocaleDateString()} color="info" variant="outlined" />
+                                    </Grid2>
+                                    <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
 
-                                <Typography variant="body1">Type:</Typography>
-                                <Chip label={file.type || "Unknown"} color="info" variant="outlined" />
+                                    <Grid2 size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} direction="row">
+                                        <Typography variant="body1">Size:</Typography>
+                                        <Chip label={formatBytes(file?.size || 0)} color="info" variant="outlined" />
+                                    </Grid2>
+                                    <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
+
+                                    <Grid2 size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} direction="row">
+                                        <Typography variant="body1">Type:</Typography>
+                                        <Chip label={file.type || "Unknown"} color="info" variant="outlined" />
+                                    </Grid2>
+                                </Grid2>
+
+                                <Stack direction="row" gap={2} alignItems="center">
+                                    <Typography variant="body1">Decryption Key:</Typography>
+                                    <Typography variant="body1" color={fileKey ? "info" : "warning"}>{fileKey || "None (not encrypted)"}</Typography>
+                                </Stack>
                             </Stack>
-                            <Stack direction="row" gap={2} alignItems="center">
-                                <Typography variant="body1">Decryption Key:</Typography>
-                                <Typography variant="body1" color={fileKey ? "info" : "warning"}>{fileKey || "None (not encrypted)"}</Typography>
-                            </Stack>
-                        </Stack>
-                        <Button variant="outlined"
-                            onClick={downloadLink}
-                            disabled={loading}
-                            startIcon={<Download />}>
-                            Download
-                        </Button>
-                        {progress && <ProgressBar sx={{ mt: 2 }}
-                            onCancel={() => controller.current.abort()}
-                            progress={progress}
-                            file={file} />
-                        }
+                            <Button variant="outlined"
+                                onClick={downloadLink}
+                                disabled={loading}
+                                startIcon={<Download />}>
+                                Download
+                            </Button>
+                            {progress && <ProgressBar sx={{ mt: 2 }}
+                                onCancel={() => controller.current.abort()}
+                                progress={progress}
+                                file={file} />
+                            }
 
-                        {/* TODO: End-to-End encrypted videos can't be streamed for now */}
-                        {file.type === "video/mp4" && fileKey === "" &&
-                            <video controls
-                                src={`${API_URL}/link_download?access_key=${params.access_key}`}>
-                            </video>
-                        }
-                    </CardContent>
-                }
-            </Card>
-        </Stack>
+                            {/* TODO: End-to-End encrypted videos can't be streamed for now */}
+                            {file.type === "video/mp4" && fileKey === "" &&
+                                <video controls
+                                    src={`${API_URL}/link_download?access_key=${params.access_key}`}>
+                                </video>
+                            }
+                        </CardContent>
+                    }
+                </Grid2>
+            </Grid2>
+        </Container>
     )
 }
 

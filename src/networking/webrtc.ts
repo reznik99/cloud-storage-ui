@@ -2,7 +2,8 @@
 import { Buffer } from 'buffer'
 
 // RTC constants
-export const rtcChunkSize = 16_384 // ~16kb chunk size for WebRTC data channel
+export const rtcChunkSize = 32_768                      // ~16kb chunk size for WebRTC data channel
+export const rtcBufferedAmountLowThreshold = 65_535     // ~64kb threshold when sending should halt
 export const rtcDataChannelName = "gdrive-file-transfer"
 export const rtcPeerConstraints: RTCConfiguration = {
     iceServers: [

@@ -28,7 +28,7 @@ import Typography from '@mui/material/Typography'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
 import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
-import { ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName, rtcPeerConstraints, WebRTCStats } from '../networking/webrtc'
+import { ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName, rtcPeerConstraints, WebRTCStats, rtcBufferedAmountLowThreshold } from '../networking/webrtc'
 import logo from '/logo.png'
 
 // Types
@@ -278,6 +278,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             ev.channel.onopen = this.channelOnOpen
             ev.channel.onclose = this.channelOnClose
             ev.channel.onerror = this.channelOnError
+            ev.channel.binaryType = 'arraybuffer'
+            ev.channel.bufferedAmountLowThreshold = rtcBufferedAmountLowThreshold
             // If we are the receiver, request file info
             if (!this.state.uploadFile) {
                 console.log("[WebRTC] requesting file info")
@@ -329,7 +331,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             rtcChannel.onclose = this.channelOnClose
             rtcChannel.onerror = this.channelOnError
             rtcChannel.binaryType = 'arraybuffer'
-            rtcChannel.bufferedAmountLowThreshold = 0
+            rtcChannel.bufferedAmountLowThreshold = rtcBufferedAmountLowThreshold
             // Create an offer
             const localOffer = await rtcConn.createOffer()
             await rtcConn.setLocalDescription(localOffer)
