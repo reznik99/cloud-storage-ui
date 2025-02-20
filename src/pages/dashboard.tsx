@@ -22,6 +22,7 @@ function Dashboard() {
     const allowedStorage = useSelector((store: RootState) => store.user.allowedStorage)
 
     const [loading, setLoading] = useState(false)
+    const [hasLoaded, setHasLoaded] = useState(false)
     const [authModalOpen, setAuthModalOpen] = useState(false)
 
     const loadFileList = useCallback(async () => {
@@ -40,10 +41,11 @@ function Dashboard() {
 
     useEffect(() => {
         // If we don't have any files in store, load from backend
-        if (!files.length) {
+        if (!hasLoaded) {
             loadFileList()
+            setHasLoaded(true)
         }
-    }, [files, loadFileList])
+    }, [hasLoaded, loadFileList])
 
     useEffect(() => {
         if (!authModalOpen && (mEncKey === "" || hAuthKey === "" || wrappedAccountKey === "")) {

@@ -107,6 +107,7 @@ function Login() {
         }
     }, [emailAddress])
 
+    console.log("Supports showSaveFilePicker", "showSaveFilePicker" in window)
     return (
         <Container maxWidth="xl">
             <Grid2 container
