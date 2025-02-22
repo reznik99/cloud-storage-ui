@@ -90,6 +90,20 @@ export function formatBits(bitSize: number) {
     return (bitSize / 1_024_000_000).toFixed(2).toLocaleString() + " Gb"
 }
 
+export function formatTime(ms: number) {
+    if (ms < 1000) {
+        return ms.toFixed(0).toLocaleString() + "ms"
+    } else if (millisecondsToX(ms, "second") < 60) {
+        return millisecondsToX(ms, "second").toFixed(0).toLocaleString() + "s"
+    } else if (millisecondsToX(ms, "minute") < 60) {
+        return millisecondsToX(ms, "minute").toFixed(0).toLocaleString() + "m"
+    } else if (millisecondsToX(ms, "hour") < 24) {
+        return millisecondsToX(ms, "hour").toFixed(0).toLocaleString() + "hr"
+    } else {
+        return millisecondsToX(ms, "day").toFixed(0).toLocaleString() + "day"
+    }
+}
+
 export function getFileIcon(fileName: string): JSX.Element {
     const fileExt = fileName.substring(fileName.lastIndexOf('.'), fileName.length)
     switch (fileExt.toLowerCase()) {

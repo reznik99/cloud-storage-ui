@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography'
 import Cancel from "@mui/icons-material/Cancel"
 import { Theme, SxProps } from '@mui/material/styles'
 
-import { FileInfo, formatBits, formatBytes, Progress } from "../utilities/utils"
+import { FileInfo, formatBits, formatBytes, formatTime, Progress } from "../utilities/utils"
 
 type IProps = {
     progress: Progress;
@@ -31,7 +31,7 @@ function ProgressBar({ progress, file, sx, onCancel }: IProps) {
                     {`${progress.percentage}% (${formatBytes(progress.bytesProcessed)}/${formatBytes(file?.size || 0)})`}
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    {`${progress.estimateSec}s remaining `}
+                    {`${formatTime(progress.estimateSec / 1000)} remaining `}
                     {progress.bitRate && `(${formatBits(progress.bitRate)}/s)`}
                 </Typography>
             </Box>
