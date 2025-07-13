@@ -33,6 +33,7 @@ import {
     ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName,
     rtcPeerConstraints, WebRTCStats, rtcBufferedAmountLowThreshold
 } from '../networking/webrtc'
+import { QRCodeImage } from '../components/qr_code_image'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
 import logo from '/logo.png'
@@ -437,7 +438,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // Send start download event to peer
             this.state.rtcChanel.send(JSON.stringify({ type: "start-download" }))
             // Start metrics fetching job
-            const metricsTimer = setInterval(this.handleMetrics, 250)
+            const metricsTimer = window.setInterval(this.handleMetrics, 250)
             this.setState({ loading: true, transferStartTime: Date.now(), metricsIntervalID: metricsTimer })
         } catch (err) {
             console.error("[WebRTC] failed to request start-download:", err)
@@ -469,7 +470,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // Start file chunk sending job
             this.sendFileChunks(chunks)
             // Start metrics fetching job
-            const metricsTimer = setInterval(this.handleMetrics, 250)
+            const metricsTimer = window.setInterval(this.handleMetrics, 250)
             this.setState({ transferStartTime: Date.now(), metricsIntervalID: metricsTimer })
         } catch (err) {
             console.error("[WebRTC] send file err:", err)
@@ -675,6 +676,25 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     </Card>
                 </Grid2>
                 <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
+                    {this.state.shareLink &&
+                        <Alert variant='standard' color="warning" severity='info' >
+                            <Typography>Leave this page open while the recepient downloads the file!</Typography>
+                            <QRCodeImage url={this.state.shareLink} size={384} />
+                            <Typography>Click the link below to copy it to your clipboard!</Typography>
+                            <ListItem>
+                                <Tooltip title="Click to copy to clipboard">
+                                    <ListItemButton
+                                        sx={{ overflowWrap: "break-all", overflow: 'hidden' }}
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(this.state.shareLink)
+                                            enqueueSnackbar("Copied URL to clipboard!")
+                                        }}>
+                                        <Typography color="info">{this.state.shareLink}</Typography>
+                                    </ListItemButton>
+                                </Tooltip>
+                            </ListItem>
+                        </Alert>
+                    }
                     <Alert variant="standard" severity="info">
                         <AlertTitle>
                             <Typography variant="h5">Peer-To-Peer file sharing</Typography>
@@ -701,23 +721,6 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             </AccordionDetails>
                         </Accordion>
                     </Alert>
-                    {this.state.shareLink &&
-                        <Alert variant='standard' color="warning" severity='info' >
-                            <Typography>Click the link below to copy it to your clipboard! Leave this page open while the recepient downloads the file!</Typography>
-                            <ListItem>
-                                <Tooltip title="Click to copy to clipboard">
-                                    <ListItemButton
-                                        sx={{ overflowWrap: "break-all", overflow: 'hidden' }}
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(this.state.shareLink)
-                                            enqueueSnackbar("Copied URL to clipboard!")
-                                        }}>
-                                        <Typography color="info">{this.state.shareLink}</Typography>
-                                    </ListItemButton>
-                                </Tooltip>
-                            </ListItem>
-                        </Alert>
-                    }
                 </Grid2>
             </Grid2>
         </Container>
