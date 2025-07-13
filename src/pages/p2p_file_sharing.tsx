@@ -64,6 +64,8 @@ type IProps = {
     hash: string;
 }
 
+const hasFileSystemAccessAPI = typeof window.showSaveFilePicker === 'function';
+
 class P2PFileSharing extends React.Component<IProps, IState> {
     // Static data (prevent re-rendering)
     websocket: WebSocket | undefined
@@ -233,7 +235,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             }
                         })
                         // If supported by browser, create file handle to stream writes
-                        if (typeof window.showSaveFilePicker === 'function') {
+                        if (hasFileSystemAccessAPI) {
                             window.showSaveFilePicker({ suggestedName: msg.data.name })
                                 .then(async fileHandle => {
                                     this.downloadFileHandle = await fileHandle.createWritable()
@@ -255,11 +257,11 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                     }
                     case "finish-download": {
                         // Only trigger file download if not using FileStream api
-                        if (!this.downloadFileHandle) {
-                            triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.downloadFileChunks))
-                        } else {
+                        if (hasFileSystemAccessAPI && this.downloadFileHandle) {
                             this.downloadFileHandle.close()
                             this.downloadFileHandle = undefined
+                        } else {
+                            triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.downloadFileChunks))
                         }
                         // Clear state and interval
                         clearInterval(this.state.metricsIntervalID)
@@ -271,7 +273,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 break;
             }
             case "object": {
-                if (this.downloadFileHandle) {
+                if (hasFileSystemAccessAPI && this.downloadFileHandle) {
                     // Browser supports file stream writes, write straight to disk
                     this.downloadFileHandle.write(message.data)
                 } else {
