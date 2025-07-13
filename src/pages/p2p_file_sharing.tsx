@@ -25,10 +25,16 @@ import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
+import {
+    FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus,
+    millisecondsToX, Progress, triggerDownload
+} from '../utilities/utils'
+import {
+    ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName,
+    rtcPeerConstraints, WebRTCStats, rtcBufferedAmountLowThreshold
+} from '../networking/webrtc'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
-import { FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus, millisecondsToX, Progress, triggerDownload } from '../utilities/utils'
-import { ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName, rtcPeerConstraints, WebRTCStats, rtcBufferedAmountLowThreshold } from '../networking/webrtc'
 import logo from '/logo.png'
 
 // Types
@@ -60,9 +66,12 @@ type IProps = {
 
 class P2PFileSharing extends React.Component<IProps, IState> {
     // Static data (prevent re-rendering)
-    downloadFileChunks: Array<ArrayBuffer> = []
     websocket: WebSocket | undefined
     chatElement!: HTMLDivElement | null
+    // Used in Firefox since it doesn't support stream writes (https://developer.mozilla.org/en-US/docs/Web/API/Window/showSaveFilePicker)
+    downloadFileChunks: Array<ArrayBuffer> = []
+    // Used in Chromium browsers to allow stream writes (doesn't cache downloaded file in RAM)
+    downloadFileHandle?: FileSystemWritableFileStream = undefined
 
     constructor(props: IProps) {
         super(props)
@@ -223,6 +232,15 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                                 wrapped_file_key: ""
                             }
                         })
+                        // If supported by browser, create file handle to stream writes
+                        if (typeof window.showSaveFilePicker === 'function') {
+                            window.showSaveFilePicker({ suggestedName: msg.data.name })
+                                .then(async fileHandle => {
+                                    this.downloadFileHandle = await fileHandle.createWritable()
+                                })
+                                .catch(err => console.error("Failed to show save file picker", err))
+                        }
+                        // TODO: Show warning that file transfer is limited by available RAM
                         break
                     }
                     case "request-file-info": {
@@ -236,7 +254,10 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         break
                     }
                     case "finish-download": {
-                        triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.downloadFileChunks))
+                        // Only trigger file download if not using FileStream api
+                        if (!this.downloadFileHandle) {
+                            triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.downloadFileChunks))
+                        }
                         // Clear state and interval
                         clearInterval(this.state.metricsIntervalID)
                         this.downloadFileChunks = []
@@ -247,8 +268,13 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 break;
             }
             case "object": {
-                // TODO: Instead of saving chanks in RAM, stream to disk to allow massive file transfer (use FileSystemWritableFileStream)
-                this.downloadFileChunks.push(message.data)
+                if (this.downloadFileHandle) {
+                    // Browser supports file stream writes, write straight to disk
+                    this.downloadFileHandle.write(message.data)
+                } else {
+                    // Browser (Firefox) doesn't support file stream writes, save chunks in RAM
+                    this.downloadFileChunks.push(message.data)
+                }
                 break;
             }
             default: { console.warn("[WebRTC] Data channel received unrecognized message type: ", typeof message.data) }
