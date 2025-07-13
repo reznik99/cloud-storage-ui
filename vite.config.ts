@@ -18,7 +18,8 @@ export default defineConfig({
         "style-src-elem": ["'self'", "'unsafe-inline'"],
         "font-src": ["'self'", "data:"],
         "connect-src": ["wss://storage.francescogorini.com", "storage.francescogorini.com", "ws://localhost:8080", "localhost:8080", "'self'"],
-        "media-src": ["wss://storage.francescogorini.com", "storage.francescogorini.com", "ws://localhost:8080", "localhost:8080", "'self'"]
+        "media-src": ["wss://storage.francescogorini.com", "storage.francescogorini.com", "ws://localhost:8080", "localhost:8080", "'self'"],
+        "img-src": ["'self'", "data:"],
       }
     })
   ]
