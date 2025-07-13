@@ -257,6 +257,9 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         // Only trigger file download if not using FileStream api
                         if (!this.downloadFileHandle) {
                             triggerDownload(this.state.downloadFileInfo?.name || "unknown-name", new Blob(this.downloadFileChunks))
+                        } else {
+                            this.downloadFileHandle.close()
+                            this.downloadFileHandle = undefined
                         }
                         // Clear state and interval
                         clearInterval(this.state.metricsIntervalID)
