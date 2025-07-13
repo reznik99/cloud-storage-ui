@@ -643,13 +643,13 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                                 <Stack direction="column" gap={1} height={125} marginRight={5} sx={{ overflowY: "scroll" }}>
                                     {this.state.rtcMessages.map((msg, idx) => {
                                         if (msg.sent) {
-                                            return (<Stack>
-                                                <Typography key={idx} color="primary" alignSelf="flex-start">{msg.message}</Typography>
+                                            return (<Stack key={idx}>
+                                                <Typography color="primary" alignSelf="flex-start">{msg.message}</Typography>
                                                 <Typography variant='caption' color="textDisabled" alignSelf="flex-start">{new Date(msg.when).toLocaleTimeString()}</Typography>
                                             </Stack>)
                                         } else {
-                                            return (<Stack>
-                                                <Typography key={idx} color="secondary" alignSelf="flex-end">{msg.message}</Typography>
+                                            return (<Stack key={idx}>
+                                                <Typography color="secondary" alignSelf="flex-end">{msg.message}</Typography>
                                                 <Typography variant='caption' color="textDisabled" alignSelf="flex-end">{new Date(msg.when).toLocaleTimeString()}</Typography>
                                             </Stack>)
                                         }
