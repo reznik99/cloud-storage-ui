@@ -11,3 +11,27 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spinIn {
+  0% {
+    transform: rotate(-180deg);
+    opacity: 0;
+  }
+
+  100% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}
