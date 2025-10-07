@@ -120,7 +120,7 @@ async function login(emailAddress: string, password: string) {
     // Derive salt from CRV
     const salt = await GenerateSaltFromCRV(rawCrv)
     // Derive Master Auth and Enc Key from salt
-    const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    const keys = await DeriveKeysFromPassword(password, salt)
     // Login with email and derived auth key
     const resp = await client.post("/login", {
         email_address: emailAddress,
@@ -145,7 +145,7 @@ async function signup(emailAddress: string, password: string) {
     // Derive salt from CRV
     const salt = await GenerateSaltFromCRV(rawCrv)
     // Derive Master Auth and Enc Key from salt
-    const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    const keys = await DeriveKeysFromPassword(password, salt)
     // Generate account key and wrap account key with master key
     const acctKey = await GenerateKey(AccountKeyOpts)
     const mEncKey = await ImportKey(keys.mEncKey, MasterKeyOpts)
@@ -180,7 +180,7 @@ async function resetPassword(newPassword: string, resetCode: string) {
     // Derive new salt from new CRV
     const newSalt = await GenerateSaltFromCRV(newRawCrv)
     // Derive new Master Auth and Enc Key from new salt
-    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
+    const newKeys = await DeriveKeysFromPassword(newPassword, newSalt)
     // Generate new account key and Wrap new account key with new master key
     const newAcctKey = await GenerateKey(AccountKeyOpts)
     const mEncKey = await ImportKey(newKeys.mEncKey, MasterKeyOpts)
@@ -202,19 +202,19 @@ async function changePassword(password: string, newPassword: string) {
     // Derive salt from existing CRV
     const currentSalt = await GenerateSaltFromCRV(user.clientRandomValue)
     // Derive existing Master Auth and Enc Key from salt
-    const currentKeys = await DeriveKeysFromPassword(password, new Uint8Array(currentSalt))
-    const curentmEncKey = await ImportKey(currentKeys.mEncKey, MasterKeyOpts)
+    const currentKeys = await DeriveKeysFromPassword(password, currentSalt)
+    const currentmEncKey = await ImportKey(currentKeys.mEncKey, MasterKeyOpts)
 
     // Generate new random CRV (Client Random Value)
     const newRawCrv = Buffer.from(GenerateRandomBytes(CRV_len)).toString('base64')
     // Derive new salt from new CRV
     const newSalt = await GenerateSaltFromCRV(newRawCrv)
     // Derive new Master Auth and Enc Key from new salt
-    const newKeys = await DeriveKeysFromPassword(newPassword, new Uint8Array(newSalt))
+    const newKeys = await DeriveKeysFromPassword(newPassword, newSalt)
     const newmEncKey = await ImportKey(newKeys.mEncKey, MasterKeyOpts)
 
     // Decrypt account key with current keys and re-encrypt account key with new master key
-    const acctKey = await UnwrapKey(Buffer.from(user.wrappedAccountKey, 'base64'), curentmEncKey, AccountKeyOpts)
+    const acctKey = await UnwrapKey(Buffer.from(user.wrappedAccountKey, 'base64'), currentmEncKey, AccountKeyOpts)
     const newWrappedAcctKey = await WrapKey(acctKey, newmEncKey)
 
     // TODO: mEncKey has changed and will break encryption/decryption of files. Rotate it and upload wrapped kek aswell
@@ -239,7 +239,7 @@ async function deleteAccount(password: string) {
     // Derive salt from CRV
     const salt = await GenerateSaltFromCRV(rawCrv)
     // Derive Master Auth and Enc Key from salt
-    const keys = await DeriveKeysFromPassword(password, new Uint8Array(salt))
+    const keys = await DeriveKeysFromPassword(password, salt)
 
     return client.post("/delete_account", { password: Buffer.from(keys.hAuthKey).toString('base64') })
 }

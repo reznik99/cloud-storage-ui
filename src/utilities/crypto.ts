@@ -50,11 +50,6 @@ function GenerateRandomBytes(length: number): Uint8Array {
     return window.crypto.getRandomValues(new Uint8Array(length))
 }
 
-// Checks if two arraybuffers are equal
-async function BufferEquals(first: Uint8Array, second: Uint8Array) {
-    return first.length === second.length && first.every((value, index) => value === second[index]);
-}
-
 // Hashes/Digests a buffer with the given SHA algorithm
 async function Hash(buffer: ArrayBuffer, hashAlgo: string) {
     return window.crypto.subtle.digest({ name: hashAlgo }, buffer)
@@ -83,10 +78,10 @@ async function WrapKey(key: CryptoKey, wrappingKey: CryptoKey) {
 }
 
 // Unwrap a wrapped symmetric key with another symmetric key
-async function UnwrapKey(wrappedKey: ArrayBuffer, wrappingKey: CryptoKey, opts: KeyOpts) {
+async function UnwrapKey(wrappedKey: ArrayBuffer | Uint8Array, wrappingKey: CryptoKey, opts: KeyOpts) {
     return window.crypto.subtle.unwrapKey(
         "raw",
-        wrappedKey,
+        wrappedKey as BufferSource,
         wrappingKey,
         "AES-KW",
         opts.algo,
@@ -96,10 +91,10 @@ async function UnwrapKey(wrappedKey: ArrayBuffer, wrappingKey: CryptoKey, opts: 
 }
 
 // Imports a key buffer into browser for cryptographic use
-async function ImportKey(keyBuffer: ArrayBuffer, opts: KeyOpts): Promise<CryptoKey> {
+async function ImportKey(keyBuffer: ArrayBuffer | Uint8Array, opts: KeyOpts): Promise<CryptoKey> {
     return window.crypto.subtle.importKey(
         "raw",
-        keyBuffer,
+        keyBuffer as BufferSource,
         opts.algo,
         opts.exportable,
         opts.usages
@@ -123,7 +118,7 @@ async function GenerateSaltFromCRV(rawCrv: string) {
 }
 
 // Derives Master Encryption and Authentication keys from password and salt.
-async function DeriveKeysFromPassword(password: string, salt: Uint8Array) {
+async function DeriveKeysFromPassword(password: string, salt: ArrayBuffer) {
     const startTime = performance.now()
     if (salt.byteLength < PBKDF2_salt_len) {
         throw new Error(`Salt length ${salt.byteLength}bytes is below the set minimum of ${PBKDF2_salt_len}bytes!`)
@@ -182,7 +177,10 @@ async function EncryptFile(file: File) {
 
     // Encrypt file contents using derived key and IV
     const ciphertext = await window.crypto.subtle.encrypt(
-        { name: FileKeyOpts.algo, iv: iv },
+        {
+            name: FileKeyOpts.algo,
+            iv: iv as BufferSource
+        },
         fileKey,
         data
     )
@@ -203,7 +201,7 @@ async function EncryptFile(file: File) {
 }
 
 // DecryptFile decrypts a file with the given key. Salt, IV and Wrapped File Key are extracted from ciphertext.
-async function DecryptFile(encryptedFileKey: ArrayBuffer, fileInfo: FileInfo, fileData: Blob): Promise<File> {
+async function DecryptFile(encryptedFileKey: ArrayBuffer | Uint8Array, fileInfo: FileInfo, fileData: Blob): Promise<File> {
     const startTime = performance.now()
     const mEncKey = store.getState().user.mEncKey
     const wrappedAccountKey = store.getState().user.wrappedAccountKey
@@ -270,7 +268,6 @@ export {
     EncryptFile,
     DecryptFile,
     Hash,
-    BufferEquals,
     WrapKey,
     UnwrapKey,
     ImportKey,
