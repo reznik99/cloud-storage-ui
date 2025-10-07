@@ -20,9 +20,9 @@ import Typography from '@mui/material/Typography'
 
 import { FileInfo, formatBytes, getErrorString, Progress, triggerDownload } from "../utilities/utils"
 import api, { API_URL } from "../networking/endpoints"
-import logo from '/logo.png'
 import ProgressBar from "../components/progress_bar"
 import { DecryptFileLink } from "../utilities/crypto"
+import { Logo } from "../components/logo"
 
 function LinkShare() {
     const navigate = useNavigate()
@@ -89,7 +89,7 @@ function LinkShare() {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
                         <Typography variant="h5">{file?.name}</Typography>
-                        <img src={logo} width={30} height={30} />
+                        <Logo width={30} height={30} />
                     </Box>
                     <Divider sx={{ mt: 2 }} />
 

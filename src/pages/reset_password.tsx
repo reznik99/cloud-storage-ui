@@ -25,7 +25,7 @@ import { ValidatePassword } from "../utilities/security"
 import { getErrorString } from "../utilities/utils"
 import PasswordMeter from "../components/password_meter"
 import api from "../networking/endpoints"
-import logo from '/logo.png'
+import { Logo } from "../components/logo"
 
 function ResetPassword() {
     const navigate = useNavigate()
@@ -72,7 +72,7 @@ function ResetPassword() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <IconButton onClick={() => navigate('/login')}><ArrowBack /></IconButton>
                     <Typography variant="h5">Reset password (code: {hash})</Typography>
-                    <img src={logo} width={30} height={30} />
+                    <Logo width={30} height={30} />
                 </Box>
                 <Divider sx={{ mt: 2 }} />
 

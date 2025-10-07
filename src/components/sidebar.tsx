@@ -18,7 +18,7 @@ import { useColorScheme } from "@mui/material/styles"
 
 import { calculateSizePercentageUsed, calculateSizeUsed, FileInfo, formatBytes, sizePercentageToColor } from "../utilities/utils"
 import FileUploadDialog from "./dialog_file_upload"
-import logo from '/logo.png'
+import { Logo } from "./logo"
 
 type IProps = {
     files: Array<FileInfo>;
@@ -43,7 +43,7 @@ function Sidebar(props: IProps) {
                 paddingTop: 5,
                 flexGrow: 1
             }}>
-                <img src={logo} height={100} />
+                <Logo height={100} width={100} />
 
                 <Stack textAlign="center" gap={2}>
                     <Typography>Space used:</Typography>

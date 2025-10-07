@@ -30,8 +30,7 @@ import api from "../networking/endpoints"
 import { Feedback, getErrorString } from "../utilities/utils"
 import { saveCreds } from "../store/reducer"
 import { RootState } from "../store/store"
-import logoFull from '/logo-full.png'
-import logo from '/logo.png'
+import { Logo } from "../components/logo"
 
 
 function Login() {
@@ -119,7 +118,7 @@ function Login() {
                     <Card sx={{ padding: 5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography component="h1" variant="h4">Log In</Typography>
-                            <img src={logo} height={50} />
+                            <Logo width={50} height={50} />
                         </Box>
 
                         <Box component="form" onSubmit={login}
@@ -195,22 +194,54 @@ function Login() {
                 <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
                     <Alert variant="standard" severity="info" icon={false}>
                         <AlertTitle>
-                            <img src={logoFull} width="100%" />
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                width: '100%',
+                            }}>
+                                <Logo width={100} height={100} />
+                                {/* Text */}
+                                <Box>
+                                    <Box component="span"
+                                        sx={{
+                                            fontFamily: 'Poppins, sans-serif',
+                                            fontSize: '3rem',
+                                            fontWeight: 600,
+                                            color: '#00BFFF',
+                                            opacity: 0,
+                                            animation: 'fadeIn 0.7s ease forwards 0.7s',
+                                        }} >
+                                        G-Storage
+                                    </Box>
+                                    <Box component="span"
+                                        sx={{
+                                            display: 'block',
+                                            fontSize: '2rem',
+                                            color: '#ccc',
+                                            opacity: 0,
+                                            animation: 'fadeIn 1s ease forwards 1s',
+                                        }}>
+                                        End-to-End Encrypted
+                                    </Box>
+                                </Box>
+                            </Box>
+                            <Typography variant="h6" mt={2}>
+                                End-To-End encrypted file storage based on the
+                                <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}> Mega.nz whitepaper</Link>.
+                            </Typography>
                         </AlertTitle>
-                        <Typography>
-                            End-To-End encrypted file storage based on the
-                            <Link to="https://mega.nz/SecurityWhitepaper.pdf" target="_blank" component={RouterLink}> Mega.nz whitepaper</Link>.
-                        </Typography>
                         <ul>
-                            <li>Up to 1GB of storage for free</li>
-                            <li>End-To-End encryption</li>
-                            <li>Files sharing is easy! Download without an account</li>
-                            <li>Open Source</li>
+                            <li><Typography variant="subtitle2">Up to 1GB of storage for free</Typography></li>
+                            <li><Typography variant="subtitle2">End-To-End encryption</Typography></li>
+                            <li><Typography variant="subtitle2">Files sharing is easy! Download without an account</Typography></li>
+                            <li><Typography variant="subtitle2">Open Source</Typography></li>
                         </ul>
                     </Alert>
-                    <Alert variant="standard" severity="info">
+
+                    <Alert variant="standard" severity="info" icon={false}>
                         <AlertTitle>
-                            <Typography variant="h5">Need to share files directly?</Typography>
+                            <Typography variant="h6">Need to share files directly?</Typography>
                         </AlertTitle>
                         <Typography>Share files with <b>server-less peer-to-peer</b> file sharing!</Typography>
                         <ul>
@@ -220,7 +251,7 @@ function Login() {
                             <li><Typography variant="subtitle2">Open Source</Typography></li>
                         </ul>
 
-                        <Box width="100%" marginY={3}>
+                        <Box margin={3}>
                             <Button to="/p2p-file-share"
                                 variant="contained"
                                 color="info"

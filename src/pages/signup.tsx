@@ -24,7 +24,7 @@ import { ValidatePassword } from "../utilities/security"
 import api from "../networking/endpoints"
 import PasswordMeter from "../components/password_meter"
 import { saveCreds } from "../store/reducer"
-import logo from '/logo.png'
+import { Logo } from "../components/logo"
 
 function Signup() {
     const navigate = useNavigate()
@@ -99,7 +99,7 @@ function Signup() {
                             <Typography component="h1" variant="h4">
                                 Sign up
                             </Typography>
-                            <img src={logo} height={50} />
+                            <Logo height={50} width={50} />
                         </Box>
 
                         <Box component="form"

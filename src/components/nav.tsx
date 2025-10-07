@@ -18,7 +18,7 @@ import Typography from "@mui/material/Typography"
 
 import api from "../networking/endpoints"
 import { RootState } from "../store/store"
-import logo from '/logo.png'
+import { Logo } from "./logo"
 
 function Nav() {
     const navigate = useNavigate()
@@ -67,7 +67,7 @@ function Nav() {
             paddingX="2em"
             sx={{ backgroundColor: "transparent" }}>
             {/* Logo */}
-            <img src={logo} width={30} height={30} />
+            <Logo width={30} height={30} />
             {/* Menu */}
             <Tooltip title="My Account">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, gap: 1 }} disableRipple>

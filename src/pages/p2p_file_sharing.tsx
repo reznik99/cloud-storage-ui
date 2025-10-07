@@ -36,7 +36,7 @@ import {
 import { QRCodeImage } from '../components/qr_code_image'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
-import logo from '/logo.png'
+import { Logo } from '../components/logo'
 
 // Types
 type IState = {
@@ -557,7 +557,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             <IconButton onClick={() => this.props.navigate(-1)}><ArrowBack /></IconButton>
                         </Tooltip>
                         <Typography variant="h5" width="100%">P2P file sharing</Typography>
-                        <img src={logo} height={50} />
+                        <Logo height={50} width={50} />
                     </Stack>
                     <Card sx={{ padding: "1em" }}>
                         {/* Select file button (sender) */}
