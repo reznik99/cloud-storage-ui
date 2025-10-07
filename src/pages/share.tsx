@@ -140,7 +140,8 @@ function LinkShare() {
 
                             {/* TODO: End-to-End encrypted videos can't be streamed for now */}
                             {file.type === "video/mp4" && fileKey === "" &&
-                                <video controls
+                                <video style={{ maxWidth: '50vw', maxHeight: '75vh' }}
+                                    controls
                                     src={`${API_URL}/link_download?access_key=${params.access_key}`}>
                                 </video>
                             }
