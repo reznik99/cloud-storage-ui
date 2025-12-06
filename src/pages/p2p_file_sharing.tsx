@@ -46,7 +46,7 @@ type IState = {
     wsReadyState: number;
     // WebRTC state
     rtcConn: RTCPeerConnection | undefined;
-    rtcChanel: RTCDataChannel | undefined;
+    rtcChannel: RTCDataChannel | undefined;
     rtcReadyState: RTCDataChannelState;
     rtcIceCandidates: Array<string>;
     rtcNewMessage: string;
@@ -85,7 +85,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             wsReadyState: WebSocket.CLOSED,
             // WebRTC variables
             rtcConn: undefined,
-            rtcChanel: undefined,
+            rtcChannel: undefined,
             rtcReadyState: "closed",
             rtcIceCandidates: [],
             rtcNewMessage: "",
@@ -119,10 +119,10 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             this.websocket.onerror = () => { }
             this.websocket.close()
         }
-        if (this.state.rtcChanel) {
-            this.state.rtcChanel.onclose = () => { }
-            this.state.rtcChanel.onerror = () => { }
-            this.state.rtcChanel.close()
+        if (this.state.rtcChannel) {
+            this.state.rtcChannel.onclose = () => { }
+            this.state.rtcChannel.onerror = () => { }
+            this.state.rtcChannel.close()
         }
         if (this.state.rtcConn) {
             this.state.rtcConn.close()
@@ -212,7 +212,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     /* WebRTC event handlers */
 
     channelSendMessage = (message: string) => {
-        this.state.rtcChanel!.send(JSON.stringify({ type: "message", data: message }))
+        this.state.rtcChannel!.send(JSON.stringify({ type: "message", data: message }))
         this.setState({ rtcMessages: this.state.rtcMessages.concat({ sent: true, message: message, when: Date.now() }) })
     }
     channelOnMessage = (message: MessageEvent) => {
@@ -247,7 +247,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         break
                     }
                     case "request-file-info": {
-                        this.state.rtcChanel?.send(JSON.stringify(
+                        this.state.rtcChannel?.send(JSON.stringify(
                             { type: "file-info", data: { name: this.state.uploadFile?.name, size: this.state.uploadFile?.size } }
                         ))
                         break
@@ -287,15 +287,15 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         }
     }
     channelOnOpen = () => {
-        const readyState = this.state.rtcChanel?.readyState || 'closed'
+        const readyState = this.state.rtcChannel?.readyState || 'closed'
         this.setState({ rtcReadyState: readyState, loading: false })
         console.log("[WebRTC] channel state changed:", readyState)
-        if (this.state.rtcChanel && readyState === "open") {
+        if (this.state.rtcChannel && readyState === "open") {
             enqueueSnackbar("Peer connected", { variant: "success" })
         }
     }
     channelOnClose = () => {
-        const readyState = this.state.rtcChanel?.readyState || 'closed'
+        const readyState = this.state.rtcChannel?.readyState || 'closed'
         this.setState({ rtcReadyState: readyState })
         console.warn("[WebRTC] Closed")
         enqueueSnackbar("Peer disconnected", { variant: "warning" })
@@ -305,7 +305,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     }
     onDataChannel = (ev: RTCDataChannelEvent) => {
         console.log("[WebRTC] new data channel received:", ev.channel.readyState)
-        this.setState({ rtcChanel: ev.channel, rtcReadyState: ev.channel.readyState, loading: false }, () => {
+        this.setState({ rtcChannel: ev.channel, rtcReadyState: ev.channel.readyState, loading: false }, () => {
             ev.channel.onmessage = this.channelOnMessage
             ev.channel.onopen = this.channelOnOpen
             ev.channel.onclose = this.channelOnClose
@@ -315,7 +315,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // If we are the receiver, request file info
             if (!this.state.uploadFile) {
                 console.log("[WebRTC] requesting file info")
-                this.state.rtcChanel?.send(JSON.stringify({ type: "request-file-info" }))
+                this.state.rtcChannel?.send(JSON.stringify({ type: "request-file-info" }))
             }
         })
     }
@@ -374,7 +374,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // Save data
             this.setState({
                 rtcConn: rtcConn,
-                rtcChanel: rtcChannel,
+                rtcChannel: rtcChannel,
                 shareLink: link
             })
         } catch (err) {
@@ -434,9 +434,9 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     // Requests file trasnfer start from peer & initiates metrics fetching
     requestFileTransfer = () => {
         try {
-            if (!this.state.rtcChanel) throw new Error("Send channel not initialized, unable to send message")
+            if (!this.state.rtcChannel) throw new Error("Send channel not initialized, unable to send message")
             // Send start download event to peer
-            this.state.rtcChanel.send(JSON.stringify({ type: "start-download" }))
+            this.state.rtcChannel.send(JSON.stringify({ type: "start-download" }))
             // Start metrics fetching job
             const metricsTimer = window.setInterval(this.handleMetrics, 250)
             this.setState({ loading: true, transferStartTime: Date.now(), metricsIntervalID: metricsTimer })
@@ -482,7 +482,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     // Starts sending chunks to the peer. This can block until channel bufferedAmount passes threshold. 
     // After which this function becomes async and continues sending when buffered amount decreases below threshold
     sendFileChunks = async (chunks: Blob[]) => {
-        const sendChannel = this.state.rtcChanel!
+        const sendChannel = this.state.rtcChannel!
         if (chunks.length) {
             // Slow down, recurse once buffered amount decreases
             // TODO: maybe this can be a nice async func we can await
