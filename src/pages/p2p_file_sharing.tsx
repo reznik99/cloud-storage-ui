@@ -15,7 +15,7 @@ import Card from '@mui/material/Card'
 import Chip from '@mui/material/Chip'
 import Container from "@mui/material/Container"
 import Divider from '@mui/material/Divider'
-import Grid2 from "@mui/material/Grid2"
+import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton'
 import LinearProgress from '@mui/material/LinearProgress'
 import ListItem from '@mui/material/ListItem'
@@ -541,12 +541,12 @@ class P2PFileSharing extends React.Component<IProps, IState> {
 
     render = () => (
         <Container maxWidth="xl">
-            <Grid2 container
+            <Grid container
                 columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
                 rowSpacing={2}
                 margin="4vw"
                 justifyContent="center">
-                <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }} component={Card} padding="1em">
+                <Grid size={{ lg: 7, md: 6, sm: 12, xs: 12 }} component={Card} padding="1em">
                     {this.state.loading && <LinearProgress variant='indeterminate' />}
                     <Stack direction='row' alignItems='center' spacing={2}>
                         <Tooltip title="Go back" disableInteractive>
@@ -670,8 +670,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             </Stack>
                         }
                     </Card>
-                </Grid2>
-                <Grid2 size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
+                </Grid>
+                <Grid size={{ lg: 5, md: 6, sm: 12, xs: 12 }}>
                     {this.state.shareLink &&
                         <Alert variant='standard' color="warning" severity='info' >
                             <Typography>Leave this page open while the recepient downloads the file!</Typography>
@@ -717,8 +717,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                             </AccordionDetails>
                         </Accordion>
                     </Alert>
-                </Grid2>
-            </Grid2>
+                </Grid>
+            </Grid>
         </Container>
     )
 }

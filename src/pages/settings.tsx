@@ -11,7 +11,7 @@ import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import Divider from '@mui/material/Divider'
-import Grid2 from '@mui/material/Grid2'
+import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -110,31 +110,31 @@ function Settings() {
                     </Box>
                 </Stack>
 
-                <Grid2 container spacing={3}>
-                    <Grid2 size={12}><Divider><Typography variant='h6'>Actions</Typography></Divider></Grid2>
-                    <Grid2 size={{ lg: "auto", sm: 12 }}>
+                <Grid container spacing={3}>
+                    <Grid size={12}><Divider><Typography variant='h6'>Actions</Typography></Divider></Grid>
+                    <Grid size={{ lg: "auto", sm: 12 }}>
                         <Button variant='outlined'
                             onClick={editField}
                             startIcon={<AccountCircle />}>
                             Update email address
                         </Button>
-                    </Grid2>
-                    <Grid2 size={{ lg: "auto", sm: 12 }}>
+                    </Grid>
+                    <Grid size={{ lg: "auto", sm: 12 }}>
                         <Button variant='outlined'
                             onClick={() => setDialogOpen("password")}
                             startIcon={<Password />}>
                             Change password
                         </Button>
-                    </Grid2>
-                    <Grid2 size={{ lg: "auto", sm: 12 }}>
+                    </Grid>
+                    <Grid size={{ lg: "auto", sm: 12 }}>
                         <Button variant='outlined'
                             color='error'
                             onClick={() => setDialogOpen("delete_account")}
                             startIcon={<Delete />}>
                             Delete account
                         </Button>
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </Stack>
 
             <ChangePasswordDialog open={dialogOpen === "password"}

@@ -12,7 +12,7 @@ import CardContent from '@mui/material/CardContent'
 import Chip from "@mui/material/Chip"
 import Container from "@mui/material/Container"
 import Divider from '@mui/material/Divider'
-import Grid2 from "@mui/material/Grid2"
+import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
@@ -82,8 +82,8 @@ function LinkShare() {
     const fileKey = hash.slice(1)
     return (
         <Container maxWidth="xl">
-            <Grid2 container justifyContent="center">
-                <Grid2 size={{ lg: 7, md: 10, sm: 12, xs: 12 }} component={Card} padding="1em" marginTop="2em">
+            <Grid container justifyContent="center">
+                <Grid size={{ lg: 7, md: 10, sm: 12, xs: 12 }} component={Card} padding="1em" marginTop="2em">
                     {loading && <LinearProgress variant="indeterminate" />}
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -102,24 +102,24 @@ function LinkShare() {
                     {file &&
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Stack gap={1}>
-                                <Grid2 container spacing={2} justifyContent="center" sx={{ flexDirection: { xs: "column", lg: "row" } }}>
-                                    <Grid2 size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} flexDirection="row">
+                                <Grid container spacing={2} justifyContent="center" sx={{ flexDirection: { xs: "column", lg: "row" } }}>
+                                    <Grid size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} flexDirection="row">
                                         <Typography variant="body1">Uploaded on:</Typography>
                                         <Chip label={new Date(file?.added || 0).toLocaleDateString()} color="info" variant="outlined" />
-                                    </Grid2>
+                                    </Grid>
                                     <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
 
-                                    <Grid2 size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} direction="row">
+                                    <Grid size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} direction="row">
                                         <Typography variant="body1">Size:</Typography>
                                         <Chip label={formatBytes(file?.size || 0)} color="info" variant="outlined" />
-                                    </Grid2>
+                                    </Grid>
                                     <Divider orientation="vertical" sx={{ mx: 2 }} flexItem />
 
-                                    <Grid2 size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} direction="row">
+                                    <Grid size={{ lg: 3, md: 4, sm: 6, xs: "auto" }} direction="row">
                                         <Typography variant="body1">Type:</Typography>
                                         <Chip label={file.type || "Unknown"} color="info" variant="outlined" />
-                                    </Grid2>
-                                </Grid2>
+                                    </Grid>
+                                </Grid>
 
                                 <Stack direction="row" gap={2} alignItems="center">
                                     <Typography variant="body1">Decryption Key:</Typography>
@@ -147,8 +147,8 @@ function LinkShare() {
                             }
                         </CardContent>
                     }
-                </Grid2>
-            </Grid2>
+                </Grid>
+            </Grid>
         </Container>
     )
 }

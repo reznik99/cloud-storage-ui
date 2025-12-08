@@ -9,7 +9,7 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import Container from "@mui/material/Container"
 import Divider from '@mui/material/Divider'
-import Grid2 from "@mui/material/Grid2"
+import Grid from '@mui/material/Grid';
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -88,12 +88,12 @@ function Signup() {
 
     return (
         <Container maxWidth="xl">
-            <Grid2 container
+            <Grid container
                 columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
                 rowSpacing={2}
                 margin="4vw"
                 justifyContent="center">
-                <Grid2 size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
+                <Grid size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
                     <Card sx={{ padding: 5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography component="h1" variant="h4">
@@ -191,8 +191,8 @@ function Signup() {
                         }
                         {loading && <LinearProgress variant="indeterminate" />}
                     </Box>
-                </Grid2>
-            </Grid2>
+                </Grid>
+            </Grid>
         </Container>
     )
 }

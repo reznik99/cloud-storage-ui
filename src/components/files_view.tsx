@@ -15,7 +15,7 @@ import Chip from '@mui/material/Chip'
 import Collapse from '@mui/material/Collapse'
 import Divider from '@mui/material/Divider'
 import FormLabel from '@mui/material/FormLabel'
-import Grid2 from "@mui/material/Grid2"
+import Grid from '@mui/material/Grid'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
@@ -123,8 +123,8 @@ function FilesView(props: IProps) {
                             <Box key={idx}>
                                 {/* File metadata */}
                                 <ListItem>
-                                    <Grid2 container width="100%">
-                                        <Grid2 size={{ lg: 8, sm: 12, xs: 12 }} display="flex" flexDirection="row">
+                                    <Grid container width="100%">
+                                        <Grid size={{ lg: 8, sm: 12, xs: 12 }} display="flex" flexDirection="row">
                                             <ListItemIcon>
                                                 {getFileIcon(file.name)}
                                                 {file.wrapped_file_key
@@ -137,9 +137,9 @@ function FilesView(props: IProps) {
                                             </ListItemIcon>
                                             <ListItemText sx={{ width: 200 }} primary={file.name} />
                                             <ListItemText primary={formatBytes(file.size)} />
-                                        </Grid2>
+                                        </Grid>
 
-                                        <Grid2 size={{ lg: 4, sm: 12, xs: 12 }} textAlign="right">
+                                        <Grid size={{ lg: 4, sm: 12, xs: 12 }} textAlign="right">
                                             {/* File actions */}
                                             <Tooltip title="Share" disableInteractive>
                                                 <Button onClick={() => setLinkDialogIdx(idx)}>
@@ -171,8 +171,8 @@ function FilesView(props: IProps) {
                                                     {openIdx === idx ? <ExpandLess /> : <ExpandMore />}
                                                 </Button>
                                             </Tooltip>
-                                        </Grid2>
-                                    </Grid2>
+                                        </Grid>
+                                    </Grid>
                                 </ListItem>
 
                                 {(loadingIdx === idx && progress) &&
