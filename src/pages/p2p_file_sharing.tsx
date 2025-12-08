@@ -31,7 +31,7 @@ import {
 } from '../utilities/utils'
 import {
     ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName,
-    rtcPeerConstraints, WebRTCStats, rtcBufferedAmountLowThreshold
+    rtcPeerConstraints, rtcBufferedAmountLowThreshold, GetRTCConnStats
 } from '../networking/webrtc'
 import { QRCodeImage } from '../components/qr_code_image'
 import ProgressBar from '../components/progress_bar'
@@ -517,21 +517,17 @@ class P2PFileSharing extends React.Component<IProps, IState> {
     handleMetrics = async () => {
         const { rtcConn, uploadFile, downloadFileInfo, transferStartTime } = this.state
 
-        let metrics: WebRTCStats = {
-            bytesReceived: this.downloadFileChunks.length * rtcChunkSize,
-            bytesSent: 0
-        }
         // Get stats from WebRTC
-        const stats = await rtcConn!.getStats()
-        stats.forEach(report => {
-            if (report.type === 'data-channel') {
-                metrics = stats.get(report.id)
-                return
+        let metrics = await GetRTCConnStats(rtcConn!, 'data-channel')
+        if (!metrics) {
+            metrics = {
+                bytesReceived: this.downloadFileChunks.length * rtcChunkSize,
+                bytesSent: 0
             }
-        })
+        }
         // Calculate statistics
         const fileSize = downloadFileInfo?.size || uploadFile!.size
-        const bytesProcessed = Math.max(metrics?.bytesReceived, metrics?.bytesSent, 1) % fileSize;
+        const bytesProcessed = Math.max(metrics.bytesReceived, metrics.bytesSent, 1) % fileSize;
         const elapsedSec = Math.max(millisecondsToX(Date.now() - transferStartTime, 'second'), 1)
         this.setState({
             transferProgress: {
