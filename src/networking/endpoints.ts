@@ -9,7 +9,7 @@ import store from "../store/store"
 export const WS_URL = "wss://storage.francescogorini.com/ws"
 export const API_URL = "https://storage.francescogorini.com/api"
 
-const client = axios.create({
+export const client = axios.create({
     withCredentials: true,
     baseURL: API_URL
 })

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import zxcvbn from "zxcvbn"
 import Box from "@mui/material/Box"
 import LinearProgress from "@mui/material/LinearProgress"
@@ -31,11 +31,8 @@ function getDescription(score: number): string {
 }
 
 function PasswordMeter({ password }: { password: string }) {
-    const [strength, setStrength] = useState<zxcvbn.ZXCVBNResult | null>()
-
-    useEffect(() => {
-        const output = zxcvbn(password)
-        setStrength(output)
+    const strength = useMemo(() => {
+        return zxcvbn(password)
     }, [password])
 
     return (
