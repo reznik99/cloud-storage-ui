@@ -4,6 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { enqueueSnackbar } from 'notistack'
 import ArrowBack from '@mui/icons-material/ArrowBack'
 import Send from '@mui/icons-material/Send'
+import LanIcon from '@mui/icons-material/Lan'
+import StorageIcon from '@mui/icons-material/Storage'
+import CableIcon from '@mui/icons-material/Cable'
 import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
@@ -33,7 +36,7 @@ import {
     ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName,
     GetRTCServers, rtcBufferedAmountLowThreshold, GetRTCConnStats
 } from '../networking/webrtc'
-import { WebtcCandidateStats, WebtcDataChannelStats } from '../utilities/webrtc'
+import { WebrtcCandidateStats, WebrtcDataChannelStats } from '../utilities/webrtc'
 import { QRCodeImage } from '../components/qr_code_image'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
@@ -49,6 +52,7 @@ type IState = {
     rtcConn: RTCPeerConnection | undefined;
     rtcChannel: RTCDataChannel | undefined;
     rtcReadyState: RTCDataChannelState;
+    rtcChannelStats: WebrtcCandidateStats | undefined;
     rtcIceCandidates: Array<string>;
     rtcNewMessage: string;
     rtcMessages: Array<ChannelMessage>;
@@ -88,6 +92,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             rtcConn: undefined,
             rtcChannel: undefined,
             rtcReadyState: "closed",
+            rtcChannelStats: undefined,
             rtcIceCandidates: [],
             rtcNewMessage: "",
             rtcMessages: [],
@@ -300,9 +305,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                 if (!stat) throw new Error("candidate-pair webrtc stat not found")
                 const stats = await this.state.rtcConn?.getStats()
                 if (!stats) throw new Error("webrtc getStats returned nothing")
-                const candidateStats = stats?.get(stat.remoteCandidateId) as WebtcCandidateStats
-                console.log("Connection info:", candidateStats.protocol, candidateStats.candidateType)
-                // TODO: set state so we can render connection info
+                const candidateStats = stats?.get(stat.remoteCandidateId) as WebrtcCandidateStats
+                this.setState({ rtcChannelStats: candidateStats })
             })
             .catch(err => console.error('Failed to get RTC Conn info', err))
     }
@@ -625,7 +629,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                         }
 
                         <Divider sx={{ my: 3 }} />
-                        {/* Websocket and WebRTC Peer conenction status */}
+                        {/* Websocket and WebRTC Peer connection status */}
                         <Stack direction="row" gap={3} marginY={2}>
                             <Stack direction="row"
                                 alignItems="center"
@@ -641,6 +645,11 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                                 spacing={1}>
                                 <Typography>Peer:</Typography>
                                 {renderWebRTCStatus(this.state.rtcReadyState)}
+                                <Typography>Protocol: {this.state.rtcChannelStats?.protocol || 'N/A'}</Typography>
+                                {this.state.rtcChannelStats?.candidateType === "host" && <LanIcon />}
+                                {this.state.rtcChannelStats?.candidateType === "prflx" && <CableIcon />}
+                                {this.state.rtcChannelStats?.candidateType === "srflx" && <CableIcon />}
+                                {this.state.rtcChannelStats?.candidateType === "relay" && <StorageIcon />}
                             </Stack>
                         </Stack>
                         <Typography color="primary">Local: {this.state.wsKey}</Typography>
@@ -748,7 +757,7 @@ export default function P2PFileSharingWrapper() {
     )
 }
 
-const placeHolderDataChannelStats: WebtcDataChannelStats = {
+const placeHolderDataChannelStats: WebrtcDataChannelStats = {
     type: 'data-channel',
     bytesReceived: 0,
     bytesSent: 0,

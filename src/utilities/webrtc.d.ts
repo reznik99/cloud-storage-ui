@@ -1,29 +1,25 @@
-export type WebRTCStatsAny = WebtcPeerConnectionStats
-    | WebtcCandidatePairStats
-    | WebtcCandidateStats
-    | WebtcDataChannelStats
 
 export type WebrtcStatsType = "candidate-pair" | "data-channel" | "local-candidate" | "peer-connection" | "remote-candidate";
 export type WebrtcStatsTypeMapKey = keyof WebrtcStatsTypeMap;
 
 export interface WebrtcStatsTypeMap {
-    'peer-connection': WebtcPeerConnectionStats[];
-    'candidate-pair': WebtcCandidatePairStats[];
-    'local-candidate': WebtcCandidateStats[];
-    'remote-candidate': WebtcCandidateStats[];
-    'data-channel': WebtcDataChannelStats[];
+    'peer-connection': WebrtcPeerConnectionStats[];
+    'candidate-pair': WebrtcCandidatePairStats[];
+    'local-candidate': WebrtcCandidateStats[];
+    'remote-candidate': WebrtcCandidateStats[];
+    'data-channel': WebrtcDataChannelStats[];
     // Add other standard or custom types as needed:
     // 'inbound-rtp': RtcInboundRtpStreamStats; 
     // etc.
 }
 
-export interface WebtcPeerConnectionStats extends RTCStats {
+export interface WebrtcPeerConnectionStats extends RTCStats {
     type: 'peer-connection';
     dataChannelsClosed: number;
     dataChannelsOpened: number;
 }
 
-export interface WebtcCandidatePairStats extends RTCStats {
+export interface WebrtcCandidatePairStats extends RTCStats {
     type: 'candidate-pair';
     bytesReceived: number;
     bytesSent: number;
@@ -43,7 +39,7 @@ export interface WebtcCandidatePairStats extends RTCStats {
     writable: boolean;
 }
 
-export interface WebtcCandidateStats extends RTCStats {
+export interface WebrtcCandidateStats extends RTCStats {
     type: 'local-candidate' | 'remote-candidate';
     address: string;
     candidateType: 'host' | 'srflx' | 'prflx' | 'relay';
@@ -52,7 +48,7 @@ export interface WebtcCandidateStats extends RTCStats {
     protocol: 'tcp' | 'udp';
 }
 
-export interface WebtcDataChannelStats extends RTCStats {
+export interface WebrtcDataChannelStats extends RTCStats {
     type: 'data-channel';
     bytesReceived: number;
     bytesSent: number;
