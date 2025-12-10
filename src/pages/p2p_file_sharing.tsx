@@ -26,14 +26,14 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import {
-    FileInfo, fileToFileInfo, formatBytes, getWebRTCStatus, getWebsocketStatus,
+    FileInfo, fileToFileInfo, formatBytes, renderWebRTCStatus, renderWebsocketStatus,
     millisecondsToX, Progress, triggerDownload
 } from '../utilities/utils'
 import {
     ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName,
     GetRTCServers, rtcBufferedAmountLowThreshold, GetRTCConnStats
 } from '../networking/webrtc'
-import { WebtcDataChannelStats } from '../utilities/webrtc'
+import { WebtcCandidateStats, WebtcDataChannelStats } from '../utilities/webrtc'
 import { QRCodeImage } from '../components/qr_code_image'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
@@ -294,6 +294,17 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         if (this.state.rtcChannel && readyState === "open") {
             enqueueSnackbar("Peer connected", { variant: "success" })
         }
+        GetRTCConnStats(this.state.rtcConn!, 'candidate-pair')
+            .then(stats => stats?.find(stat => stat.selected))
+            .then(async stat => {
+                if (!stat) throw new Error("candidate-pair webrtc stat not found")
+                const stats = await this.state.rtcConn?.getStats()
+                if (!stats) throw new Error("webrtc getStats returned nothing")
+                const candidateStats = stats?.get(stat.remoteCandidateId) as WebtcCandidateStats
+                console.log("Connection info:", candidateStats.protocol, candidateStats.candidateType)
+                // TODO: set state so we can render connection info
+            })
+            .catch(err => console.error('Failed to get RTC Conn info', err))
     }
     channelOnClose = () => {
         const readyState = this.state.rtcChannel?.readyState || 'closed'
@@ -620,7 +631,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                                 alignItems="center"
                                 spacing={1}>
                                 <Typography>Server:</Typography>
-                                {getWebsocketStatus(this.state.wsReadyState)}
+                                {renderWebsocketStatus(this.state.wsReadyState)}
                             </Stack>
 
                             <Divider orientation='vertical' flexItem />
@@ -629,7 +640,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
                                 alignItems="center"
                                 spacing={1}>
                                 <Typography>Peer:</Typography>
-                                {getWebRTCStatus(this.state.rtcReadyState)}
+                                {renderWebRTCStatus(this.state.rtcReadyState)}
                             </Stack>
                         </Stack>
                         <Typography color="primary">Local: {this.state.wsKey}</Typography>

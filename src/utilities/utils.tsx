@@ -104,7 +104,7 @@ export function formatTime(ms: number) {
     }
 }
 
-export function getFileIcon(fileName: string): JSX.Element {
+export function renderFileIcon(fileName: string): JSX.Element {
     const fileExt = fileName.substring(fileName.lastIndexOf('.'), fileName.length)
     switch (fileExt.toLowerCase()) {
         // Folders
@@ -174,7 +174,7 @@ export function noopProgressCallback(progress: Progress) {
     console.debug(progress)
 }
 
-export function getWebsocketStatus(status: number) {
+export function renderWebsocketStatus(status: number) {
     switch (status) {
         case WebSocket.CONNECTING:
             return <Chip label="connecting" color="info" variant="outlined" />
@@ -189,7 +189,7 @@ export function getWebsocketStatus(status: number) {
     }
 }
 
-export function getWebRTCStatus(status: RTCDataChannelState | undefined) {
+export function renderWebRTCStatus(status: RTCDataChannelState | undefined) {
     switch (status) {
         case "connecting":
             return <Chip label="connecting" color="info" variant="outlined" />

@@ -25,7 +25,7 @@ import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
-import { FileInfo, formatBytes, getErrorString, getFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
+import { FileInfo, formatBytes, getErrorString, renderFileIcon, localDateTime, Progress, triggerDownload } from "../utilities/utils"
 import { DecryptFile } from "../utilities/crypto"
 import emptyDirectory from '/empty-box.png'
 import FileLinkDialog from "./dialog_file_link"
@@ -126,7 +126,7 @@ function FilesView(props: IProps) {
                                     <Grid container width="100%">
                                         <Grid size={{ lg: 8, sm: 12, xs: 12 }} display="flex" flexDirection="row">
                                             <ListItemIcon>
-                                                {getFileIcon(file.name)}
+                                                {renderFileIcon(file.name)}
                                                 {file.wrapped_file_key
                                                     ? <Tooltip title="Encrypted" disableInteractive>
                                                         <Https fontSize="small" color="success" />
