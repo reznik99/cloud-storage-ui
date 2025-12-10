@@ -31,8 +31,9 @@ import {
 } from '../utilities/utils'
 import {
     ChannelMessage, rtcChunkSize, CreateP2PLink, ParseP2PLink, rtcDataChannelName,
-    rtcPeerConstraints, rtcBufferedAmountLowThreshold, GetRTCConnStats
+    GetRTCServers, rtcBufferedAmountLowThreshold, GetRTCConnStats
 } from '../networking/webrtc'
+import { WebtcDataChannelStats } from '../utilities/webrtc'
 import { QRCodeImage } from '../components/qr_code_image'
 import ProgressBar from '../components/progress_bar'
 import { WS_URL } from '../networking/endpoints'
@@ -349,7 +350,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         try {
             this.setState({ loading: true })
             // Create localConn and generate offer
-            const rtcConn = new RTCPeerConnection(rtcPeerConstraints)
+            const config = await GetRTCServers()
+            const rtcConn = new RTCPeerConnection(config)
             rtcConn.onicecandidate = (ev) => this.onIceCandidate(ev.candidate)
             rtcConn.onicecandidateerror = (ev) => console.warn("[WebRTC] icecandidate err:", ev.errorText)
             rtcConn.onconnectionstatechange = (ev) => console.debug("[WebRTC] onconnectionstatechange:", ev)
@@ -367,7 +369,7 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // Create an offer
             const localOffer = await rtcConn.createOffer()
             await rtcConn.setLocalDescription(localOffer)
-
+            // TODO: Send offer to server for caching, making the seedShareLink much smaller
             // Convert local offer into a URL
             if (!this.state.wsKey.length) throw new Error("wsKey not initialized")
             const link = CreateP2PLink(this.state.wsKey, localOffer)
@@ -392,7 +394,8 @@ class P2PFileSharing extends React.Component<IProps, IState> {
             // Parse remote offer (from the URL)
             const { wsPeerKey, rtcPeerOffer } = ParseP2PLink(this.props.hash)
             // Create local conn
-            const rtcConn = new RTCPeerConnection(rtcPeerConstraints)
+            const config = await GetRTCServers()
+            const rtcConn = new RTCPeerConnection(config)
             rtcConn.ondatachannel = this.onDataChannel
             rtcConn.onicecandidate = (ev) => this.onIceCandidate(ev.candidate)
             rtcConn.onicecandidateerror = (ev) => console.warn("[WebRTC] icecandidate err:", ev.errorText)
@@ -518,13 +521,14 @@ class P2PFileSharing extends React.Component<IProps, IState> {
         const { rtcConn, uploadFile, downloadFileInfo, transferStartTime } = this.state
 
         // Get stats from WebRTC
-        let metrics = await GetRTCConnStats(rtcConn!, 'data-channel')
+        let metrics = (await GetRTCConnStats(rtcConn!, 'data-channel'))?.[0]
         if (!metrics) {
             metrics = {
+                ...placeHolderDataChannelStats,
                 bytesReceived: this.downloadFileChunks.length * rtcChunkSize,
-                bytesSent: 0
             }
         }
+
         // Calculate statistics
         const fileSize = downloadFileInfo?.size || uploadFile!.size
         const bytesProcessed = Math.max(metrics.bytesReceived, metrics.bytesSent, 1) % fileSize;
@@ -731,4 +735,18 @@ export default function P2PFileSharingWrapper() {
     return (
         <P2PFileSharing navigate={navigate} hash={hash} />
     )
+}
+
+const placeHolderDataChannelStats: WebtcDataChannelStats = {
+    type: 'data-channel',
+    bytesReceived: 0,
+    bytesSent: 0,
+    id: "",
+    timestamp: 0,
+    dataChannelIdentifier: 0,
+    label: "",
+    messagesReceived: 0,
+    messagesSent: 0,
+    protocol: "",
+    state: 'open'
 }
