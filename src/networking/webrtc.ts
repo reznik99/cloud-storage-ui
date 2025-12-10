@@ -28,10 +28,9 @@ export const GetRTCStats = async (rtcConn: RTCPeerConnection) => {
     return statsMap
 }
 
+// Gets the RTCPeerConnection statistics for a specific type
 export async function GetRTCConnStats<K extends WebrtcStatsTypeMapKey>(rtcConn: RTCPeerConnection, type: K): Promise<WebrtcStatsTypeMap[K] | undefined> {
     const statsMap = await GetRTCStats(rtcConn);
-
-    // We still have to use an assertion internally, but the external signature is clean.
     return statsMap.get(type) as WebrtcStatsTypeMap[K] | undefined;
 }
 
