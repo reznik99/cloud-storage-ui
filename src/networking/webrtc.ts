@@ -57,6 +57,7 @@ export const GetRTCServers = async (): Promise<RTCConfiguration> => {
     // Default ICE servers for STUN (peer-to-peer)
     const RTCConfig: RTCConfiguration = {
         iceServers: [{ urls: 'stun:turn.francescogorini.com' }, { urls: 'stun:stun.l.google.com:19302' }],
+        iceTransportPolicy: 'all',
     };
     try {
         const res = await client.get('/turn_credentials');
@@ -66,7 +67,7 @@ export const GetRTCServers = async (): Promise<RTCConfiguration> => {
                 // TURN over UDP (fastest)
                 { urls: ['turn:turn.francescogorini.com:3478?transport=udp'], username, credential },
                 // TURN over TCP (fallback for UDP-restricted networks)
-                // { urls: ['turn:turn.francescogorini.com:3478?transport=tcp'], username, credential },
+                { urls: ['turn:turn.francescogorini.com:3478?transport=tcp'], username, credential },
                 // TURN over TLS (best for strict firewalls/proxies)
                 { urls: ['turn:turn.francescogorini.com:5349?transport=tcp'], username, credential },
             );
