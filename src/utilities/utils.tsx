@@ -1,13 +1,13 @@
-import { JSX } from "react"
-import axios, { AxiosError } from "axios"
-import Article from "@mui/icons-material/Article"
-import AudioFile from "@mui/icons-material/AudioFile"
-import Folder from "@mui/icons-material/Folder"
-import FolderZip from "@mui/icons-material/FolderZip"
-import Movie from "@mui/icons-material/Movie"
-import Photo from "@mui/icons-material/Photo"
-import PictureAsPdf from "@mui/icons-material/PictureAsPdf"
-import Chip from "@mui/material/Chip"
+import { JSX } from 'react';
+import axios, { AxiosError } from 'axios';
+import Article from '@mui/icons-material/Article';
+import AudioFile from '@mui/icons-material/AudioFile';
+import Folder from '@mui/icons-material/Folder';
+import FolderZip from '@mui/icons-material/FolderZip';
+import Movie from '@mui/icons-material/Movie';
+import Photo from '@mui/icons-material/Photo';
+import PictureAsPdf from '@mui/icons-material/PictureAsPdf';
+import Chip from '@mui/material/Chip';
 
 export type FileInfo = {
     name: string;
@@ -15,53 +15,55 @@ export type FileInfo = {
     type: string;
     added: string;
     wrapped_file_key: string;
-}
+};
 export type Feedback = {
-    message: string,
-    severity: "error" | "info" | "success" | "warning"
-}
+    message: string;
+    severity: 'error' | 'info' | 'success' | 'warning';
+};
 export type Progress = {
     estimateSec: number;
     bytesProcessed: number;
     percentage: number;
-    bitRate?: number
-}
+    bitRate?: number;
+};
 
-export function millisecondsToX(ms: number, target: "day" | "hour" | "minute" | "second") {
+export function millisecondsToX(ms: number, target: 'day' | 'hour' | 'minute' | 'second') {
     switch (target) {
-        case "day":
-            return ms / 1000 / 60 / 60 / 24
-        case "hour":
-            return ms / 1000 / 60 / 60
-        case "minute":
-            return ms / 1000 / 60
-        case "second":
-            return ms / 1000
+        case 'day':
+            return ms / 1000 / 60 / 60 / 24;
+        case 'hour':
+            return ms / 1000 / 60 / 60;
+        case 'minute':
+            return ms / 1000 / 60;
+        case 'second':
+            return ms / 1000;
     }
 }
 
 export function localDateTime(date: Date, withHumanDiff: boolean) {
-    let output = date.toLocaleString()
+    let output = date.toLocaleString();
     if (withHumanDiff) {
-        const diffDays = millisecondsToX(Date.now() - date.valueOf(), "day")
-        if (diffDays <= 1) output += " (< day ago)"
-        else output += ` (${Math.floor(diffDays).toLocaleString()} days ago)`
+        const diffDays = millisecondsToX(Date.now() - date.valueOf(), 'day');
+        if (diffDays <= 1) output += ' (< day ago)';
+        else output += ` (${Math.floor(diffDays).toLocaleString()} days ago)`;
     }
-    return output
+    return output;
 }
 
 export function calculateSizeUsed(files: Array<FileInfo>) {
-    let total = 0
-    files.forEach(file => total += file.size)
+    let total = 0;
+    files.forEach(file => (total += file.size));
 
-    return total
+    return total;
 }
 
 export function calculateSizePercentageUsed(used: number, total: number) {
-    return Math.min(Math.round((used / total) * 100), 100)
+    return Math.min(Math.round((used / total) * 100), 100);
 }
 
-export function sizePercentageToColor(used: number): "error" | "info" | "success" | "warning" | "primary" | "inherit" | "secondary" {
+export function sizePercentageToColor(
+    used: number,
+): 'error' | 'info' | 'success' | 'warning' | 'primary' | 'inherit' | 'secondary' {
     if (used < 25) return 'primary';
     if (used < 50) return 'info';
     if (used < 75) return 'warning';
@@ -70,71 +72,71 @@ export function sizePercentageToColor(used: number): "error" | "info" | "success
 
 export function formatBytes(byteSize: number) {
     if (byteSize < 1_024) {
-        return "<1 kB"
+        return '<1 kB';
     } else if (byteSize < 1_024_000) {
-        return (byteSize / 1_024).toFixed(0).toLocaleString() + " kB"
+        return (byteSize / 1_024).toFixed(0).toLocaleString() + ' kB';
     } else if (byteSize < 1_024_000_000) {
-        return (byteSize / 1_024_000).toFixed(2).toLocaleString() + " MB"
+        return (byteSize / 1_024_000).toFixed(2).toLocaleString() + ' MB';
     }
-    return (byteSize / 1_024_000_000).toFixed(2).toLocaleString() + " GB"
+    return (byteSize / 1_024_000_000).toFixed(2).toLocaleString() + ' GB';
 }
 
 export function formatBits(bitSize: number) {
     if (bitSize < 1_024) {
-        return "<1 kb"
+        return '<1 kb';
     } else if (bitSize < 1_024_000) {
-        return (bitSize / 1_024).toFixed(0).toLocaleString() + " kb"
+        return (bitSize / 1_024).toFixed(0).toLocaleString() + ' kb';
     } else if (bitSize < 1_024_000_000) {
-        return (bitSize / 1_024_000).toFixed(2).toLocaleString() + " Mb"
+        return (bitSize / 1_024_000).toFixed(2).toLocaleString() + ' Mb';
     }
-    return (bitSize / 1_024_000_000).toFixed(2).toLocaleString() + " Gb"
+    return (bitSize / 1_024_000_000).toFixed(2).toLocaleString() + ' Gb';
 }
 
 export function formatTime(ms: number) {
     if (ms < 1000) {
-        return ms.toFixed(0).toLocaleString() + "ms"
-    } else if (millisecondsToX(ms, "second") < 60) {
-        return millisecondsToX(ms, "second").toFixed(0).toLocaleString() + "s"
-    } else if (millisecondsToX(ms, "minute") < 60) {
-        return millisecondsToX(ms, "minute").toFixed(0).toLocaleString() + "m"
-    } else if (millisecondsToX(ms, "hour") < 24) {
-        return millisecondsToX(ms, "hour").toFixed(0).toLocaleString() + "hr"
+        return ms.toFixed(0).toLocaleString() + 'ms';
+    } else if (millisecondsToX(ms, 'second') < 60) {
+        return millisecondsToX(ms, 'second').toFixed(0).toLocaleString() + 's';
+    } else if (millisecondsToX(ms, 'minute') < 60) {
+        return millisecondsToX(ms, 'minute').toFixed(0).toLocaleString() + 'm';
+    } else if (millisecondsToX(ms, 'hour') < 24) {
+        return millisecondsToX(ms, 'hour').toFixed(0).toLocaleString() + 'hr';
     } else {
-        return millisecondsToX(ms, "day").toFixed(0).toLocaleString() + "day"
+        return millisecondsToX(ms, 'day').toFixed(0).toLocaleString() + 'day';
     }
 }
 
 export function renderFileIcon(fileName: string): JSX.Element {
-    const fileExt = fileName.substring(fileName.lastIndexOf('.'), fileName.length)
+    const fileExt = fileName.substring(fileName.lastIndexOf('.'), fileName.length);
     switch (fileExt.toLowerCase()) {
         // Folders
-        case ".tar":
-        case ".gz":
-        case ".gzip":
-        case ".zip":
-        case ".7z":
-        case ".7zip":
-            return (<FolderZip color="primary" />)
-        case "":
-            return (<Folder color="primary" />)
+        case '.tar':
+        case '.gz':
+        case '.gzip':
+        case '.zip':
+        case '.7z':
+        case '.7zip':
+            return <FolderZip color="primary" />;
+        case '':
+            return <Folder color="primary" />;
         // Images
-        case ".jpg":
-        case ".jpeg":
-        case ".png":
-            return (<Photo color="primary" />)
+        case '.jpg':
+        case '.jpeg':
+        case '.png':
+            return <Photo color="primary" />;
         // Videos
-        case ".mp4":
-        case ".wav":
-            return (<Movie color="primary" />)
+        case '.mp4':
+        case '.wav':
+            return <Movie color="primary" />;
         // Music
-        case ".mp3":
-            return (<AudioFile color="primary" />)
+        case '.mp3':
+            return <AudioFile color="primary" />;
         // Documents
-        case ".pdf":
-            return (<PictureAsPdf color="primary" />)
+        case '.pdf':
+            return <PictureAsPdf color="primary" />;
         // Default
         default:
-            return (<Article color="primary" />)
+            return <Article color="primary" />;
     }
 }
 
@@ -148,58 +150,58 @@ export function triggerDownload(name: string, fileBlob: Blob): void {
 }
 
 export function getErrorString(err: Error | AxiosError | unknown): string {
-    const isAxiosError = axios.isAxiosError(err)
-    if (isAxiosError && err.response?.data?.message) return `${err.response.status} - ${err.response.data.message}`
-    if (isAxiosError && err.response?.statusText) return `${err.response.status} - ${err.response.statusText}`
-    if (err instanceof Error && err?.message) return err.message
-    return err?.toString() || "unknown error"
+    const isAxiosError = axios.isAxiosError(err);
+    if (isAxiosError && err.response?.data?.message) return `${err.response.status} - ${err.response.data.message}`;
+    if (isAxiosError && err.response?.statusText) return `${err.response.status} - ${err.response.statusText}`;
+    if (err instanceof Error && err?.message) return err.message;
+    return err?.toString() || 'unknown error';
 }
 
 export function assembleShareLink(accessKey: string, fileKey: string) {
-    return `${window.location.protocol}//${window.location.host}/share/${accessKey}#${fileKey}`
+    return `${window.location.protocol}//${window.location.host}/share/${accessKey}#${fileKey}`;
 }
 
 export function fileToFileInfo(file: File | null | undefined): FileInfo {
-    if (!file) return { name: '', type: '', size: 0, added: new Date(0).toLocaleString(), wrapped_file_key: '' }
+    if (!file) return { name: '', type: '', size: 0, added: new Date(0).toLocaleString(), wrapped_file_key: '' };
     return {
         name: file.name,
         type: file.type,
         size: file.size,
         added: new Date().toLocaleString(),
-        wrapped_file_key: ''
-    }
+        wrapped_file_key: '',
+    };
 }
 
 export function noopProgressCallback(progress: Progress) {
-    console.debug(progress)
+    console.debug(progress);
 }
 
 export function renderWebsocketStatus(status: number) {
     switch (status) {
         case WebSocket.CONNECTING:
-            return <Chip label="connecting" color="info" variant="outlined" />
+            return <Chip label="connecting" color="info" variant="outlined" />;
         case WebSocket.OPEN:
-            return <Chip label="online" color="success" variant="outlined" />
+            return <Chip label="online" color="success" variant="outlined" />;
         case WebSocket.CLOSING:
-            return <Chip label="closing" color="warning" variant="outlined" />
+            return <Chip label="closing" color="warning" variant="outlined" />;
         case WebSocket.CLOSED:
-            return <Chip label="offline" color="error" variant="outlined" />
+            return <Chip label="offline" color="error" variant="outlined" />;
         default:
-            return <Chip label="unknown" color="secondary" variant="outlined" />
+            return <Chip label="unknown" color="secondary" variant="outlined" />;
     }
 }
 
 export function renderWebRTCStatus(status: RTCDataChannelState | undefined) {
     switch (status) {
-        case "connecting":
-            return <Chip label="connecting" color="info" variant="outlined" />
-        case "open":
-            return <Chip label="online" color="success" variant="outlined" />
-        case "closing":
-            return <Chip label="closing" color="warning" variant="outlined" />
-        case "closed":
-            return <Chip label="offline" color="error" variant="outlined" />
+        case 'connecting':
+            return <Chip label="connecting" color="info" variant="outlined" />;
+        case 'open':
+            return <Chip label="online" color="success" variant="outlined" />;
+        case 'closing':
+            return <Chip label="closing" color="warning" variant="outlined" />;
+        case 'closed':
+            return <Chip label="offline" color="error" variant="outlined" />;
         default:
-            return <Chip label="unknown" color="secondary" variant="outlined" />
+            return <Chip label="unknown" color="secondary" variant="outlined" />;
     }
 }

@@ -1,72 +1,73 @@
-import axios from 'axios'
-import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import Grid from '@mui/material/Grid'
+import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import Grid from '@mui/material/Grid';
 
-import AuthenticateDialog from '../components/dialog_authenticate'
-import FilesView from '../components/files_view'
-import Sidebar from '../components/sidebar'
-import api from '../networking/endpoints'
-import { RootState } from '../store/store'
-import { saveFiles } from '../store/reducer'
-import { getErrorString } from '../utilities/utils'
+import AuthenticateDialog from '../components/dialog_authenticate';
+import FilesView from '../components/files_view';
+import Sidebar from '../components/sidebar';
+import api from '../networking/endpoints';
+import { RootState } from '../store/store';
+import { saveFiles } from '../store/reducer';
+import { getErrorString } from '../utilities/utils';
 
 function Dashboard() {
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const files = useSelector((store: RootState) => store.user.files)
-    const mEncKey = useSelector((store: RootState) => store.user.mEncKey)
-    const hAuthKey = useSelector((store: RootState) => store.user.hAuthKey)
-    const wrappedAccountKey = useSelector((store: RootState) => store.user.wrappedAccountKey)
-    const allowedStorage = useSelector((store: RootState) => store.user.allowedStorage)
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const files = useSelector((store: RootState) => store.user.files);
+    const mEncKey = useSelector((store: RootState) => store.user.mEncKey);
+    const hAuthKey = useSelector((store: RootState) => store.user.hAuthKey);
+    const wrappedAccountKey = useSelector((store: RootState) => store.user.wrappedAccountKey);
+    const allowedStorage = useSelector((store: RootState) => store.user.allowedStorage);
 
-    const [loading, setLoading] = useState(false)
-    const [hasLoaded, setHasLoaded] = useState(false)
-    const [authModalOpen, setAuthModalOpen] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(false);
 
     const loadFileList = useCallback(async () => {
         try {
-            setLoading(true)
-            const resp = await api.getFiles()
-            dispatch(saveFiles({ files: resp.data.files }))
+            setLoading(true);
+            const resp = await api.getFiles();
+            dispatch(saveFiles({ files: resp.data.files }));
         } catch (err: unknown) {
-            const message = getErrorString(err)
-            console.error(message)
-            if (axios.isAxiosError(err) && err.response?.status === 401) navigate("/login")
+            const message = getErrorString(err);
+            console.error(message);
+            if (axios.isAxiosError(err) && err.response?.status === 401) navigate('/login');
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }, [navigate, dispatch])
+    }, [navigate, dispatch]);
 
     useEffect(() => {
         // If we don't have any files in store, load from backend
         if (!hasLoaded) {
-            loadFileList()
-            setHasLoaded(true)
+            loadFileList();
+            setHasLoaded(true);
         }
-    }, [hasLoaded, loadFileList])
+    }, [hasLoaded, loadFileList]);
 
     useEffect(() => {
-        if (!authModalOpen && (mEncKey === "" || hAuthKey === "" || wrappedAccountKey === "")) {
+        if (!authModalOpen && (mEncKey === '' || hAuthKey === '' || wrappedAccountKey === '')) {
             // We lost track of imporant keys, page cannot function, ask for password to re-initialise keys
-            setAuthModalOpen(true)
+            setAuthModalOpen(true);
         }
-    }, [authModalOpen, mEncKey, hAuthKey, wrappedAccountKey])
+    }, [authModalOpen, mEncKey, hAuthKey, wrappedAccountKey]);
 
     return (
-        <Grid container width="100%"
+        <Grid
+            container
+            width="100%"
             rowSpacing={2}
             sx={{
                 display: 'flex',
                 flexGrow: 1,
                 overflowY: 'scroll',
-            }}>
-
+            }}
+        >
             {/* File explorer */}
             <Grid size={{ md: 10, sm: 12 }}>
-                <FilesView files={files || []} loadFileList={loadFileList}
-                    loading={loading} />
+                <FilesView files={files || []} loadFileList={loadFileList} loading={loading} />
             </Grid>
 
             {/* Side menu */}
@@ -74,11 +75,10 @@ function Dashboard() {
                 <Sidebar files={files || []} loadFileList={loadFileList} allowedStorage={allowedStorage} />
             </Grid>
 
-
             {/* Auth dialolg */}
             <AuthenticateDialog open={authModalOpen} closeDialog={() => setAuthModalOpen(false)} />
         </Grid>
-    )
+    );
 }
 
-export default Dashboard
+export default Dashboard;

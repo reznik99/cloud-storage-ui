@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { FileInfo } from '../utilities/utils'
+import { createSlice } from '@reduxjs/toolkit';
+import { FileInfo } from '../utilities/utils';
 
 interface UserState {
     emailAddress: string;
@@ -25,8 +25,8 @@ const initialState: UserState = {
     hAuthKey: '',
     wrappedAccountKey: '',
     clientRandomValue: '',
-    allowedStorage: 1_024_000_000
-}
+    allowedStorage: 1_024_000_000,
+};
 
 export const dataSlice = createSlice({
     name: 'user',
@@ -47,9 +47,9 @@ export const dataSlice = createSlice({
             state.files = action.payload.files;
         },
     },
-})
+});
 
 // Action creators are generated for each case reducer function
-export const { saveCreds, saveFiles } = dataSlice.actions
+export const { saveCreds, saveFiles } = dataSlice.actions;
 
-export default dataSlice.reducer
+export default dataSlice.reducer;

@@ -1,98 +1,103 @@
-import { useCallback, useState } from "react"
-import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
-import { useSnackbar } from "notistack"
-import Alert from '@mui/material/Alert'
-import AlertTitle from '@mui/material/AlertTitle'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import Container from "@mui/material/Container"
-import Divider from '@mui/material/Divider'
+import { useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
-import LinearProgress from '@mui/material/LinearProgress'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import FormControl from '@mui/material/FormControl'
-import FormLabel from '@mui/material/FormLabel'
-import ArrowBack from "@mui/icons-material/ArrowBack"
-import AccountCircle from "@mui/icons-material/AccountCircle"
+import LinearProgress from '@mui/material/LinearProgress';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 
-import { Feedback, getErrorString } from "../utilities/utils"
-import { ValidatePassword } from "../utilities/security"
-import api from "../networking/endpoints"
-import PasswordMeter from "../components/password_meter"
-import { saveCreds } from "../store/reducer"
-import { Logo } from "../components/logo"
+import { Feedback, getErrorString } from '../utilities/utils';
+import { ValidatePassword } from '../utilities/security';
+import api from '../networking/endpoints';
+import PasswordMeter from '../components/password_meter';
+import { saveCreds } from '../store/reducer';
+import { Logo } from '../components/logo';
 
 function Signup() {
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const { enqueueSnackbar } = useSnackbar()
-    const [loading, setLoading] = useState(false)
-    const [feedback, setFeedback] = useState<Feedback | null>()
-    const [emailAddress, setEmailAddress] = useState('')
-    const [emailError, setEmailError] = useState('')
-    const [password, setPassword] = useState('')
-    const [passwordError, setPasswordError] = useState('')
-    const [passwordConfirmation, setPasswordConfirmation] = useState('')
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { enqueueSnackbar } = useSnackbar();
+    const [loading, setLoading] = useState(false);
+    const [feedback, setFeedback] = useState<Feedback | null>();
+    const [emailAddress, setEmailAddress] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
 
     const handleEmail = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        resetFeedback()
+        resetFeedback();
         if (!e.target.validity.valid) {
-            setEmailError("Invalid email address")
+            setEmailError('Invalid email address');
         }
-        setEmailAddress(e.target.value)
-    }
+        setEmailAddress(e.target.value);
+    };
 
     const resetFeedback = () => {
-        setFeedback(null)
-        setEmailError("")
-        setPasswordError("")
-    }
+        setFeedback(null);
+        setEmailError('');
+        setPasswordError('');
+    };
 
     const checkValues = useCallback(() => {
-        if (!emailAddress.trim()) setEmailError("Email is required")
-        else if (!password.trim()) setPasswordError("Password is required")
-        else if (password !== passwordConfirmation) setPasswordError("Passwords do not match!")
+        if (!emailAddress.trim()) setEmailError('Email is required');
+        else if (!password.trim()) setPasswordError('Password is required');
+        else if (password !== passwordConfirmation) setPasswordError('Passwords do not match!');
         else {
-            const err = ValidatePassword(password)
+            const err = ValidatePassword(password);
             if (err) {
-                setPasswordError(err)
-                return false
+                setPasswordError(err);
+                return false;
             }
-            return true
+            return true;
         }
-        return false
-    }, [emailAddress, password, passwordConfirmation])
+        return false;
+    }, [emailAddress, password, passwordConfirmation]);
 
-    const signup = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        resetFeedback()
-        try {
-            setLoading(true)
-            if (!checkValues()) return
-            await api.signup(emailAddress, password)
-            dispatch(saveCreds({ emailAddress: emailAddress }))
-            navigate('/login')
-            enqueueSnackbar("Account created successfully", { variant: "success" })
-        } catch (err) {
-            const error = getErrorString(err)
-            console.error(error)
-            setFeedback({ message: error, severity: "error" })
-        } finally {
-            setLoading(false)
-        }
-    }, [emailAddress, password, checkValues, dispatch, navigate, enqueueSnackbar])
+    const signup = useCallback(
+        async (e: React.FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            resetFeedback();
+            try {
+                setLoading(true);
+                if (!checkValues()) return;
+                await api.signup(emailAddress, password);
+                dispatch(saveCreds({ emailAddress: emailAddress }));
+                navigate('/login');
+                enqueueSnackbar('Account created successfully', { variant: 'success' });
+            } catch (err) {
+                const error = getErrorString(err);
+                console.error(error);
+                setFeedback({ message: error, severity: 'error' });
+            } finally {
+                setLoading(false);
+            }
+        },
+        [emailAddress, password, checkValues, dispatch, navigate, enqueueSnackbar],
+    );
 
     return (
         <Container maxWidth="xl">
-            <Grid container
+            <Grid
+                container
                 columnSpacing={{ lg: 5, md: 3, sm: 1, xs: 1 }}
                 rowSpacing={2}
                 margin="4vw"
-                justifyContent="center">
+                justifyContent="center"
+            >
                 <Grid size={{ lg: 7, md: 6, sm: 12, xs: 12 }}>
                     <Card sx={{ padding: 5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -102,7 +107,8 @@ function Signup() {
                             <Logo height={50} width={50} />
                         </Box>
 
-                        <Box component="form"
+                        <Box
+                            component="form"
                             noValidate={true}
                             onSubmit={signup}
                             sx={{
@@ -110,10 +116,12 @@ function Signup() {
                                 flexDirection: 'column',
                                 gap: 3,
                                 my: 3,
-                            }}>
+                            }}
+                        >
                             <FormControl>
                                 <FormLabel htmlFor="email">Email Address</FormLabel>
-                                <TextField required
+                                <TextField
+                                    required
                                     fullWidth
                                     id="email"
                                     type="email"
@@ -125,11 +133,13 @@ function Signup() {
                                     value={emailAddress}
                                     error={!!emailError}
                                     helperText={emailError}
-                                    onChange={handleEmail} />
+                                    onChange={handleEmail}
+                                />
                             </FormControl>
                             <FormControl>
                                 <FormLabel htmlFor="password">Password</FormLabel>
-                                <TextField required
+                                <TextField
+                                    required
                                     fullWidth
                                     name="password"
                                     type="password"
@@ -141,11 +151,13 @@ function Signup() {
                                     value={password}
                                     error={!!passwordError}
                                     helperText={passwordError}
-                                    onChange={(e) => setPassword(e.target.value)} />
+                                    onChange={e => setPassword(e.target.value)}
+                                />
                             </FormControl>
                             <FormControl>
                                 <FormLabel htmlFor="confirm-password">Confirm Password</FormLabel>
-                                <TextField required
+                                <TextField
+                                    required
                                     fullWidth
                                     name="confirm-password"
                                     type="password"
@@ -157,44 +169,39 @@ function Signup() {
                                     value={passwordConfirmation}
                                     error={!!passwordError}
                                     helperText={passwordError}
-                                    onChange={(e) => setPasswordConfirmation(e.target.value)} />
+                                    onChange={e => setPasswordConfirmation(e.target.value)}
+                                />
                             </FormControl>
                             {password && <PasswordMeter password={password || passwordConfirmation} />}
 
                             <Stack direction="row" justifyContent="center">
-                                <Button variant="contained"
-                                    type="submit"
-                                    disabled={loading}
-                                    startIcon={<AccountCircle />}>
+                                <Button variant="contained" type="submit" disabled={loading} startIcon={<AccountCircle />}>
                                     Create Account
                                 </Button>
                             </Stack>
-
                         </Box>
 
                         <Divider sx={{ mb: 3 }}>Already have an account?</Divider>
 
                         <Stack direction="row" justifyContent="center">
-                            <Button variant="outlined"
-                                startIcon={<ArrowBack />}
-                                onClick={() => navigate('/login')}>
+                            <Button variant="outlined" startIcon={<ArrowBack />} onClick={() => navigate('/login')}>
                                 Log in
                             </Button>
                         </Stack>
                     </Card>
 
                     <Box>
-                        {feedback &&
+                        {feedback && (
                             <Alert severity={feedback.severity}>
                                 <AlertTitle>{feedback.message}</AlertTitle>
                             </Alert>
-                        }
+                        )}
                         {loading && <LinearProgress variant="indeterminate" />}
                     </Box>
                 </Grid>
             </Grid>
         </Container>
-    )
+    );
 }
 
-export default Signup
+export default Signup;

@@ -1,5 +1,4 @@
-
-export type WebrtcStatsType = "candidate-pair" | "data-channel" | "local-candidate" | "peer-connection" | "remote-candidate";
+export type WebrtcStatsType = 'candidate-pair' | 'data-channel' | 'local-candidate' | 'peer-connection' | 'remote-candidate';
 export type WebrtcStatsTypeMapKey = keyof WebrtcStatsTypeMap;
 
 export interface WebrtcStatsTypeMap {
@@ -9,7 +8,7 @@ export interface WebrtcStatsTypeMap {
     'remote-candidate': WebrtcCandidateStats[];
     'data-channel': WebrtcDataChannelStats[];
     // Add other standard or custom types as needed:
-    // 'inbound-rtp': RtcInboundRtpStreamStats; 
+    // 'inbound-rtp': RtcInboundRtpStreamStats;
     // etc.
 }
 
