@@ -69,7 +69,7 @@ export const GetRTCServers = async (): Promise<RTCConfiguration> => {
                 // TURN over TCP (fallback for UDP-restricted networks)
                 { urls: ['turn:turn.francescogorini.com:3478?transport=tcp'], username, credential },
                 // TURN over TLS (best for strict firewalls/proxies)
-                { urls: ['turn:turn.francescogorini.com:5349?transport=tcp'], username, credential },
+                { urls: ['turns:turn.francescogorini.com:5349?transport=tcp'], username, credential },
             );
         }
         return RTCConfig;
