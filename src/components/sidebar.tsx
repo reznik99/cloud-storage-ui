@@ -13,7 +13,7 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
-import { useColorScheme } from '@mui/material/styles';
+import { alpha, useColorScheme } from '@mui/material/styles';
 
 import {
     calculateSizePercentageUsed,
@@ -38,7 +38,18 @@ function Sidebar(props: IProps) {
     const sizeUsed = calculateSizeUsed(props.files);
     const sizeUsedPercentage = calculateSizePercentageUsed(sizeUsed, props.allowedStorage);
     return (
-        <Card elevation={4} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Card
+            elevation={4}
+            sx={theme => ({
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: `1px solid ${theme.palette.divider}`,
+            })}
+        >
             <Box
                 sx={{
                     display: 'flex',

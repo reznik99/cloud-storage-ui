@@ -49,7 +49,7 @@ function Dashboard() {
 
     useEffect(() => {
         if (!authModalOpen && (mEncKey === '' || hAuthKey === '' || wrappedAccountKey === '')) {
-            // We lost track of imporant keys, page cannot function, ask for password to re-initialise keys
+            // We lost track of important keys, page cannot function, ask for password to re-initialise keys
             setAuthModalOpen(true);
         }
     }, [authModalOpen, mEncKey, hAuthKey, wrappedAccountKey]);
@@ -75,7 +75,7 @@ function Dashboard() {
                 <Sidebar files={files || []} loadFileList={loadFileList} allowedStorage={allowedStorage} />
             </Grid>
 
-            {/* Auth dialolg */}
+            {/* Auth dialog */}
             <AuthenticateDialog open={authModalOpen} closeDialog={() => setAuthModalOpen(false)} />
         </Grid>
     );

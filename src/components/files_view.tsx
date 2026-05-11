@@ -127,9 +127,15 @@ function FilesView(props: IProps) {
                 <Paper elevation={6} square>
                     <ListItem>
                         <Stack width="100%" direction="row" paddingX="2em">
-                            <ListItemText sx={{ width: 200 }} primary="File Name" />
-                            <ListItemText primary="File Size" />
-                            <ListItemText sx={{ textAlign: 'right' }} primary="Actions" />
+                            <Typography variant="overline" color="text.secondary" sx={{ width: 200 }}>
+                                File Name
+                            </Typography>
+                            <Typography variant="overline" color="text.secondary" sx={{ flex: 1 }}>
+                                File Size
+                            </Typography>
+                            <Typography variant="overline" color="text.secondary" sx={{ flex: 1, textAlign: 'right' }}>
+                                Actions
+                            </Typography>
                         </Stack>
                     </ListItem>
                 </Paper>
@@ -139,7 +145,13 @@ function FilesView(props: IProps) {
                         <Chip label={`${props.files?.length || 0} files`} size="small" />
                     </Divider>
                     {props.files.map((file, idx) => (
-                        <Box key={idx}>
+                        <Box
+                            key={idx}
+                            sx={{
+                                '&:hover .file-actions': { opacity: 1 },
+                                '@media (hover: none)': { '.file-actions': { opacity: 1 } },
+                            }}
+                        >
                             {/* File metadata */}
                             <ListItem>
                                 <Grid container width="100%">
@@ -156,11 +168,26 @@ function FilesView(props: IProps) {
                                                 </Tooltip>
                                             )}
                                         </ListItemIcon>
-                                        <ListItemText sx={{ width: 200 }} primary={file.name} />
-                                        <ListItemText primary={formatBytes(file.size)} />
+                                        <ListItemText
+                                            sx={{ width: 200 }}
+                                            primary={file.name}
+                                            primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                                        />
+                                        <ListItemText
+                                            primary={formatBytes(file.size)}
+                                            primaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
+                                        />
                                     </Grid>
 
-                                    <Grid size={{ lg: 4, sm: 12, xs: 12 }} textAlign="right">
+                                    <Grid
+                                        size={{ lg: 4, sm: 12, xs: 12 }}
+                                        textAlign="right"
+                                        className="file-actions"
+                                        sx={{
+                                            opacity: loadingIdx === idx ? 1 : 0,
+                                            transition: 'opacity 0.18s ease',
+                                        }}
+                                    >
                                         {/* File actions */}
                                         <Tooltip title="Share" disableInteractive>
                                             <Button onClick={() => setLinkDialogIdx(idx)}>

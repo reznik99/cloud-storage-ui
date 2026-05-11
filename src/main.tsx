@@ -24,13 +24,16 @@ import P2PFileSharingWrapper from './pages/p2p_file_sharing.tsx';
 
 const theme = createTheme({
     colorSchemes: {
-        dark: true,
-        light: true,
-    },
-    palette: {
-        mode: 'light',
-        background: {
-            default: '#DEDEDE',
+        light: {
+            palette: {
+                primary: { main: '#009EFF' },
+                background: { default: '#F4F6F8', paper: '#FFFFFF' },
+            },
+        },
+        dark: {
+            palette: {
+                primary: { main: '#009EFF' },
+            },
         },
     },
 });

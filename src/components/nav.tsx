@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 
 import api from '../networking/endpoints';
 import { RootState } from '../store/store';
@@ -66,7 +67,12 @@ function Nav() {
             width="100vw"
             paddingY={2}
             paddingX="2em"
-            sx={{ backgroundColor: 'transparent' }}
+            sx={theme => ({
+                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                borderBottom: `1px solid ${theme.palette.divider}`,
+            })}
         >
             {/* Logo */}
             <Logo width={30} height={30} />
