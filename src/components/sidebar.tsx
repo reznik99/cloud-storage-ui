@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import Circle from '@mui/icons-material/Circle';
+import Lock from '@mui/icons-material/Lock';
 import Upload from '@mui/icons-material/Upload';
 import GitHub from '@mui/icons-material/GitHub';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import LinearProgress from '@mui/material/LinearProgress';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { alpha, useColorScheme } from '@mui/material/styles';
 
@@ -85,9 +88,20 @@ function Sidebar(props: IProps) {
                     />
                 )}
 
-                <Button variant="contained" startIcon={<Upload />} onClick={() => setFileModalOpen(true)}>
-                    Upload
-                </Button>
+                <Stack alignItems="center" gap={1}>
+                    <Button variant="contained" startIcon={<Upload />} onClick={() => setFileModalOpen(true)}>
+                        Upload
+                    </Button>
+                    <Tooltip title="Files are encrypted with a per-file key in your browser before upload — the server only ever stores ciphertext. Encryption can be disabled per file under Advanced Options.">
+                        <Chip
+                            icon={<Lock fontSize="small" />}
+                            label="End-to-end encrypted by default"
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                        />
+                    </Tooltip>
+                </Stack>
 
                 <FileUploadDialog
                     open={fileModalOpen}

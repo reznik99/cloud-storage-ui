@@ -3,6 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Download from '@mui/icons-material/Download';
+import Lock from '@mui/icons-material/Lock';
+import LockOpen from '@mui/icons-material/LockOpen';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
@@ -10,6 +12,7 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
@@ -31,6 +34,7 @@ function LinkShare() {
     const { enqueueSnackbar } = useSnackbar();
     const params = useParams();
     const [loading, setLoading] = useState<boolean>(false);
+    const [decrypting, setDecrypting] = useState<boolean>(false);
     const [file, setFile] = useState<FileInfo | null>();
     const [progress, setProgress] = useState<Progress | null>();
     const controller = useRef(new AbortController());
@@ -58,6 +62,7 @@ function LinkShare() {
             const fileKey = hash.slice(1);
             if (fileKey) {
                 // Decrypt file with URL file key
+                setDecrypting(true);
                 const decryptedFile = await DecryptFileLink(fileKey, file, resp.data);
                 triggerDownload(file.name, decryptedFile);
             } else {
@@ -71,6 +76,7 @@ function LinkShare() {
             enqueueSnackbar('File download failed: ' + error, { variant: 'error' });
         } finally {
             setLoading(false);
+            setDecrypting(false);
             setProgress(null);
         }
     }, [file, hash, params.access_key, enqueueSnackbar]);
@@ -103,6 +109,25 @@ function LinkShare() {
                     )}
                     {file && (
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Alert
+                                severity={fileKey ? 'success' : 'warning'}
+                                icon={fileKey ? <Lock fontSize="inherit" /> : <LockOpen fontSize="inherit" />}
+                                variant="outlined"
+                            >
+                                <AlertTitle>{fileKey ? 'End-to-end encrypted' : 'Not encrypted'}</AlertTitle>
+                                {fileKey ? (
+                                    <Typography variant="body2">
+                                        Decryption happens entirely in your browser. The server only stores ciphertext — the
+                                        decryption key lives in this URL's fragment (after <code>#</code>) and is never sent
+                                        over the network.
+                                    </Typography>
+                                ) : (
+                                    <Typography variant="body2">
+                                        This file is not encrypted. Treat the contents as public.
+                                    </Typography>
+                                )}
+                            </Alert>
+
                             <Stack gap={1}>
                                 <Grid
                                     container
@@ -132,11 +157,21 @@ function LinkShare() {
                                     </Grid>
                                 </Grid>
 
-                                <Stack direction="row" gap={2} alignItems="center">
-                                    <Typography variant="body1">Decryption Key:</Typography>
-                                    <Typography variant="body1" color={fileKey ? 'info' : 'warning'}>
-                                        {fileKey || 'None (not encrypted)'}
-                                    </Typography>
+                                <Stack direction="row" gap={2} alignItems="center" flexWrap="wrap">
+                                    <Typography variant="body1">Decryption key:</Typography>
+                                    {fileKey ? (
+                                        <Typography
+                                            variant="body2"
+                                            color="success.main"
+                                            sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
+                                        >
+                                            {fileKey}
+                                        </Typography>
+                                    ) : (
+                                        <Typography variant="body2" color="warning.main">
+                                            None (not encrypted)
+                                        </Typography>
+                                    )}
                                 </Stack>
                             </Stack>
                             <Button variant="outlined" onClick={downloadLink} disabled={loading} startIcon={<Download />}>
@@ -149,6 +184,14 @@ function LinkShare() {
                                     progress={progress}
                                     file={file}
                                 />
+                            )}
+                            {decrypting && (
+                                <Stack direction="row" gap={1.5} alignItems="center" justifyContent="center">
+                                    <CircularProgress size={16} color="success" />
+                                    <Typography variant="body2" color="success.main">
+                                        Decrypting locally in your browser…
+                                    </Typography>
+                                </Stack>
                             )}
 
                             {/* TODO: End-to-End encrypted videos can't be streamed for now */}

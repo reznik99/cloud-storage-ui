@@ -118,14 +118,13 @@ function FileUploadDialog(props: IProps) {
 
                 <Alert severity={encryptionEnabled ? 'info' : 'warning'}>
                     {encryptionEnabled ? (
-                        <Typography>File will be End-To-End encrypted!</Typography>
+                        <Typography>File will be end-to-end encrypted in your browser before upload.</Typography>
                     ) : (
                         <Typography>
-                            File will not be encrypted!
+                            This file will not be encrypted.
                             <br />
-                            Only disable encryption if video/mp4 files are to be shared.
-                            <br />
-                            This will allow a shared link to be used for streaming the video to the browser.
+                            Disable encryption only when sharing a video you want recipients to stream directly in their
+                            browser — encrypted files have to be downloaded in full before they can be played.
                         </Typography>
                     )}
                 </Alert>
