@@ -166,7 +166,7 @@ function Login() {
                                     name="password"
                                     type="password"
                                     id="password"
-                                    autoComplete="new-password"
+                                    autoComplete="current-password"
                                     placeholder="••••••"
                                     variant="outlined"
                                     color="primary"

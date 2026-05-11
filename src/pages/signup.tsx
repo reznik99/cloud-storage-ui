@@ -18,6 +18,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import Key from '@mui/icons-material/Key';
 
 import { Feedback, getErrorString } from '../utilities/utils';
 import { ValidatePassword } from '../utilities/security';
@@ -136,6 +137,15 @@ function Signup() {
                                     onChange={handleEmail}
                                 />
                             </FormControl>
+                            <Alert severity="warning" variant="outlined" icon={<Key fontSize="inherit" />}>
+                                <AlertTitle>Don't forget this password</AlertTitle>
+                                <Typography variant="body2">
+                                    Your password derives the keys that encrypt your files. The server never sees it — which
+                                    means we can't reset it. If you lose it, your files are permanently inaccessible. We
+                                    recommend using a password manager.
+                                </Typography>
+                            </Alert>
+
                             <FormControl>
                                 <FormLabel htmlFor="password">Password</FormLabel>
                                 <TextField

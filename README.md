@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/logo.png" alt="GoriniDrive" width="80" />
+  <img src="public/logo.png" alt="G-Storage" width="80" />
 </p>
 
-<h1 align="center">GoriniDrive</h1>
+<h1 align="center">G-Storage</h1>
 
 <p align="center">
   Self-hosted, end-to-end encrypted cloud storage.
@@ -16,7 +16,7 @@
 
 ## Overview
 
-GoriniDrive is a self-hosted cloud storage platform where files are encrypted client-side before they ever leave the browser. The server only stores ciphertext — it never has access to your plaintext data or encryption keys.
+G-Storage is a self-hosted cloud storage platform where files are encrypted client-side before they ever leave the browser. The server only stores ciphertext — it never has access to your plaintext data or encryption keys.
 
 This repository contains the **frontend** SPA. The corresponding backend API lives at [cloud-storage-api](https://github.com/reznik99/cloud-storage-api).
 
@@ -107,7 +107,7 @@ No authentication or server storage required — files flow directly between pee
 
 ### Key Hierarchy
 
-GoriniDrive uses a 4-tier key hierarchy (inspired by the [Mega whitepaper](https://mega.nz/SecurityWhitepaper.pdf)):
+G-Storage uses a 4-tier key hierarchy (inspired by the [Mega whitepaper](https://mega.nz/SecurityWhitepaper.pdf)):
 
 ```
 Password + CRV (Client Random Value)
