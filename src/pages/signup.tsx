@@ -38,6 +38,7 @@ function Signup() {
     const [password, setPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
     const handleEmail = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         resetFeedback();
@@ -51,12 +52,13 @@ function Signup() {
         setFeedback(null);
         setEmailError('');
         setPasswordError('');
+        setConfirmPasswordError('');
     };
 
     const checkValues = useCallback(() => {
         if (!emailAddress.trim()) setEmailError('Email is required');
         else if (!password.trim()) setPasswordError('Password is required');
-        else if (password !== passwordConfirmation) setPasswordError('Passwords do not match!');
+        else if (password !== passwordConfirmation) setConfirmPasswordError('Passwords do not match');
         else {
             const err = ValidatePassword(password);
             if (err) {
@@ -177,8 +179,8 @@ function Signup() {
                                     variant="outlined"
                                     color="primary"
                                     value={passwordConfirmation}
-                                    error={!!passwordError}
-                                    helperText={passwordError}
+                                    error={!!confirmPasswordError}
+                                    helperText={confirmPasswordError}
                                     onChange={e => setPasswordConfirmation(e.target.value)}
                                 />
                             </FormControl>

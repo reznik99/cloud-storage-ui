@@ -113,7 +113,7 @@ function Login() {
         }
     }, [emailAddress]);
 
-    console.log('Supports showSaveFilePicker', 'showSaveFilePicker' in window);
+    console.debug('Supports showSaveFilePicker', 'showSaveFilePicker' in window);
     return (
         <Container maxWidth="xl">
             <Grid
@@ -127,7 +127,7 @@ function Login() {
                     <Card sx={{ padding: 5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography component="h1" variant="h4">
-                                Log In
+                                Log in
                             </Typography>
                             <Logo width={50} height={50} />
                         </Box>
@@ -176,9 +176,14 @@ function Login() {
                                     onChange={e => setPassword(e.target.value)}
                                 />
                                 <Stack direction="row" marginTop={2}>
-                                    <Link to="#" component={RouterLink} onClick={() => setShowResetDialog(true)}>
+                                    <Button
+                                        variant="text"
+                                        size="small"
+                                        onClick={() => setShowResetDialog(true)}
+                                        sx={{ alignSelf: 'flex-start', px: 0, textTransform: 'none' }}
+                                    >
                                         Forgot Password?
-                                    </Link>
+                                    </Button>
                                 </Stack>
                             </FormControl>
 
@@ -223,10 +228,9 @@ function Login() {
                                     <Box
                                         component="span"
                                         sx={{
-                                            fontFamily: 'Poppins, sans-serif',
                                             fontSize: '3rem',
                                             fontWeight: 600,
-                                            color: '#00BFFF',
+                                            color: 'primary.main',
                                             opacity: 0,
                                             animation: 'fadeIn 0.7s ease forwards 0.7s',
                                         }}
@@ -238,12 +242,12 @@ function Login() {
                                         sx={{
                                             display: 'block',
                                             fontSize: '2rem',
-                                            color: '#ccc',
+                                            color: 'text.secondary',
                                             opacity: 0,
                                             animation: 'fadeIn 1s ease forwards 1s',
                                         }}
                                     >
-                                        End-to-End Encrypted
+                                        End-to-end encrypted
                                     </Box>
                                 </Box>
                             </Box>
@@ -258,18 +262,16 @@ function Login() {
                         </AlertTitle>
                         <ul>
                             <li>
-                                <Typography variant="subtitle2">Up to 1GB of storage for free</Typography>
+                                <Typography variant="subtitle2">1 GB storage per account</Typography>
                             </li>
                             <li>
-                                <Typography variant="subtitle2">End-To-End encryption</Typography>
+                                <Typography variant="subtitle2">End-to-end encryption</Typography>
                             </li>
                             <li>
-                                <Typography variant="subtitle2">
-                                    Files sharing is easy! Download without an account
-                                </Typography>
+                                <Typography variant="subtitle2">Shareable download links — no account required</Typography>
                             </li>
                             <li>
-                                <Typography variant="subtitle2">Open Source</Typography>
+                                <Typography variant="subtitle2">Open source</Typography>
                             </li>
                         </ul>
                     </Alert>
@@ -288,13 +290,10 @@ function Login() {
                                 </Typography>
                             </li>
                             <li>
-                                <Typography variant="subtitle2">Peer-To-Peer & Server-less</Typography>
+                                <Typography variant="subtitle2">Peer-to-peer, no server storage</Typography>
                             </li>
                             <li>
-                                <Typography variant="subtitle2">End-To-End encryption</Typography>
-                            </li>
-                            <li>
-                                <Typography variant="subtitle2">Open Source</Typography>
+                                <Typography variant="subtitle2">No account required</Typography>
                             </li>
                         </ul>
 
